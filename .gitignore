@@ -1,0 +1,4 @@
+target/
+__pycache__/
+# A library workspace: the consumer's lockfile decides the versions.
+Cargo.lock

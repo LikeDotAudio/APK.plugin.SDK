@@ -1,0 +1,20 @@
+# APK.plugin.SDK — the two crates every APK.audio plugin links, as one workspace.
+#
+# PUBLISHED, NOT EDITED. This file is the SDK repository's root manifest; its
+# source of truth is PODS/POD.THICK/DISCOVERY.Engine/SDK/Cargo.toml in the
+# APK.audio monorepo, and `.apk.scripts/publish_sdk.py` assembles the rest
+# beside it on every publish:
+#   runner/          <- DISCOVERY.Engine/SRC/RUNNER        (apk-plugin-runner)
+#   contracts/rust/  <- <repo>/contracts/rust              (apkaudio-contracts)
+#   contracts/tokens <- <repo>/contracts/tokens            (tokens.rs compiles brand.json in)
+#   contracts/vectors<- <repo>/contracts/vectors           (the contract tests read them)
+#   docker/          <- DISCOVERY.Engine/Docker/plugin-base.yml (what a plugin compose extends)
+# An edit made in the SDK repository is overwritten by the next publish.
+#
+# A plugin names a TAG, never a branch:
+#   apk-plugin-runner  = { git = "https://github.com/LikeDotAudio/APK.plugin.SDK", tag = "sdk-v0.1" }
+#   apkaudio-contracts = { git = "https://github.com/LikeDotAudio/APK.plugin.SDK", tag = "sdk-v0.1" }
+# Cargo finds each package by name anywhere in this repository.
+[workspace]
+resolver = "2"
+members = ["runner", "contracts/rust"]

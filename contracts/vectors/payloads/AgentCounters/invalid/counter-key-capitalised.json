@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "agent": "apkaudio-ptp",
+  "at": "2026-08-29T14:00:10.000Z",
+  "startedAt": "2026-08-29T14:00:00.000Z",
+  "intervalMs": 10000,
+  "counters": { "UdpSeen": 812 }
+}

@@ -1,0 +1,137 @@
+# The one CI every APK.audio plugin repository runs (PLAN-3408.01).
+#
+# PUBLISHED FROM THE MONOREPO like the rest of this repository: the source is
+# PODS/POD.THICK/DISCOVERY.Engine/SDK/.github/workflows/plugin-ci.yml, and
+# .apk.scripts/publish_sdk.py copies it here. A plugin calls it in five lines:
+#
+#   on: [push, pull_request]
+#   jobs:
+#     ci:
+#       uses: LikeDotAudio/APK.plugin.SDK/.github/workflows/plugin-ci.yml@main
+#       secrets: inherit
+#
+# WHAT IT PROVES, in the order a plugin can fail:
+#   1. cargo test     every crate under SRC/ (SRC/Cargo.toml, or SRC/<crate>/Cargo.toml)
+#                     builds and passes ON ITS OWN — no monorepo around it, the
+#                     runner and contracts fetched from the SDK tag the crate pins.
+#   2. cargo clippy   reported; it fails the run only with `clippy-deny-warnings: true`.
+#   3. api shape      the SDK at that same tag: the Rust and Python halves of
+#                     `incoming/api` still publish the same keys.
+#   4. compose        `docker compose config` on Docker/docker-compose.yml, with the
+#                     SDK's docker/plugin-base.yml placed where `extends:` looks for it.
+# A plugin with no Cargo.toml (a Python probe) skips 1-2 and byte-compiles SRC/.
+#
+# PRIVATE DEPENDENCIES. The SDK is public; a plugin that also links a private
+# sibling (apkaudio-maclookup, apkaudio-ravenna, ...) needs a token that can read
+# it. Set a repository secret APK_DEPS_TOKEN (a fine-grained PAT, Contents: read
+# on those repositories); without it such a plugin fails at step 1 with
+# "failed to authenticate", and that failure names the missing secret below.
+name: plugin-ci
+
+on:
+  workflow_call:
+    inputs:
+      clippy-deny-warnings:
+        description: "fail the run on any clippy warning"
+        type: boolean
+        default: false
+    secrets:
+      APK_DEPS_TOKEN:
+        description: "read access to the private sibling repositories a plugin links"
+        required: false
+
+jobs:
+  plugin:
+    runs-on: ubuntu-latest
+    env:
+      CARGO_TERM_COLOR: always
+      # Fetch git dependencies with the git CLI, so the insteadOf below applies.
+      CARGO_NET_GIT_FETCH_WITH_CLI: "true"
+    steps:
+      # ../../../DISCOVERY.Engine/Docker/plugin-base.yml from PLUGINS/plugin/Docker/
+      # is <workspace>/DISCOVERY.Engine/Docker/ — the checkout path is chosen for that.
+      - uses: actions/checkout@v4
+        with:
+          path: PLUGINS/plugin
+
+      - name: Private dependencies
+        env:
+          TOKEN: ${{ secrets.APK_DEPS_TOKEN }}
+        run: |
+          if [ -n "$TOKEN" ]; then
+            git config --global url."https://x-access-token:${TOKEN}@github.com/".insteadOf "https://github.com/"
+            echo "APK_DEPS_TOKEN set: private siblings are fetched with it"
+          else
+            echo "no APK_DEPS_TOKEN: only public dependencies (the SDK, crates.io) can be fetched"
+          fi
+
+      - name: Which SDK
+        id: sdk
+        run: |
+          tag=$(grep -rhoE --include=Cargo.toml 'APK\.plugin\.SDK"?[^}]*tag *= *"sdk-v[0-9.]+"' PLUGINS/plugin/SRC 2>/dev/null \
+                | grep -oE 'sdk-v[0-9.]+' | sort -uV | tail -1)
+          echo "ref=${tag:-main}" >> "$GITHUB_OUTPUT"
+          echo "SDK ref: ${tag:-main (no crate pins a tag)}"
+          crates=$(find PLUGINS/plugin/SRC -maxdepth 2 -name Cargo.toml 2>/dev/null | sort | tr '\n' ' ')
+          echo "crates=$crates" >> "$GITHUB_OUTPUT"
+          echo "crates: ${crates:-none}"
+
+      - uses: actions/checkout@v4
+        with:
+          repository: LikeDotAudio/APK.plugin.SDK
+          ref: ${{ steps.sdk.outputs.ref }}
+          path: sdk
+
+      - name: System libraries
+        if: steps.sdk.outputs.crates != ''
+        # The same list the shared plugin image installs (DISCOVERY.Engine/Docker/Dockerfile).
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends libasound2-dev pkg-config protobuf-compiler libopus-dev libudev-dev
+
+      - uses: dtolnay/rust-toolchain@stable
+        if: steps.sdk.outputs.crates != ''
+        with:
+          components: clippy
+
+      - name: cargo test
+        if: steps.sdk.outputs.crates != ''
+        run: |
+          for m in ${{ steps.sdk.outputs.crates }}; do
+            echo "::group::cargo test $m"
+            if ! cargo test --manifest-path "$m" --all-targets; then
+              if grep -E 'git *= *"https://github.com/' "$m" | grep -qv 'APK.plugin.SDK'; then
+                echo "::error file=$m::cargo test failed. This crate links a private repository; if the error above is an authentication failure, set the APK_DEPS_TOKEN secret."
+              fi
+              exit 1
+            fi
+            echo "::endgroup::"
+          done
+
+      - name: cargo clippy
+        if: steps.sdk.outputs.crates != ''
+        run: |
+          deny=""
+          [ "${{ inputs.clippy-deny-warnings }}" = "true" ] && deny="-D warnings"
+          for m in ${{ steps.sdk.outputs.crates }}; do
+            echo "::group::cargo clippy $m"
+            cargo clippy --manifest-path "$m" --all-targets -- $deny
+            echo "::endgroup::"
+          done
+
+      - name: Python sources compile
+        if: steps.sdk.outputs.crates == ''
+        run: |
+          if [ -d PLUGINS/plugin/SRC ]; then python3 -m compileall -q PLUGINS/plugin/SRC; fi
+
+      - name: api shape
+        run: python3 sdk/runner/python/check-api-shape.py
+
+      - name: docker compose config
+        run: |
+          f=PLUGINS/plugin/Docker/docker-compose.yml
+          if [ ! -f "$f" ]; then echo "no $f — nothing to check"; exit 0; fi
+          mkdir -p DISCOVERY.Engine/Docker
+          cp sdk/docker/plugin-base.yml DISCOVERY.Engine/Docker/plugin-base.yml
+          docker compose -f "$f" config -q
+          echo "compose ok"

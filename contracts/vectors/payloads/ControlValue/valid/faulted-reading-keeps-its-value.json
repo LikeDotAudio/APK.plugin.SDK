@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "value": 10000000,
+  "unit": "Hz",
+  "ts": "2026-08-07T19:42:06.000Z",
+  "origin": "apkaudio-ptp:agent",
+  "error": {
+    "code": "no_lock",
+    "message": "grandmaster not seen for 12 s",
+    "since": "2026-08-07T19:41:54.000Z"
+  }
+}

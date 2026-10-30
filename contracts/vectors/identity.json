@@ -1,0 +1,32 @@
+{
+  "$comment": "Golden vectors for identity + time helpers (guidelines D2, Phase 1 §2.2). Consumed by contracts/src/identity.test.ts AND contracts/rust tests.",
+  "deviceId": [
+    { "input": { "protocol": "visa", "serial": "MY12345678", "address": "TCPIP0::192.168.10.5::INSTR", "make": "Agilent Technologies", "model": "N9340B" }, "deviceId": "visa:MY12345678", "why": "serial wins over address" },
+    { "input": { "protocol": "visa", "serial": "MY 123 45", "address": "x" }, "deviceId": "visa:MY-123-45", "why": "spaces sanitized to '-'" },
+    { "input": { "protocol": "visa", "serial": "", "address": "TCPIP0::192.168.10.5::INSTR" }, "deviceId": "visa:TCPIP::192.168.10.5::INSTR", "why": "empty serial falls to protocol-native address (board-0 prefix canonicalised)" },
+    { "input": { "protocol": "visa", "serial": "  ", "address": "USB0::0x0957::0x0407::MY44060332::INSTR" }, "deviceId": "visa:USB0::0x0957::0x0407::MY44060332::INSTR", "why": "whitespace-only serial ignored" },
+    { "input": { "protocol": "visa", "serial": "0", "address": "TCPIP0::44.44.44.222::gpib7,4::INSTR", "make": "HEWLETT-PACKARD", "model": "34401A" }, "deviceId": "visa:TCPIP::44.44.44.222::gpib7-4::INSTR", "why": "placeholder serial '0' (every 34401A) is not an identity; falls to address" },
+    { "input": { "protocol": "visa", "serial": "N/A", "address": "TCPIP0::44.44.44.222::gpib7,10::INSTR" }, "deviceId": "visa:TCPIP::44.44.44.222::gpib7-10::INSTR", "why": "placeholder serial 'N/A' falls to address" },
+    { "input": { "protocol": "visa", "serial": "0", "address": "TCPIP::44.44.44.222::gpib7,4::INSTR" }, "deviceId": "visa:TCPIP::44.44.44.222::gpib7-4::INSTR", "why": "TCPIP and TCPIP0 spell one resource: both agents must derive one id" },
+    { "input": { "protocol": "midi", "make": "PreSonus", "model": "Faderport 8", "address": "" }, "deviceId": "midi:5718cafba9aea2c3", "why": "no serial, no address → FNV-1a 64 of make|model|address" },
+    { "input": { "protocol": "visa", "serial": "Ünit§1" }, "deviceId": "visa:-nit-1", "why": "non-charset chars sanitized" }
+  ],
+  "fnv1a64": [
+    { "input": "", "hex": "cbf29ce484222325", "why": "offset basis — algorithm sanity" },
+    { "input": "PreSonus|Faderport 8|", "hex": "5718cafba9aea2c3" }
+  ],
+  "fromUnixSeconds": [
+    { "seconds": 0, "iso": "1970-01-01T00:00:00.000Z" },
+    { "seconds": 1752786000, "iso": "2025-07-17T21:00:00.000Z", "why": "the VISA agent's last_online era" },
+    { "seconds": 1752786000.789, "iso": "2025-07-17T21:00:00.789Z", "why": "float seconds, ms preserved" }
+  ],
+  "timeOfDayHz": [
+    { "unixMs": 1788698940000, "utcOffsetMinutes": 0, "microHz": 12049000000, "hz": 12049.0, "why": "12:49 — the reading this map was asked for: 12 049 Hz is twelve forty-nine" },
+    { "unixMs": 1788702573500, "utcOffsetMinutes": 0, "microHz": 13049033500, "hz": 13049.0335, "why": "seconds are milliHz and milliseconds are microHz" },
+    { "unixMs": 1788739199999, "utcOffsetMinutes": 0, "microHz": 23059059999, "hz": 23059.059999, "why": "the last frequency of the day, and the one under Nyquist at 48k" },
+    { "unixMs": 1788652800000, "utcOffsetMinutes": 0, "microHz": 0, "hz": 0.0, "why": "midnight is DC — a consequence, not a defect" },
+    { "unixMs": 1788653999999, "utcOffsetMinutes": 0, "microHz": 19059999, "hz": 19.059999, "why": "the last instant of the day below hearing" },
+    { "unixMs": 1788716940000, "utcOffsetMinutes": -300, "microHz": 12049000000, "hz": 12049.0, "why": "the same 12:49 read on a bench five hours behind UTC" },
+    { "unixMs": -1, "utcOffsetMinutes": 0, "microHz": 23059059999, "hz": 23059.059999, "why": "one millisecond before the epoch is a time of day, not a negative frequency" }
+  ]
+}

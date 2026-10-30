@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 2,
+  "protocol": "appletv",
+  "deviceId": "appletv:C02ABC123",
+  "state": "active",
+  "since": "2026-09-17T06:27:37.000Z",
+  "deviceClass": "Media Player",
+  "make": "Apple",
+  "model": "Apple TV 4K",
+  "address": "10.0.0.41"
+}

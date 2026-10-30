@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "value": 470,
+  "unit": "MHz",
+  "ts": "2026-08-07T19:42:08.000Z",
+  "origin": "cli",
+  "error": { "code": "over_range" }
+}

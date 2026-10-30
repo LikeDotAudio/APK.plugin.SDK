@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "value": false,
+  "ts": "2026-08-07T19:42:07.000Z",
+  "origin": "apkaudio-AVB-Milan:agent",
+  "error": {
+    "code": "cap_net_raw",
+    "message": "AVDECC needs CAP_NET_RAW; found at startup, start time unknown"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "nextMarkEpochMs": 1788698941000,
+  "offsetMs": -37.5,
+  "delayMs": 4,
+  "silenceSeconds": 10,
+  "computedAt": 1788698912345,
+  "measured": true,
+  "source": "APK:Softapps/TIME/NRC Time Signal"
+}

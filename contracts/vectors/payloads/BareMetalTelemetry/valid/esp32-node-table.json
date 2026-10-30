@@ -1,0 +1,5 @@
+[
+  { "node": "beskar2d2", "key": "heap_free", "value": 174320, "unit": "B", "quality": "good", "last_seen": "2026-09-02T14:03:11.000Z" },
+  { "node": "beskar2d2", "key": "rssi", "value": -61, "unit": "dBm", "quality": "good", "last_seen": "2026-09-02T14:03:11.000Z" },
+  { "node": "beskar2d2", "key": "ota_partition", "value": "ota_1", "last_seen": "2026-09-02T14:03:09.000Z" }
+]

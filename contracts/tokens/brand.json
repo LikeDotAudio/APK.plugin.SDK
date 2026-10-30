@@ -1,0 +1,22 @@
+{
+  "$comment": "The brand's visual constants, stated once. See tokens/README.md for why this lives in contracts/ and what may go in it.",
+  "accent": {
+    "hex": "#f4902c",
+    "rgb": [244, 144, 44],
+    "role": "The accent. Active tool in the Kad sketcher, selected row in oneScope, focus ring in libControl, PWA theme_color in SAMPLE and PLAY, bar fill in generated timeline JSON."
+  },
+  "accentHover": {
+    "hex": "#ffa552",
+    "rgb": [255, 165, 82],
+    "role": "Hover state for solid-accent buttons."
+  },
+  "accentTint": {
+    "rgba": "rgba(244,144,44,0.18)",
+    "role": "Hover wash for menu rows on dark panels. The accent at 18% over a dark ground."
+  },
+  "onAccent": {
+    "hex": "#1e1e1e",
+    "rgb": [30, 30, 30],
+    "role": "Text and icons sitting on an accent fill."
+  }
+}

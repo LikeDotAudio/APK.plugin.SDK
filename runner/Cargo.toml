@@ -1,0 +1,25 @@
+# apk-plugin-runner — the five things every plugin container does, once.
+#
+# PLAN-3316.01. Until then the orchestrator did them for every plugin at the
+# same time, in one process: it published every crate's config.ini, it answered
+# every module's selftest_run, and it was the only thing that could die. A
+# plugin in its own container has to do those for itself, and twenty copies of
+# the same `main()` would be twenty chances to forget the last will.
+#
+# NOT A MODULE. The folder name carries no `<Kind>:<token>` and there is no
+# config.ini here, so `broker::node_directory`, `protocol_census` and the
+# Dockerfile's config staging all walk past it — which is correct: this crate
+# publishes nothing under its own name, only under the plugin that links it.
+#
+# rumqttc 0.24, the version 23 of the members use. See Dockerfile.plugins for
+# why the other two were brought down to it.
+[package]
+name = "apk-plugin-runner"
+version = "0.1.0"
+edition = "2024"
+[dependencies]
+apkaudio-contracts = { path = "../contracts/rust" }
+rumqttc = "0.24"
+serde_json = "1"
+# SIGTERM/SIGINT handler (PID 1 has no default action for them). Already in the lock.
+libc = "0.2"

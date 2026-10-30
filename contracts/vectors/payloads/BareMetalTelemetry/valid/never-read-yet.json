@@ -1,0 +1,4 @@
+[
+  { "node": "beskar2d2", "key": "bldc_rpm", "value": null, "unit": "rpm", "quality": "stale", "last_seen": "2026-09-02T13:58:00.000Z" },
+  { "node": "beskar2d2", "key": "secure_boot", "value": false, "last_seen": "2026-09-02T14:03:11.000Z" }
+]
