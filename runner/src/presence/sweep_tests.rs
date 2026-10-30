@@ -97,10 +97,47 @@ fn presence_a_link_to_an_adopted_online_document_goes_when_it_expires() {
 
     let out = ticked(&mut s, T0 + 3_000);
     assert!(retracted(&out, GHOST).is_empty(), "{out:?}");
-    assert_eq!(s.orphans.get(GHOST).map(String::as_str), Some(DOC));
+    assert_eq!(s.orphans.get(GHOST).map(|(l, _)| l.as_str()), Some(DOC));
 
     let out = ticked(&mut s, T0 + 3_000 + 91_000);
     assert!(out.iter().any(|p| p.topic == DOC && !p.is_retraction()), "the document is said offline: {out:?}");
     assert_eq!(retracted(&out, GHOST), ALL, "{out:?}");
+    assert!(s.orphans.is_empty());
+}
+
+/// LOOSE-printers-ghost-identity, as measured: the printer's old friendly-name
+/// row links the same document the UUID row now keeps online. The document
+/// never goes offline, so only the row's own silence can retract it.
+#[test]
+fn presence_an_alias_row_of_an_online_document_goes_after_its_grace() {
+    let mut s = Shared::new();
+    s.protocols = vec!["printer".into()];
+    connected(&mut s);
+    s.connected_at = Instant::now().checked_sub(READBACK);
+    let printer = Sighting::new("printer", "192.168.1.20").class("Printer").serial("e3248000");
+    let doc = printer.topic().unwrap();
+    let base = "APK.audio/System/Protocols/printers/Device";
+    let alias = format!("{base}/Brother_HL-L2405W");
+    let row = format!("{base}/e3248000");
+    s.tracker.restore(
+        &doc,
+        br#"{"lastOnline":"2026-10-30T10:00:00Z","lastOffline":null,"lastDiscovered":"2026-10-30T10:00:00Z"}"#,
+    );
+    found(&mut s, &format!("{alias}/presence_topic"), doc.as_bytes());
+    found(&mut s, &format!("{row}/presence_topic"), doc.as_bytes());
+
+    let out = ticked(&mut s, T0 + 3_000);
+    assert!(retracted(&out, &alias).is_empty(), "adopted while the grace runs: {out:?}");
+    // The UUID row is sighted again and keeps the document online…
+    sighted(&mut s, &printer, Some(&row), T0 + 10_000);
+    sighted(&mut s, &printer, Some(&row), T0 + 100_000);
+    let grace = super::super::ADOPT_GRACE.as_millis() as i64;
+    let out = ticked(&mut s, T0 + 3_000 + grace - 1_000);
+    assert!(retracted(&out, &alias).is_empty(), "not before the grace: {out:?}");
+    // …but nothing has said the alias row, so it goes; the live row stays.
+    let out = ticked(&mut s, T0 + 3_000 + grace + 1);
+    assert_eq!(retracted(&out, &alias), ALL, "{out:?}");
+    assert!(retracted(&out, &row).is_empty(), "{out:?}");
+    assert!(!out.iter().any(|p| p.topic == doc), "the document stays online: {out:?}");
     assert!(s.orphans.is_empty());
 }

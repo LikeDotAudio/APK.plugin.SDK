@@ -51,7 +51,8 @@ than a fall-through.
 
 ## What holds it
 
-`.apk.scripts/check_brand_colour.py`, run by `./.apk.scripts/check.sh brand`. It does two
+`.apk.scripts/check_brand_colour.py`, run by the old `check.sh brand` lane. Both were
+deleted with the old check.sh in 2240c51e5, so NOTHING holds this today. It did two
 things, and the second is the one that matters:
 
 1. A **ratchet** on how many times the literal is still spelled out, seeded at the count

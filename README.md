@@ -13,8 +13,8 @@ The two crates every APK.audio plugin links, so a plugin repository builds on it
 
 ```toml
 [dependencies]
-apk-plugin-runner  = { git = "https://github.com/LikeDotAudio/APK.plugin.SDK", tag = "sdk-v0.1" }
-apkaudio-contracts = { git = "https://github.com/LikeDotAudio/APK.plugin.SDK", tag = "sdk-v0.1" }
+apk-plugin-runner  = { git = "https://github.com/LikeDotAudio/APK.plugin.SDK", tag = "sdk-v0.3" }
+apkaudio-contracts = { git = "https://github.com/LikeDotAudio/APK.plugin.SDK", tag = "sdk-v0.3" }
 ```
 
 Pin a **tag**. Tags are never moved; a change is a new `sdk-vX.Y`.

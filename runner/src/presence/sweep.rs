@@ -19,12 +19,23 @@
 //! ```text
 //!   linked document offline, or absent   → link + identity retracted now
 //!   linked document online (adopted)     → kept, and retracted when the
-//!                                          tracker says that document offline
+//!                                          tracker says that document offline,
+//!                                          or when the row itself has gone
+//!                                          unsighted for its grace
 //!   sighted again before either          → an ordinary row; nothing special
 //! ```
 //!
 //! Nothing unverified is trusted: an adopted-online document expires on its
-//! own clock (or `ADOPT_GRACE`), and the link goes with it.
+//! own clock (or `ADOPT_GRACE`), and the link goes with it. AND THE ROW IS
+//! VOUCHED FOR BY ITS OWN SIGHTING, NOT ITS DOCUMENT'S
+//! (LOOSE-printers-ghost-identity): one document is shared by many rows — a
+//! DNS-SD host's every service, a printer's old friendly-name prefix and its
+//! UUID one — and a sibling row keeps that document online for ever. Measured:
+//! `printers/Device/Brother_HL-L2405W/*` retained beside the UUID row that
+//! replaced it, and ~46 dnssd service rows whose host was still up, every one
+//! a ghost panel for 120 s on each restart. So an orphan not sighted within
+//! the plugin's clock (`presence_inactive_after_s`, else `ADOPT_GRACE`) of its
+//! adoption is retracted whatever its document says.
 
 use apkaudio_contracts::device_publish::Publication;
 use apkaudio_contracts::topics::ROOT;
@@ -77,7 +88,7 @@ pub(super) fn found(s: &mut Shared, topic: &str, payload: &[u8]) {
 
 /// The window closed (the tracker has already reconciled its documents):
 /// judge every link it found that no row of this process accounts for.
-pub(super) fn swept(s: &mut Shared) -> Vec<Publication> {
+pub(super) fn swept(s: &mut Shared, now_ms: i64) -> Vec<Publication> {
     let mut out = Vec::new();
     for (prefix, link) in std::mem::take(&mut s.found) {
         if s.rows.contains_key(&prefix) {
@@ -85,7 +96,7 @@ pub(super) fn swept(s: &mut Shared) -> Vec<Publication> {
             continue;
         }
         if s.tracker.is_online(&link) {
-            s.orphans.insert(prefix, link);
+            s.orphans.insert(prefix, (link, now_ms));
         } else {
             println!("🧹 [{}] {prefix} unlinked — {link} is not online", s.token);
             s.orphans.remove(&prefix);
@@ -99,11 +110,27 @@ pub(super) fn swept(s: &mut Shared) -> Vec<Publication> {
 pub(super) fn expired(s: &mut Shared, offline: &[Publication]) -> Vec<Publication> {
     let topics: Vec<&str> = offline.iter().map(|p| p.topic.as_str()).collect();
     let gone: Vec<String> =
-        s.orphans.iter().filter(|(_, link)| topics.contains(&link.as_str())).map(|(p, _)| p.clone()).collect();
+        s.orphans.iter().filter(|(_, (link, _))| topics.contains(&link.as_str())).map(|(p, _)| p.clone()).collect();
     let mut out = Vec::new();
     for prefix in gone {
         s.orphans.remove(&prefix);
         println!("🧹 [{}] {prefix} unlinked — its device went offline", s.token);
+        out.extend(retraction(&prefix));
+    }
+    out
+}
+
+/// The tick: an orphan no sighting has vouched for within the grace since it
+/// was adopted goes, even though its document is still online — something
+/// else (a sibling row) is keeping that document up, not this row.
+pub(super) fn unvouched(s: &mut Shared, now_ms: i64) -> Vec<Publication> {
+    let grace = s.tracker.grace_ms();
+    let stale: Vec<String> =
+        s.orphans.iter().filter(|(_, (_, at))| now_ms - at > grace).map(|(p, _)| p.clone()).collect();
+    let mut out = Vec::new();
+    for prefix in stale {
+        s.orphans.remove(&prefix);
+        println!("🧹 [{}] {prefix} unlinked — not sighted since it was adopted", s.token);
         out.extend(retraction(&prefix));
     }
     out

@@ -1,5 +1,5 @@
 {
-  "$comment": "Golden vectors for the machine command envelope (PLAN-3394.01): what may be written on APK.audio/System/BareMetal/MonitorProbes/{probe}/{host}/outgoing/command. Consumed by contracts/rust/tests/machine_command.rs and contracts/python/tests/test_machine_command.py. `refused_id` is the id the refusal is answered against (null when none could be read).",
+  "$comment": "Golden vectors for the machine command envelope (PLAN-3394.01): what may be written on APK.audio/System/BareMetal/MonitorProbes/{probe}/{host}/outgoing/command. Consumed by contracts/rust/tests/machine_command.rs, contracts/python/tests/test_machine_command.py and contracts/src/machine-command.test.ts. `refused_id` is the id the refusal is answered against (null when none could be read).",
   "valid": [
     {"why": "a reboot, confirmed and logged", "doc": {"id": "cmd-0001-abcd", "verb": "power", "action": "cycle", "session": "mlog-20261030-0001", "operator": "APK/Anthony", "issued_at_ms": 1793000000000}},
     {"why": "power on through a wake relay, to the MAC the machine published", "doc": {"id": "cmd-0002-abcd", "verb": "power", "action": "on", "mac": "AA:bb:cc:00:11:22", "session": "mlog-20261030-0002", "operator": "RACK/Rack", "issued_at_ms": 1793000000000}},

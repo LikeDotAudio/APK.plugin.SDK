@@ -82,7 +82,10 @@
 //! A LINK NOBODY HERE SET. The same window reads back every retained
 //! `presence_topic` an earlier process left under this plugin's protocols. One
 //! no sighting accounts for is retracted, link and identity, unless its
-//! document is online — then it goes when that document goes offline. A device
+//! document is online — then it goes when that document goes offline, or when
+//! the row itself is not sighted within the plugin's clock (else
+//! [`ADOPT_GRACE`]): a sibling row can keep a shared document online for ever,
+//! so the document alone never vouches for a row. A device
 //! that departed while the plugin was down no longer leaves a leaf-only ghost
 //! under `Device/+` for ever (`sweep.rs`).
 //!

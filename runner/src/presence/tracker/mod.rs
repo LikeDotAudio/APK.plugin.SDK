@@ -160,6 +160,12 @@ impl Tracker {
         due.into_iter().filter_map(|(id, at)| self.deactivate(&id, at)).collect()
     }
 
+    /// How long something adopted at a boot may go unsighted before it is
+    /// no longer trusted: the plugin's own clock, else [`ADOPT_GRACE`].
+    pub(in crate::presence) fn grace_ms(&self) -> i64 {
+        self.inactive_after_ms.filter(|ms| *ms > 0).unwrap_or(ADOPT_GRACE.as_millis() as i64)
+    }
+
     /// The expiry clock `start` hands a tracker that was booting before it
     /// was told one. Unlike [`Tracker::new`], zero is not filtered out.
     pub(in crate::presence) fn set_inactive_after(&mut self, d: Option<Duration>) {

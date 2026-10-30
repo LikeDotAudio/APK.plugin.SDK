@@ -117,7 +117,7 @@ pub(super) fn ticked(s: &mut Shared, now: i64) -> Vec<Publication> {
     let mut out = Vec::new();
     if s.tracker.reading_back() && s.connected_at.is_some_and(|at| at.elapsed() >= READBACK) {
         out = s.tracker.finish_readback(now);
-        out.extend(sweep::swept(s));
+        out.extend(sweep::swept(s, now));
         if let Some(client) = &s.client {
             for p in &s.protocols {
                 if let Ok(f) = apkaudio_contracts::topics::discovery_wildcard(Some(p)) {
@@ -142,5 +142,6 @@ pub(super) fn ticked(s: &mut Shared, now: i64) -> Vec<Publication> {
     }
     out.extend(sweep::expired(s, &expired));
     out.extend(expired);
+    out.extend(sweep::unvouched(s, now));
     out
 }

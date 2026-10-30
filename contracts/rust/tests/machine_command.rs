@@ -1,6 +1,6 @@
 // Part of the APK.audio project — http://APK.audio — made by Anthony Kuzub
 // MIT Licence. Free, for everyone, for ever. Full text in LICENSE at the root.
-//! The machine command vectors (PLAN-3394.01), shared with the Python mirror.
+//! The machine command vectors (PLAN-3394.01), shared with the Python and TypeScript mirrors.
 
 use apkaudio_contracts::machine_command::{acl_deny_patterns, parse};
 use serde_json::Value;

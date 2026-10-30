@@ -41,9 +41,11 @@ pub(super) struct Shared {
     /// `{prefix: link}` — retained links an earlier process left, collected
     /// while a read-back window is open. See `sweep.rs`.
     pub(super) found: BTreeMap<String, String>,
-    /// `{prefix: link}` — those links kept because their document is online
-    /// but unsighted; retracted when it goes offline. See `sweep.rs`.
-    pub(super) orphans: BTreeMap<String, String>,
+    /// `{prefix: (link, adopted at ms)}` — those links kept because their
+    /// document is online but unsighted; retracted when it goes offline, or
+    /// when no sighting has vouched for the row itself within its grace.
+    /// See `sweep.rs`.
+    pub(super) orphans: BTreeMap<String, (String, i64)>,
     pub(super) warned_unstarted: bool,
 }
 
