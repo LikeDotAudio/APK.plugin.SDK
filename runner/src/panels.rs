@@ -22,7 +22,19 @@
 //! A manifest entry may also say `"device_depth": 1` for a plugin whose
 //! devices sit one level under `Device/` (`…/Device/<device>/<field>`, the
 //! shape the PlayStation, NMOS and Dante hunters write) instead of the
-//! contract's two (`<category>/<device>`). One plugin's families share it.
+//! contract's two (`<category>/<device>`).
+//!
+//! `"device_path"` names the shape outright, as segments under `Device/`
+//! where `+` is any one segment and anything else must match itself:
+//! `"+/Channel/+"` makes every `…/Device/<device>/Channel/<n>` its own device
+//! (Dante's per-channel console). `device_depth: 1` is `"+"`, the default `"+/+"`.
+//! A family with its own shape is its own panel; families of one shape share
+//! one panel, a placement each.
+//!
+//! `"device_document": true` says the device is the topic AT that path and its
+//! payload is one JSON object (SAP's `…/Device/<origin>`): its top-level
+//! `last_online`, `model`, `name` and `serial` are read as the leaves would be,
+//! and a `"device_doc": true` field binds to the topic itself.
 //!
 //! The manifest's `tree` names the placement (`7_Device_Consoles` →
 //! `Device_Consoles`, the value the OS "Device Consoles" display names in its
@@ -79,11 +91,17 @@ pub struct Template {
     pub family: String,
     /// The placement: the display's `"panels"` name, e.g. `Device_Consoles`.
     pub at: String,
-    /// Segments under `Device/` that name one device: 2 (`<category>/<device>`,
-    /// the contract's shape and the default) or 1 (`<device>`).
-    pub depth: usize,
+    /// The segments under `Device/` that name one device: `+` is any one,
+    /// anything else must match itself. `["+", "+"]` (`<category>/<device>`,
+    /// the contract's shape) unless the manifest says otherwise.
+    pub path: Vec<String>,
+    /// The device is the topic at `path` and its payload one JSON object.
+    pub document: bool,
     pub body: Value,
 }
+
+/// Any one segment, in a [`Template::path`].
+const ANY: &str = "+";
 
 static TEMPLATES: Mutex<Vec<Template>> = Mutex::new(Vec::new());
 
@@ -124,8 +142,23 @@ pub fn parse_template(family: &str, manifest: &str, template: &str) -> Result<Te
             _ => return Err(format!("gui/manifest.json `{family}.device_depth` is {v}; it is 1 or 2")),
         },
     };
+    let path: Vec<String> = match entry.get("device_path") {
+        None => vec![ANY.to_string(); depth],
+        Some(v) => {
+            let text = v.as_str().ok_or_else(|| format!("gui/manifest.json `{family}.device_path` is {v}; it is a string"))?;
+            let path: Vec<String> = text.split('/').map(str::to_string).collect();
+            if path.iter().any(|s| s.is_empty() || s == "#" || s == DEVICE_CONTROL_LEAF) || !path.iter().any(|s| s == ANY) {
+                return Err(format!("gui/manifest.json `{family}.device_path` is {text:?}; it is segments with at least one `+`"));
+            }
+            path
+        }
+    };
+    let document = match entry.get("device_document") {
+        None => false,
+        Some(v) => v.as_bool().ok_or_else(|| format!("gui/manifest.json `{family}.device_document` is {v}; it is true or false"))?,
+    };
     let body: Value = serde_json::from_str(template).map_err(|e| format!("gui/{family}/{family}.json: {e}"))?;
-    Ok(Template { family: family.to_string(), at, depth, body })
+    Ok(Template { family: family.to_string(), at, path, document, body })
 }
 
 /// `7_Device_Consoles` → `Device_Consoles`: the numeric prefix orders folders
@@ -140,19 +173,57 @@ fn placement_of(tree: &str) -> String {
 /// One device, as the bus has described it so far.
 #[derive(Debug)]
 struct Device {
-    category: String,
+    /// Which [`Shape`] found it.
+    shape: usize,
+    /// Its segments under `Device/`, literals included.
+    segments: Vec<String>,
     name: String,
     fields: BTreeMap<String, String>,
     online: Option<bool>,
     seen: Instant,
 }
 
+/// The families that read one device shape, presented as one panel.
+struct Shape {
+    path: Vec<String>,
+    document: bool,
+    templates: Vec<Template>,
+}
+
+impl Shape {
+    /// `segments` (under `Device/`) → `(device segments, field)` when they
+    /// name a leaf of a device of this shape (or, for a document shape, the
+    /// device itself, with an empty field).
+    fn find<'a>(&self, segments: &'a [&'a str]) -> Option<(&'a [&'a str], String)> {
+        let n = self.path.len();
+        if segments.len() < n || segments[..n].iter().zip(&self.path).any(|(s, p)| s.is_empty() || (p != ANY && p != s)) {
+            return None;
+        }
+        if self.document {
+            return (segments.len() == n).then(|| (&segments[..n], String::new()));
+        }
+        // A press on `Control/…` is the operator talking to the device, not
+        // the device describing itself.
+        if segments.len() == n || segments[n] == DEVICE_CONTROL_LEAF {
+            return None;
+        }
+        Some((&segments[..n], segments[n..].join("/")))
+    }
+
+    /// The tab's name: the device's own segment for the contract's
+    /// `<category>/<device>` and a flat `<device>`, every `+` segment otherwise.
+    fn name_of(&self, segments: &[&str]) -> String {
+        if self.path.len() <= 2 {
+            return segments.last().map(|s| s.to_string()).unwrap_or_default();
+        }
+        segments.iter().zip(&self.path).filter(|(_, p)| *p == ANY).map(|(s, _)| *s).collect::<Vec<_>>().join("_")
+    }
+}
+
 /// The per-module state: what devices exist and which panels are on the broker.
 pub struct Book {
     token: String,
-    templates: Vec<Template>,
-    /// From the first template: every family of one plugin reads one tree.
-    depth: usize,
+    shapes: Vec<Shape>,
     expire_after: Option<Duration>,
     devices: BTreeMap<String, Device>,
     /// `{key: payload text}` for every panel this process has on the broker.
@@ -168,13 +239,19 @@ pub type Publication = (String, String);
 
 impl Book {
     pub fn new(token: &str, templates: Vec<Template>, expire_after: Option<Duration>) -> Self {
-        let depth = templates.first().map(|t| t.depth).unwrap_or(2);
-        Book { token: token.to_string(), templates, depth, expire_after, devices: BTreeMap::new(), ledger: BTreeMap::new(), inherited: BTreeMap::new() }
+        let mut shapes: Vec<Shape> = Vec::new();
+        for t in templates {
+            match shapes.iter_mut().find(|s| s.path == t.path && s.document == t.document) {
+                Some(shape) => shape.templates.push(t),
+                None => shapes.push(Shape { path: t.path.clone(), document: t.document, templates: vec![t] }),
+            }
+        }
+        Book { token: token.to_string(), shapes, expire_after, devices: BTreeMap::new(), ledger: BTreeMap::new(), inherited: BTreeMap::new() }
     }
 
     /// Whether this module presents anything at all.
     pub fn is_active(&self) -> bool {
-        !self.templates.is_empty()
+        !self.shapes.is_empty()
     }
 
     /// The device tree this module reads: `…/Protocols/<token>/Device/#`.
@@ -200,29 +277,51 @@ impl Book {
         }
         let Some(rest) = topic.strip_prefix(&self.device_root()) else { return Vec::new() };
         let segments: Vec<&str> = rest.split('/').collect();
-        // `<category>/<device>/<field…>` (or `<device>/<field…>` at depth 1);
-        // a press on `Control/…` is the operator talking to the device, not
-        // the device describing itself.
-        let depth = self.depth;
-        if segments.len() <= depth || segments[depth] == DEVICE_CONTROL_LEAF || segments[..depth].iter().any(|s| s.is_empty()) {
-            return Vec::new();
+        let root = self.device_root();
+        let found: Vec<(usize, bool, &[&str], String, String)> = self
+            .shapes
+            .iter()
+            .enumerate()
+            .filter_map(|(index, shape)| shape.find(&segments).map(|(at, field)| (index, shape.document, at, field, shape.name_of(at))))
+            .collect();
+        let mut out = Vec::new();
+        for (index, document, at, field, name) in found {
+            let base = format!("{root}{}", at.join("/"));
+            let device = self.devices.entry(base.clone()).or_insert_with(|| Device {
+                shape: index,
+                segments: at.iter().map(|s| s.to_string()).collect(),
+                name,
+                fields: BTreeMap::new(),
+                online: None,
+                seen: now,
+            });
+            device.seen = now;
+            if document {
+                // The document is the whole device. An empty one is a device
+                // that said it is gone, the way a cleared leaf would.
+                match serde_json::from_str::<Value>(payload) {
+                    Ok(Value::Object(doc)) => {
+                        let text = |v: &Value| v.as_str().map(str::to_string).unwrap_or_else(|| v.to_string());
+                        if let Some(v) = doc.get("last_online") {
+                            device.online = Some(apkaudio_contracts::presence::is_online_now(&text(v)));
+                        }
+                        for leaf in ["model", "name", "serial"] {
+                            if let Some(v) = doc.get(leaf) {
+                                device.fields.insert(leaf.to_string(), text(v).trim().to_string());
+                            }
+                        }
+                    }
+                    _ if payload.trim().is_empty() => device.online = Some(false),
+                    _ => {}
+                }
+            } else if field == "last_online" {
+                device.online = Some(apkaudio_contracts::presence::is_online_now(payload));
+            } else if matches!(field.as_str(), "model" | "name" | "serial") {
+                device.fields.insert(field, payload.trim().to_string());
+            }
+            out.extend(self.reconcile(&base));
         }
-        let base = format!("{}{}", self.device_root(), segments[..depth].join("/"));
-        let field = segments[depth..].join("/");
-        let device = self.devices.entry(base.clone()).or_insert_with(|| Device {
-            category: if depth == 2 { segments[0].to_string() } else { String::new() },
-            name: segments[depth - 1].to_string(),
-            fields: BTreeMap::new(),
-            online: None,
-            seen: now,
-        });
-        device.seen = now;
-        if field == "last_online" {
-            device.online = Some(apkaudio_contracts::presence::is_online_now(payload));
-        } else if matches!(field.as_str(), "model" | "name" | "serial") {
-            device.fields.insert(field, payload.trim().to_string());
-        }
-        self.reconcile(&base)
+        out
     }
 
     /// A retained panel on the broker. One of this plugin's that this process
@@ -280,11 +379,10 @@ impl Book {
             .collect()
     }
 
+    /// `<token>-<segment>-…`: `cast-Speaker-Garage`, `playstation-B41F…`,
+    /// `dante-<device>-Channel-3`.
     fn key_of(&self, device: &Device) -> String {
-        if device.category.is_empty() {
-            return sanitize_segment(&format!("{}-{}", self.token, device.name));
-        }
-        sanitize_segment(&format!("{}-{}-{}", self.token, device.category, device.name))
+        sanitize_segment(&format!("{}-{}", self.token, device.segments.join("-")))
     }
 
     fn clear(&mut self, key: &str) -> Vec<Publication> {
@@ -318,8 +416,8 @@ impl Book {
     fn document(&self, base: &str, device: &Device, key: &str) -> Value {
         let model = device.fields.get("model").cloned().unwrap_or_else(|| device.name.clone());
         let name = device.fields.get("name").cloned().unwrap_or_else(|| device.name.clone());
-        let placements: Vec<Value> = self
-            .templates
+        let templates = &self.shapes[device.shape].templates;
+        let placements: Vec<Value> = templates
             .iter()
             .map(|t| {
                 let mut marks = BTreeMap::new();
@@ -342,7 +440,7 @@ impl Book {
             // two plugins that each found a "Living_Room" do not share a tab.
             "folder": format!("{}_{}", device.name, self.token),
             "device": {
-                "type": self.templates.first().map(|t| t.family.clone()).unwrap_or_default(),
+                "type": templates.first().map(|t| t.family.clone()).unwrap_or_default(),
                 "model": model,
                 "resource": base,
                 "write_topic": format!("{base}/{DEVICE_CONTROL_LEAF}"),
@@ -529,7 +627,7 @@ mod tests {
     fn a_flat_device_tree_is_read_at_depth_one() {
         let manifest = r#"{"ps": {"tree": "7_Device_Consoles", "device_depth": 1}}"#;
         let t = parse_template("ps", manifest, TEMPLATE).expect("parses");
-        assert_eq!(t.depth, 1);
+        assert_eq!(t.path, vec!["+"]);
         let mut b = Book::new("playstation", vec![t], None);
         let now = Instant::now();
         let base = "APK.audio/System/Protocols/playstation/Device/B41F4D477C99";
@@ -544,6 +642,61 @@ mod tests {
         assert!(b.observe(&format!("{base}/Channel/Ch1/id"), "1", now).is_empty());
         assert!(b.observe(&format!("{base}/Control/Wake"), "1", now).is_empty());
         assert!(parse_template("ps", r#"{"ps": {"device_depth": 3}}"#, TEMPLATE).is_err());
+    }
+
+    #[test]
+    fn a_device_path_makes_each_channel_its_own_panel_beside_the_device() {
+        let manifest = r#"{"dante": {"tree": "7_Device_Consoles", "device_depth": 1},
+                          "dante_channels": {"tree": "7_Device_Consoles", "device_path": "+/Channel/+"}}"#;
+        let ch = r#"{"Console": {"description": {"En": "Ch ${name}"}, "blocks": {"I": {"fields": {"id": {"device_state": "id"}}}}}}"#;
+        let t = parse_template("dante", manifest, TEMPLATE).unwrap();
+        let c = parse_template("dante_channels", manifest, ch).unwrap();
+        assert_eq!(c.path, vec!["+", "Channel", "+"]);
+        let mut b = Book::new("dante", vec![t, c], None);
+        let now = Instant::now();
+        let dev = "APK.audio/System/Protocols/dante/Device/AVIO-1";
+        // A channel leaf is a leaf of the device AND a leaf of the channel.
+        let out = b.observe(&format!("{dev}/Channel/3/id"), "3", now);
+        let keys: Vec<&str> = out.iter().map(|(t, _)| t.as_str()).collect();
+        assert_eq!(keys, vec!["APK.audio/System/Gui/Panels/dante-AVIO-1", "APK.audio/System/Gui/Panels/dante-AVIO-1-Channel-3"]);
+        let doc: Value = serde_json::from_str(&out[1].1).unwrap();
+        assert_eq!(doc["placements"].as_array().unwrap().len(), 1, "the channel panel carries only its own family");
+        let content = &doc["placements"][0]["frames"][0]["content"]["Console"];
+        assert_eq!(content["blocks"]["I"]["fields"]["id"]["topic"], format!("{dev}/Channel/3/id"));
+        assert_eq!(doc["folder"], "AVIO-1_3_dante");
+        // A channel that goes offline empties only its own panel.
+        let out = b.observe(&format!("{dev}/Channel/3/last_online"), "1761830000", now);
+        assert_eq!(out, vec![("APK.audio/System/Gui/Panels/dante-AVIO-1-Channel-3".to_string(), String::new())]);
+        // Another literal is not a channel.
+        assert!(b.observe(&format!("{dev}/Flow/1/id"), "1", now).is_empty());
+        for bad in [r#""+/Channel/""#, r#""Channel""#, r#""+/Control""#, "3"] {
+            let m = format!(r#"{{"x": {{"device_path": {bad}}}}}"#);
+            assert!(parse_template("x", &m, ch).is_err(), "{bad}");
+        }
+    }
+
+    #[test]
+    fn a_device_document_is_the_device() {
+        let manifest = r#"{"sap": {"tree": "7_Device_Consoles", "device_depth": 1, "device_document": true}}"#;
+        let tpl = r#"{"Console": {"description": {"En": "SAP — ${model}"}, "blocks": {"I": {"fields": {"device": {"device_doc": true}}}}}}"#;
+        let t = parse_template("sap", manifest, tpl).unwrap();
+        assert!(t.document);
+        let mut b = Book::new("sap", vec![t], None);
+        let now = Instant::now();
+        let dev = "APK.audio/System/Protocols/sap/Device/44_44_44_158";
+        let out = b.observe(dev, r#"{"origin": "44.44.44.158", "last_online": "-1", "sessions": {}}"#, now);
+        assert_eq!(out.len(), 1);
+        assert_eq!(out[0].0, "APK.audio/System/Gui/Panels/sap-44_44_44_158");
+        let doc: Value = serde_json::from_str(&out[0].1).unwrap();
+        let content = &doc["placements"][0]["frames"][0]["content"]["Console"];
+        assert_eq!(content["blocks"]["I"]["fields"]["device"]["topic"], dev);
+        assert_eq!(content["description"]["En"], "SAP — 44_44_44_158");
+        // A leaf under a document device is not the device.
+        assert!(b.observe(&format!("{dev}/extra"), "1", now).is_empty());
+        // An offline stamp inside the document empties it.
+        let out = b.observe(dev, r#"{"last_online": 1761830000}"#, now);
+        assert_eq!(out, vec![("APK.audio/System/Gui/Panels/sap-44_44_44_158".to_string(), String::new())]);
+        assert!(parse_template("sap", r#"{"sap": {"device_document": "yes"}}"#, tpl).is_err());
     }
 
     #[test]
