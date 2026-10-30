@@ -50,7 +50,7 @@ jobs:
     steps:
       # ../../../DISCOVERY.Engine/Docker/plugin-base.yml from PLUGINS/plugin/Docker/
       # is <workspace>/DISCOVERY.Engine/Docker/ — the checkout path is chosen for that.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           path: PLUGINS/plugin
 
@@ -76,7 +76,7 @@ jobs:
           echo "crates=$crates" >> "$GITHUB_OUTPUT"
           echo "crates: ${crates:-none}"
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: LikeDotAudio/APK.plugin.SDK
           ref: ${{ steps.sdk.outputs.ref }}

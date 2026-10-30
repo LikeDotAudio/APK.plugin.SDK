@@ -19,6 +19,11 @@
 //!                                 `device_state` and `device_control` markers
 //! ```
 //!
+//! A manifest entry may also say `"device_depth": 1` for a plugin whose
+//! devices sit one level under `Device/` (`…/Device/<device>/<field>`, the
+//! shape the PlayStation, NMOS and Dante hunters write) instead of the
+//! contract's two (`<category>/<device>`). One plugin's families share it.
+//!
 //! The manifest's `tree` names the placement (`7_Device_Consoles` →
 //! `Device_Consoles`, the value the OS "Device Consoles" display names in its
 //! `display.json` as `"panels"`). No `tree` means the Instruments display, the
@@ -45,6 +50,14 @@
 //! such key, silence alone never removes a panel — the tunable lives in the
 //! plugin's config, not here.
 //!
+//! A PANEL AN EARLIER PROCESS LEFT. The book also reads back
+//! `Gui/Panels/+` and adopts every retained panel whose `source` is this
+//! plugin's but which this process has not presented. If no device accounts
+//! for it within [`ADOPT_GRACE`](crate::presence::ADOPT_GRACE) — the window
+//! the presence tracker gives a retained device nobody has sighted — it is
+//! emptied, so a device that left while the plugin was down does not keep a
+//! tab for ever (LOOSE-panels-stale-after-restart).
+//!
 //! ONLY CHANGES ARE PUBLISHED. The payload text is the fingerprint, as in
 //! `present.rs`, so a device restated every thirty seconds costs nothing.
 
@@ -52,6 +65,7 @@ use std::collections::BTreeMap;
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
+use crate::presence::ADOPT_GRACE;
 use apkaudio_contracts::topics::{sanitize_segment, DEVICE_CONTROL_LEAF};
 use serde_json::{json, Map, Value};
 
@@ -65,6 +79,9 @@ pub struct Template {
     pub family: String,
     /// The placement: the display's `"panels"` name, e.g. `Device_Consoles`.
     pub at: String,
+    /// Segments under `Device/` that name one device: 2 (`<category>/<device>`,
+    /// the contract's shape and the default) or 1 (`<device>`).
+    pub depth: usize,
     pub body: Value,
 }
 
@@ -99,8 +116,16 @@ pub fn parse_template(family: &str, manifest: &str, template: &str) -> Result<Te
         .and_then(Value::as_str)
         .map(placement_of)
         .unwrap_or_else(|| "Instruments".to_string());
+    let depth = match entry.get("device_depth") {
+        None => 2,
+        Some(v) => match v.as_u64() {
+            Some(1) => 1,
+            Some(2) => 2,
+            _ => return Err(format!("gui/manifest.json `{family}.device_depth` is {v}; it is 1 or 2")),
+        },
+    };
     let body: Value = serde_json::from_str(template).map_err(|e| format!("gui/{family}/{family}.json: {e}"))?;
-    Ok(Template { family: family.to_string(), at, body })
+    Ok(Template { family: family.to_string(), at, depth, body })
 }
 
 /// `7_Device_Consoles` → `Device_Consoles`: the numeric prefix orders folders
@@ -126,10 +151,15 @@ struct Device {
 pub struct Book {
     token: String,
     templates: Vec<Template>,
+    /// From the first template: every family of one plugin reads one tree.
+    depth: usize,
     expire_after: Option<Duration>,
     devices: BTreeMap<String, Device>,
     /// `{key: payload text}` for every panel this process has on the broker.
     ledger: BTreeMap<String, String>,
+    /// `{key: when first read back}` for every retained panel of this plugin's
+    /// that an earlier process left and no device here has claimed yet.
+    inherited: BTreeMap<String, Instant>,
 }
 
 /// What to put on the broker, always retained: `(topic, payload)`. An empty
@@ -138,7 +168,8 @@ pub type Publication = (String, String);
 
 impl Book {
     pub fn new(token: &str, templates: Vec<Template>, expire_after: Option<Duration>) -> Self {
-        Book { token: token.to_string(), templates, expire_after, devices: BTreeMap::new(), ledger: BTreeMap::new() }
+        let depth = templates.first().map(|t| t.depth).unwrap_or(2);
+        Book { token: token.to_string(), templates, depth, expire_after, devices: BTreeMap::new(), ledger: BTreeMap::new(), inherited: BTreeMap::new() }
     }
 
     /// Whether this module presents anything at all.
@@ -151,24 +182,36 @@ impl Book {
         format!("{}#", self.device_root())
     }
 
+    /// The panels this module may have left on the broker: `Gui/Panels/+`,
+    /// read back so a panel no device claims can be emptied.
+    pub fn panels_filter(&self) -> String {
+        format!("{PANELS_TOPIC_ROOT}/+")
+    }
+
     fn device_root(&self) -> String {
         format!("APK.audio/System/Protocols/{}/Device/", self.token)
     }
 
     /// One message off the device tree. Returns what must be published.
     pub fn observe(&mut self, topic: &str, payload: &str, now: Instant) -> Vec<Publication> {
-        let Some(rest) = topic.strip_prefix(&self.device_root()) else { return Vec::new() };
-        let segments: Vec<&str> = rest.split('/').collect();
-        // `<category>/<device>/<field…>`; a press on `Control/…` is the
-        // operator talking to the device, not the device describing itself.
-        if segments.len() < 3 || segments[2] == DEVICE_CONTROL_LEAF {
+        if let Some(key) = topic.strip_prefix(PANELS_TOPIC_ROOT).and_then(|k| k.strip_prefix('/')) {
+            self.read_back(key, payload, now);
             return Vec::new();
         }
-        let base = format!("{}{}/{}", self.device_root(), segments[0], segments[1]);
-        let field = segments[2..].join("/");
+        let Some(rest) = topic.strip_prefix(&self.device_root()) else { return Vec::new() };
+        let segments: Vec<&str> = rest.split('/').collect();
+        // `<category>/<device>/<field…>` (or `<device>/<field…>` at depth 1);
+        // a press on `Control/…` is the operator talking to the device, not
+        // the device describing itself.
+        let depth = self.depth;
+        if segments.len() <= depth || segments[depth] == DEVICE_CONTROL_LEAF || segments[..depth].iter().any(|s| s.is_empty()) {
+            return Vec::new();
+        }
+        let base = format!("{}{}", self.device_root(), segments[..depth].join("/"));
+        let field = segments[depth..].join("/");
         let device = self.devices.entry(base.clone()).or_insert_with(|| Device {
-            category: segments[0].to_string(),
-            name: segments[1].to_string(),
+            category: if depth == 2 { segments[0].to_string() } else { String::new() },
+            name: segments[depth - 1].to_string(),
             fields: BTreeMap::new(),
             online: None,
             seen: now,
@@ -182,16 +225,45 @@ impl Book {
         self.reconcile(&base)
     }
 
-    /// Clear every panel whose device has been silent past the window.
+    /// A retained panel on the broker. One of this plugin's that this process
+    /// did not present is an earlier process's, held until a device claims it
+    /// or [`ADOPT_GRACE`] passes. An empty payload is a clear, ours or not.
+    fn read_back(&mut self, key: &str, payload: &str, now: Instant) {
+        if payload.trim().is_empty() {
+            self.inherited.remove(key);
+            return;
+        }
+        if self.ledger.contains_key(key) {
+            return;
+        }
+        let source = serde_json::from_str::<Value>(payload)
+            .ok()
+            .and_then(|d| d.get("source").and_then(Value::as_str).map(str::to_string));
+        if source.as_deref() == Some(format!("plugin:{}", self.token).as_str()) {
+            self.inherited.entry(key.to_string()).or_insert(now);
+        }
+    }
+
+    /// Clear every panel whose device has been silent past the window, and
+    /// every inherited panel no device has claimed within [`ADOPT_GRACE`].
     pub fn expire(&mut self, now: Instant) -> Vec<Publication> {
-        let Some(after) = self.expire_after else { return Vec::new() };
+        let orphans: Vec<String> = self
+            .inherited
+            .iter()
+            .filter(|(_, since)| now.saturating_duration_since(**since) > ADOPT_GRACE)
+            .map(|(key, _)| key.clone())
+            .collect();
+        let mut out = Vec::new();
+        for key in orphans {
+            out.extend(self.clear(&key));
+        }
+        let Some(after) = self.expire_after else { return out };
         let gone: Vec<String> = self
             .devices
             .iter()
             .filter(|(_, d)| now.saturating_duration_since(d.seen) > after)
             .map(|(base, _)| base.clone())
             .collect();
-        let mut out = Vec::new();
         for base in gone {
             let device = self.devices.remove(&base).expect("listed above");
             out.extend(self.clear(&self.key_of(&device)));
@@ -209,11 +281,16 @@ impl Book {
     }
 
     fn key_of(&self, device: &Device) -> String {
+        if device.category.is_empty() {
+            return sanitize_segment(&format!("{}-{}", self.token, device.name));
+        }
         sanitize_segment(&format!("{}-{}-{}", self.token, device.category, device.name))
     }
 
     fn clear(&mut self, key: &str) -> Vec<Publication> {
-        if self.ledger.remove(key).is_some() {
+        let ours = self.ledger.remove(key).is_some();
+        let inherited = self.inherited.remove(key).is_some();
+        if ours || inherited {
             vec![(format!("{PANELS_TOPIC_ROOT}/{key}"), String::new())]
         } else {
             Vec::new()
@@ -231,6 +308,7 @@ impl Book {
         if self.ledger.get(&key) == Some(&text) {
             return Vec::new();
         }
+        self.inherited.remove(&key);
         self.ledger.insert(key.clone(), text.clone());
         vec![(format!("{PANELS_TOPIC_ROOT}/{key}"), text)]
     }
@@ -400,6 +478,72 @@ mod tests {
         let out = b.expire(later);
         assert_eq!(out.len(), 1);
         assert!(out[0].1.is_empty());
+    }
+
+    fn left_behind(key: &str, token: &str) -> (String, String) {
+        (format!("{PANELS_TOPIC_ROOT}/{key}"), json!({"key": key, "source": format!("plugin:{token}")}).to_string())
+    }
+
+    #[test]
+    fn a_panel_an_earlier_process_left_is_emptied_when_no_device_claims_it() {
+        let mut b = book(None);
+        let now = Instant::now();
+        let (topic, text) = left_behind("cast-Speaker-Gone", "cast");
+        assert!(b.observe(&topic, &text, now).is_empty());
+        // Another plugin's panel is not ours to clear.
+        let (other, other_text) = left_behind("dnssd-Host-X", "dnssd");
+        b.observe(&other, &other_text, now);
+        assert!(b.expire(now + ADOPT_GRACE).is_empty(), "not before the grace");
+        let out = b.expire(now + ADOPT_GRACE + Duration::from_secs(1));
+        assert_eq!(out, vec![(topic, String::new())]);
+        assert!(b.expire(now + ADOPT_GRACE * 10).is_empty(), "said once");
+    }
+
+    #[test]
+    fn an_inherited_panel_a_device_claims_is_kept() {
+        let mut b = book(None);
+        let now = Instant::now();
+        let (topic, text) = left_behind("cast-Speaker-Garage", "cast");
+        b.observe(&topic, &text, now);
+        assert_eq!(b.observe(&format!("{BASE}/name"), "Garage", now).len(), 1);
+        // Our own echo of what we just presented is not an inheritance.
+        let (_, ours) = b.restate().remove(0);
+        b.observe(&topic, &ours, now);
+        assert!(b.expire(now + ADOPT_GRACE * 2).is_empty());
+    }
+
+    #[test]
+    fn an_inherited_panel_whose_device_reads_offline_is_emptied_at_once() {
+        let mut b = book(None);
+        let now = Instant::now();
+        let (topic, text) = left_behind("cast-Speaker-Garage", "cast");
+        b.observe(&topic, &text, now);
+        let out = b.observe(&format!("{BASE}/last_online"), "1761830000", now);
+        assert_eq!(out, vec![(topic.clone(), String::new())]);
+        // The broker's echo of that clear ends it.
+        b.observe(&topic, "", now);
+        assert!(b.expire(now + ADOPT_GRACE * 2).is_empty());
+    }
+
+    #[test]
+    fn a_flat_device_tree_is_read_at_depth_one() {
+        let manifest = r#"{"ps": {"tree": "7_Device_Consoles", "device_depth": 1}}"#;
+        let t = parse_template("ps", manifest, TEMPLATE).expect("parses");
+        assert_eq!(t.depth, 1);
+        let mut b = Book::new("playstation", vec![t], None);
+        let now = Instant::now();
+        let base = "APK.audio/System/Protocols/playstation/Device/B41F4D477C99";
+        let out = b.observe(&format!("{base}/model"), "PS5", now);
+        assert_eq!(out.len(), 1);
+        assert_eq!(out[0].0, "APK.audio/System/Gui/Panels/playstation-B41F4D477C99");
+        let doc: Value = serde_json::from_str(&out[0].1).unwrap();
+        let content = &doc["placements"][0]["frames"][0]["content"]["Console"];
+        assert_eq!(content["blocks"]["I"]["fields"]["model"]["topic"], format!("{base}/model"));
+        assert_eq!(content["blocks"]["I"]["fields"]["volume"]["topic"], format!("{base}/Control/Volume"));
+        // A deeper leaf belongs to the same device, a press is not a fact.
+        assert!(b.observe(&format!("{base}/Channel/Ch1/id"), "1", now).is_empty());
+        assert!(b.observe(&format!("{base}/Control/Wake"), "1", now).is_empty());
+        assert!(parse_template("ps", r#"{"ps": {"device_depth": 3}}"#, TEMPLATE).is_err());
     }
 
     #[test]

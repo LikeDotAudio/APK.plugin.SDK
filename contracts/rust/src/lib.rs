@@ -83,6 +83,10 @@ pub mod komand_clock;
 /// Every bare-metal item's `incoming/` and `outgoing/` landing spots.
 pub mod baremetal_io;
 
+/// What may be written on a machine's `outgoing/command` (power, a named
+/// command, a deploy), who may write it, and the retained answer. PLAN-3394.01.
+pub mod machine_command;
+
 /// The behavior half of `ControlValue` -- the constructors that make the
 /// envelope buildable from Rust at all, and the rendering rule. `gen/` had the
 /// shape and nothing had the behavior, which is why nothing published one.

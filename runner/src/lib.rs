@@ -552,6 +552,9 @@ fn spawn_session(
                         let book = book.lock().unwrap_or_else(|e| e.into_inner());
                         if book.is_active() {
                             let _ = client.try_subscribe(book.filter(), QoS::AtLeastOnce);
+                            // Read back what an earlier process left, so a
+                            // panel no device claims is emptied, not kept.
+                            let _ = client.try_subscribe(book.panels_filter(), QoS::AtLeastOnce);
                             publish_panels(&client, book.restate());
                         }
                     }

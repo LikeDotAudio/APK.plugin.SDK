@@ -1,0 +1,29 @@
+{
+  "$comment": "Golden vectors for the machine command envelope (PLAN-3394.01): what may be written on APK.audio/System/BareMetal/MonitorProbes/{probe}/{host}/outgoing/command. Consumed by contracts/rust/tests/machine_command.rs and contracts/python/tests/test_machine_command.py. `refused_id` is the id the refusal is answered against (null when none could be read).",
+  "valid": [
+    {"why": "a reboot, confirmed and logged", "doc": {"id": "cmd-0001-abcd", "verb": "power", "action": "cycle", "session": "mlog-20261030-0001", "operator": "APK/Anthony", "issued_at_ms": 1793000000000}},
+    {"why": "power on through a wake relay, to the MAC the machine published", "doc": {"id": "cmd-0002-abcd", "verb": "power", "action": "on", "mac": "AA:bb:cc:00:11:22", "session": "mlog-20261030-0002", "operator": "RACK/Rack", "issued_at_ms": 1793000000000}},
+    {"why": "a named command from the agent's allow-list, rehearsed", "doc": {"id": "cmd-0003-abcd", "verb": "run", "name": "uptime", "session": "mlog-20261030-0003", "operator": "APK/Anthony", "issued_at_ms": 1793000000000, "dry_run": true}},
+    {"why": "a deploy by allow-list name", "doc": {"id": "cmd-0004-abcd", "verb": "deploy", "name": "apk-plugins", "session": "mlog-20261030-0004", "operator": "APK/Anthony", "issued_at_ms": 1793000000000}}
+  ],
+  "invalid": [
+    {"why": "a command line riding along is never half-read", "refused_id": "cmd-0101-abcd", "doc": {"id": "cmd-0101-abcd", "verb": "run", "name": "uptime", "argv": ["rm", "-rf", "/"], "session": "mlog-20261030-0101", "operator": "APK/Anthony", "issued_at_ms": 1793000000000}},
+    {"why": "a shell string in the name", "refused_id": "cmd-0102-abcd", "doc": {"id": "cmd-0102-abcd", "verb": "run", "name": "uptime; reboot", "session": "mlog-20261030-0102", "operator": "APK/Anthony", "issued_at_ms": 1793000000000}},
+    {"why": "no confirmation log id: nothing unconfirmed is obeyed", "refused_id": "cmd-0103-abcd", "doc": {"id": "cmd-0103-abcd", "verb": "power", "action": "off", "operator": "APK/Anthony", "issued_at_ms": 1793000000000}},
+    {"why": "no operator", "refused_id": "cmd-0104-abcd", "doc": {"id": "cmd-0104-abcd", "verb": "power", "action": "off", "session": "mlog-20261030-0104", "issued_at_ms": 1793000000000}},
+    {"why": "an unknown verb", "refused_id": "cmd-0105-abcd", "doc": {"id": "cmd-0105-abcd", "verb": "format", "session": "mlog-20261030-0105", "operator": "APK/Anthony", "issued_at_ms": 1793000000000}},
+    {"why": "an unknown power action", "refused_id": "cmd-0106-abcd", "doc": {"id": "cmd-0106-abcd", "verb": "power", "action": "hibernate", "session": "mlog-20261030-0106", "operator": "APK/Anthony", "issued_at_ms": 1793000000000}},
+    {"why": "a MAC on anything but power on", "refused_id": "cmd-0107-abcd", "doc": {"id": "cmd-0107-abcd", "verb": "power", "action": "off", "mac": "aa:bb:cc:00:11:22", "session": "mlog-20261030-0107", "operator": "APK/Anthony", "issued_at_ms": 1793000000000}},
+    {"why": "an IP where a MAC goes: identity is never an address", "refused_id": "cmd-0108-abcd", "doc": {"id": "cmd-0108-abcd", "verb": "power", "action": "on", "mac": "192.168.1.20", "session": "mlog-20261030-0108", "operator": "APK/Anthony", "issued_at_ms": 1793000000000}},
+    {"why": "a deploy with no name", "refused_id": "cmd-0109-abcd", "doc": {"id": "cmd-0109-abcd", "verb": "deploy", "session": "mlog-20261030-0109", "operator": "APK/Anthony", "issued_at_ms": 1793000000000}},
+    {"why": "no id: refused, and there is nothing to answer against", "refused_id": null, "doc": {"verb": "power", "action": "cycle", "session": "mlog-20261030-0110", "operator": "APK/Anthony", "issued_at_ms": 1793000000000}},
+    {"why": "no issue time: a replay cannot be told from a press", "refused_id": "cmd-0111-abcd", "doc": {"id": "cmd-0111-abcd", "verb": "power", "action": "cycle", "session": "mlog-20261030-0111", "operator": "APK/Anthony"}},
+    {"why": "dry_run spelled as a string", "refused_id": "cmd-0112-abcd", "doc": {"id": "cmd-0112-abcd", "verb": "power", "action": "cycle", "dry_run": "yes", "session": "mlog-20261030-0112", "operator": "APK/Anthony", "issued_at_ms": 1793000000000}}
+  ],
+  "acl_deny": [
+    "APK.audio/System/BareMetal/+/outgoing/command",
+    "APK.audio/System/BareMetal/+/+/outgoing/command",
+    "APK.audio/System/BareMetal/+/+/+/outgoing/command",
+    "APK.audio/System/BareMetal/+/+/+/+/outgoing/command"
+  ]
+}
