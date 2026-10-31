@@ -1,0 +1,16 @@
+{
+  "$comment": "topics::sanitize_segment (Rust) and apkaudio_contracts.segments.sanitize_segment (Python): free text -> one legal T4 topic level. Every non [A-Za-z0-9-] character becomes '_', trailing '_' dropped, leading kept (DNS-SD `_ipp`), empty -> '_'.",
+  "cases": [
+    {"raw": "Garage speaker", "segment": "Garage_speaker"},
+    {"raw": "a/b+c#d", "segment": "a_b_c_d"},
+    {"raw": "Living Room TV.", "segment": "Living_Room_TV"},
+    {"raw": "Studio 2.4", "segment": "Studio_2_4"},
+    {"raw": "_ipp._tcp.local.", "segment": "_ipp__tcp_local", "why": "leading underscore kept: it is significant in DNS-SD"},
+    {"raw": "  padded  ", "segment": "padded"},
+    {"raw": "", "segment": "_"},
+    {"raw": "///", "segment": "_"},
+    {"raw": "Ünïcödé", "segment": "_n_c_d", "why": "one '_' per character, not per byte"},
+    {"raw": "device:0a1b2c", "segment": "device_0a1b2c"},
+    {"raw": "Already-fine_1", "segment": "Already-fine_1"}
+  ]
+}

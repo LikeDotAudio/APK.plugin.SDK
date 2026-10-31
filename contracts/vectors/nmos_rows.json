@@ -1,0 +1,18 @@
+{
+  "$comment": "The nmos device table row schema (contracts/rust/src/nmos_rows.rs). `rows`: a role and the key set it carries; `ok` says whether it is a table row. `ids`: PLUGIN.NMOS's {host}_{port} row id. Both PLUGIN.NMOS and PLUGIN.NMOS_CONTROL test their published key sets against these.",
+  "rows": [
+    {"role": "Node", "keys": ["service", "role", "api_versions", "api_proto", "api_auth", "priority", "host", "port", "addresses", "mac", "vendor", "last_online", "online_since"], "ok": true},
+    {"role": "Registration", "keys": ["service", "role", "api_versions", "api_proto", "api_auth", "priority", "host", "port", "addresses", "mac", "vendor", "last_online", "online_since"], "ok": true},
+    {"role": "Device", "keys": ["service", "role", "senders", "receivers", "vendor", "api_versions", "api_proto", "api_auth", "host", "port", "addresses", "last_online", "online_since"], "ok": true},
+    {"role": "Device", "keys": ["service", "role", "api_versions", "api_proto", "api_auth", "priority", "host", "port", "addresses", "mac", "vendor", "last_online", "online_since"], "ok": false, "why": "an endpoint's keys under the Device role"},
+    {"role": "Node", "keys": ["service", "role", "api_versions", "api_proto", "api_auth", "priority", "host", "port", "addresses", "mac", "vendor", "last_online"], "ok": false, "why": "online_since is part of the row"},
+    {"role": "Sender", "keys": ["service", "role"], "ok": false, "why": "not a role either writer uses"}
+  ],
+  "ids": [
+    {"host": "nmos-node.local.", "port": 3210, "id": "nmos-node_local_3210"},
+    {"host": "10.0.0.5", "port": 8080, "id": "10_0_0_5_8080"}
+  ],
+  "topics": [
+    {"id": "nmos-node_local_3210", "key": "role", "topic": "APK.audio/System/Protocols/nmos/Device/nmos-node_local_3210/role"}
+  ]
+}

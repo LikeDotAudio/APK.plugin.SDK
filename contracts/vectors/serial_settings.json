@@ -1,0 +1,36 @@
+{
+  "$comment": "Golden vectors for APK_SERIAL_SETTINGS (contracts/rust/src/serial_settings.rs, contracts/python/apkaudio_contracts/serial_settings.py). `parse`: settings text -> label (null = refused). `pins`: a whole spec, the port asked about, and the label it resolves to (null = no pin). `rejected`: the entries a spec reports as unreadable. Cases taken from PLUGIN.VISA serial_hunter/pinned.rs and PLUGIN.SERIAL_COM exchange.rs tests, which held the two copies this replaces.",
+  "parse": [
+    {"text": "9600 7E2", "label": "9600 7E2 none", "why": "the four HP 34401A meters"},
+    {"text": "9600 7e2", "label": "9600 7E2 none", "why": "framing is case-insensitive; the label is upper case"},
+    {"text": "19200 8n1 rtscts", "label": "19200 8N1 rtscts"},
+    {"text": "4800 7O1 XONXOFF", "label": "4800 7O1 xonxoff", "why": "flow is case-insensitive"},
+    {"text": "  115200   8N1   none  ", "label": "115200 8N1 none", "why": "whitespace runs are one separator"},
+    {"text": "9600 7E2 none", "label": "9600 7E2 none", "why": "the label reads back"},
+    {"text": "", "label": null},
+    {"text": "9600", "label": null, "why": "framing is required"},
+    {"text": "fast 8N1", "label": null},
+    {"text": "-9600 8N1", "label": null},
+    {"text": "0 8N1", "label": null, "why": "zero baud is a typo, refused (the one tightening over the old copies)"},
+    {"text": "9600 9N1", "label": null},
+    {"text": "9600 8X1", "label": null},
+    {"text": "9600 8N3", "label": null},
+    {"text": "9600 8N1 maybe", "label": null},
+    {"text": "9600 8N1 none extra", "label": null}
+  ],
+  "pins": [
+    {"spec": "*=9600 7E2, ttyUSB1=19200 8N1, EQAKb2A8J14=4800 7O1", "tty": "ttyUSB0", "serial": "EGCQb2A8J14", "label": "9600 7E2 none", "why": "no serial or name match: the default"},
+    {"spec": "*=9600 7E2, ttyUSB1=19200 8N1, EQAKb2A8J14=4800 7O1", "tty": "ttyUSB1", "serial": "", "label": "19200 8N1 none", "why": "name beats *"},
+    {"spec": "*=9600 7E2, ttyUSB1=19200 8N1, EQAKb2A8J14=4800 7O1", "tty": "ttyUSB1", "serial": "EQAKb2A8J14", "label": "4800 7O1 none", "why": "the adapter serial follows the meter to whatever port it lands on"},
+    {"spec": "ttyUSB1=9600 7E2", "tty": "ttyUSB0", "serial": "", "label": null},
+    {"spec": "/dev/ttyUSB0=9600 7E2", "tty": "ttyUSB0", "serial": "", "label": "9600 7E2 none", "why": "a /dev/ prefix on the key is ignored"},
+    {"spec": "ttyUSB0=9600 7E2", "tty": "/dev/ttyUSB0", "serial": "", "label": "9600 7E2 none", "why": "and on the port name"},
+    {"spec": "*=9600 7E2,*=19200 8N1", "tty": "ttyS0", "serial": "", "label": "19200 8N1 none", "why": "within one rank the last entry wins"},
+    {"spec": "ttyUSB0=garbage, *=9600 8N1", "tty": "ttyUSB0", "serial": "", "label": "9600 8N1 none", "why": "a rejected entry does not shadow the default"},
+    {"spec": "", "tty": "ttyUSB0", "serial": "", "label": null},
+    {"spec": "=9600 8N1", "tty": "", "serial": "", "label": null, "why": "an empty key names no port"}
+  ],
+  "rejected": [
+    {"spec": "*=9600 7E2, ttyUSB1=fast, nonsense, =9600 8N1", "rejected": ["ttyUSB1=fast", "=9600 8N1"], "why": "an entry with no '=' is skipped silently; one with '=' and bad settings, or an empty key, is reported"}
+  ]
+}

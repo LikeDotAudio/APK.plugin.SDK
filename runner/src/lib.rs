@@ -66,9 +66,12 @@
 //! receive loop is the one-line change that closes the gap for that hunter.
 
 pub mod api;
+pub mod jobs;
 pub mod panels;
 pub mod presence;
 pub mod republish;
+pub mod session;
+pub mod unkept;
 
 use std::collections::BTreeSet;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -79,7 +82,7 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use apkaudio_contracts::agent_state::AgentReport;
 use apkaudio_contracts::baremetal_io;
 use apkaudio_contracts::self_test::{Check, Depth, Engaged, Engagement, Report, LEAF_ENGAGE, LEAF_RUN};
-use rumqttc::{Client, Event, LastWill, MqttOptions, Packet, QoS};
+use rumqttc::{Client, Event, Packet, QoS};
 use serde_json::{json, Map, Value};
 
 /// What a plugin binary hands the runner. Built by [`main!`]; written out by
@@ -459,28 +462,25 @@ fn spawn_session(
     let token = plugin.token;
     let door = plugin.self_test;
 
-    // A process id in the client id, because two containers of one plugin on
-    // one broker (a per-switch netgear agent) must not kick each other off —
-    // MQTT drops the older session on a duplicate id, silently, forever.
-    let mut options = MqttOptions::new(format!("apk-plugin-{token}-{}", std::process::id()), host, port);
-    options.set_keep_alive(Duration::from_secs(30));
+    // A UNIQUE CLIENT ID (session::client_id: node + pid + nonce), because two
+    // containers of one plugin on one broker (a per-switch netgear agent) must
+    // not kick each other off — MQTT drops the older session on a duplicate
+    // id, silently, forever — and in a container every process is pid 1.
+    //
     // A PANEL IS BIGGER THAN rumqttc's 10 KiB DEFAULT. The bound Chromecast
     // console is ~11 KiB, and an over-size publish is not refused — it kills
     // the session, which reconnects, restates the panel and dies again, a loop
     // the broker logs as "disconnected due to out of memory" (PLAN-3413.01).
-    options.set_max_packet_size(MAX_PACKET, MAX_PACKET);
-    if let Some((username, password)) = apkaudio_contracts::broker_auth::credentials() {
-        options.set_credentials(username, password);
-    }
+    let mut session = session::Session::new(token, "plugin").to(host, port).max_packet(MAX_PACKET);
     // THE LAST WILL IS THE LIVENESS. `unavailable` is the contract's word for
     // "running and can see nothing"; a process that is gone sees nothing, and
     // the word is one every consumer of `state` already renders. Retained, so
     // a reader that arrives after the crash still reads the crash.
     if let Ok((topic, _)) = baremetal_io::module_incoming(token, "state") {
-        options.set_last_will(LastWill::new(topic, "unavailable", QoS::AtLeastOnce, true));
+        session = session.last_will(topic, "unavailable");
     }
 
-    let (client, mut connection) = Client::new(options, 64);
+    let (client, mut connection) = session.connect();
     let config = ini_to_json(&config_text);
     let topic = module_topic(&config, token);
     let broker_is_ours = broker_is_local(host);
@@ -829,6 +829,40 @@ pub fn broker_is_local(host: &str) -> bool {
 /// read-only. `APK_PLUGIN_HEALTH_FILE` moves it.
 pub fn health_file() -> String {
     std::env::var("APK_PLUGIN_HEALTH_FILE").unwrap_or_else(|_| "/tmp/apk-plugin.alive".to_string())
+}
+
+/// The `apk-plugin-health` probe as a function: 0 when the runner's telemetry
+/// tick wrote the health file within `APK_PLUGIN_HEALTH_MAX_AGE` (60 s), 1
+/// otherwise, with the reason on stderr. A worker in its own workspace ships a
+/// one-line `fn main() { std::process::exit(apk_plugin_runner::health_check()) }`
+/// instead of compiling this crate's bin file by path (P08 handoff).
+///
+/// A file that says `not built …` is the image's stub for a crate that failed
+/// to compile (Dockerfile, PLAN-3398.01): reported as such, not as "missing".
+pub fn health_check() -> i32 {
+    let path = health_file();
+    let max_age: u64 = std::env::var("APK_PLUGIN_HEALTH_MAX_AGE")
+        .ok()
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(60);
+    let contents = std::fs::read_to_string(&path).ok();
+    if let Some(text) = contents.as_deref().map(str::trim) {
+        if text.starts_with("not built") {
+            eprintln!("{text}");
+            return 1;
+        }
+    }
+    match contents.and_then(|s| s.trim().parse::<u64>().ok()) {
+        Some(then) if unix_now().saturating_sub(then) <= max_age => 0,
+        Some(then) => {
+            eprintln!("stale: {path} is {}s old (limit {max_age}s)", unix_now().saturating_sub(then));
+            1
+        }
+        None => {
+            eprintln!("missing: {path} has no timestamp yet");
+            1
+        }
+    }
 }
 
 fn write_health_file() {

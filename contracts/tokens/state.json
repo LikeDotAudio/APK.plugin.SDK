@@ -266,7 +266,19 @@
     "most -- Okabe-Ito's alarm/ok separate 20.5 dE deuteranopic and IBM Carbon's",
     "15.7, against these tones' 7.3 -- and two would not: Paul Tol's is 8.2 and",
     "Classic LCARS's 15.1. That is the honest case for the other answer, and it",
-    "is written here so the next reader argues with a measurement."
+    "is written here so the next reader argues with a measurement.",
+    "",
+    "AND `absent` -> KINDA, ruled once for its two minters (SDK/contracts audit,",
+    "CC-02/OS-04, 2026-10-30). OS/Scanalyzer/puck/relay-puck-to-cloud.js mints",
+    "it (OS.PUCK_ABSENT) for a bench whose SpaceNavigator branch carries no",
+    "retained status at all, and OS/SpaceMouse/mount-space-mouse.js draws it",
+    "after four seconds of a connected bus with nothing on that branch. Both say",
+    "the same thing in their own words: `a fact about the bench, not a fault --",
+    "nothing has failed`. It is never published. Red is refused for the reason",
+    "`stub` is amber: an optional peripheral that is simply not attached is a",
+    "permanent, intended state, and painting it red trains an operator to",
+    "ignore red. Green is refused because nothing answered. Amber, nobody can",
+    "say more -- until a probe publishes, which lights the same window green."
   ],
 
   "tones": {
@@ -321,7 +333,9 @@
     "partial": "kinda",
     "under_test": "kinda",
 
-    "cleared": "kinda"
+    "cleared": "kinda",
+
+    "absent": "kinda"
   },
 
   "default": "kinda"

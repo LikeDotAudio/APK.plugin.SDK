@@ -1,0 +1,5 @@
+{
+  "v": 1,
+  "type": "ice",
+  "candidate": "candidate:1 1 UDP 2122252543 10.0.0.5 50000 typ host"
+}

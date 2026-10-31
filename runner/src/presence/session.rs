@@ -7,7 +7,7 @@ use std::sync::OnceLock;
 use std::time::{Duration, Instant};
 
 use apkaudio_contracts::device_publish::Publication;
-use rumqttc::{Client, Connection, Event, MqttOptions, Packet, QoS};
+use rumqttc::{Client, Connection, Event, Packet, QoS};
 
 use super::shared::{forget_said, now_ms, say, unsaid, with, Shared};
 use super::sweep;
@@ -24,12 +24,7 @@ pub fn start(token: &str, host: &str, port: u16, protocols: Vec<String>, inactiv
         return;
     }
 
-    let mut options = MqttOptions::new(format!("apk-presence-{token}-{}", std::process::id()), host, port);
-    options.set_keep_alive(Duration::from_secs(30));
-    if let Some((username, password)) = apkaudio_contracts::broker_auth::credentials() {
-        options.set_credentials(username, password);
-    }
-    let (client, connection) = Client::new(options, 256);
+    let (client, connection) = crate::session::Session::new(token, "presence").to(host, port).capacity(256).connect();
     with(|s| {
         // Sightings before `start` were held by the booting tracker; keep them,
         // and give the tracker the clock it should have had.

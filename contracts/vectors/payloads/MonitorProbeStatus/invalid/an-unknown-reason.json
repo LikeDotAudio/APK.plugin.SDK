@@ -1,0 +1,11 @@
+{
+  "v": 1,
+  "status": "online",
+  "hostname": "APK-Shop",
+  "machine_id": "0f3c9e",
+  "mac": "aa:bb:cc:dd:ee:ff",
+  "probe": "Linux Desktop Monitor",
+  "connected_at": "2026-10-30T21:00:00-04:00",
+  "at": "2026-10-30T22:00:00-04:00",
+  "reason": "bored"
+}

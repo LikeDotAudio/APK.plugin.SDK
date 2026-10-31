@@ -1,0 +1,926 @@
+{
+ "_": "Shared panel vectors: RUNNER/src/panels.rs (the_shared_vectors_hold) and RUNNER/python/test_apk_plugin_panels.py both run every case. `at` is seconds since the case began; `expect` is what the step publishes, retained, in order; a payload is the parsed panel document, or \"\" for a clear. Regenerate only by changing a rule in BOTH implementations.",
+ "cases": [
+  {
+   "name": "a device leaf presents a bound panel once, offline empties it",
+   "token": "cast",
+   "manifest": {
+    "cast": {
+     "tab": "7_Google_Cast",
+     "tree": "7_Device_Consoles"
+    }
+   },
+   "families": {
+    "cast": {
+     "Console": {
+      "description": {
+       "En": "Cast — ${model}"
+      },
+      "blocks": {
+       "I": {
+        "fields": {
+         "model": {
+          "device_state": "model"
+         },
+         "volume": {
+          "device_control": "Volume"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "expire_after_s": null,
+   "steps": [
+    {
+     "at": 0,
+     "observe": [
+      "APK.audio/System/Protocols/cast/Device/Speaker/Garage/model",
+      "Google Nest Mini"
+     ],
+     "expect": [
+      [
+       "APK.audio/System/Gui/Panels/cast-Speaker-Garage",
+       {
+        "device": {
+         "model": "Google Nest Mini",
+         "resource": "APK.audio/System/Protocols/cast/Device/Speaker/Garage",
+         "serial": null,
+         "type": "cast",
+         "write_topic": "APK.audio/System/Protocols/cast/Device/Speaker/Garage/Control"
+        },
+        "folder": "Garage_cast",
+        "key": "cast-Speaker-Garage",
+        "placements": [
+         {
+          "at": "Device_Consoles",
+          "frames": [
+           {
+            "content": {
+             "Console": {
+              "blocks": {
+               "I": {
+                "fields": {
+                 "model": {
+                  "device_state": "model",
+                  "topic": "APK.audio/System/Protocols/cast/Device/Speaker/Garage/model"
+                 },
+                 "volume": {
+                  "device_control": "Volume",
+                  "topic": "APK.audio/System/Protocols/cast/Device/Speaker/Garage/Control/Volume"
+                 }
+                }
+               }
+              },
+              "description": {
+               "En": "Cast — Google Nest Mini"
+              }
+             }
+            },
+            "path": "cast.json"
+           }
+          ]
+         }
+        ],
+        "source": "plugin:cast"
+       }
+      ]
+     ]
+    },
+    {
+     "at": 0,
+     "observe": [
+      "APK.audio/System/Protocols/cast/Device/Speaker/Garage/model",
+      "Google Nest Mini"
+     ],
+     "expect": []
+    },
+    {
+     "at": 0,
+     "observe": [
+      "APK.audio/System/Protocols/cast/Device/Speaker/Garage/Control/Volume",
+      "0.5"
+     ],
+     "expect": []
+    },
+    {
+     "at": 0,
+     "observe": [
+      "APK.audio/System/Protocols/cast/Device/Speaker/Garage/serial",
+      "SN1"
+     ],
+     "expect": [
+      [
+       "APK.audio/System/Gui/Panels/cast-Speaker-Garage",
+       {
+        "device": {
+         "model": "Google Nest Mini",
+         "resource": "APK.audio/System/Protocols/cast/Device/Speaker/Garage",
+         "serial": "SN1",
+         "type": "cast",
+         "write_topic": "APK.audio/System/Protocols/cast/Device/Speaker/Garage/Control"
+        },
+        "folder": "Garage_cast",
+        "key": "cast-Speaker-Garage",
+        "placements": [
+         {
+          "at": "Device_Consoles",
+          "frames": [
+           {
+            "content": {
+             "Console": {
+              "blocks": {
+               "I": {
+                "fields": {
+                 "model": {
+                  "device_state": "model",
+                  "topic": "APK.audio/System/Protocols/cast/Device/Speaker/Garage/model"
+                 },
+                 "volume": {
+                  "device_control": "Volume",
+                  "topic": "APK.audio/System/Protocols/cast/Device/Speaker/Garage/Control/Volume"
+                 }
+                }
+               }
+              },
+              "description": {
+               "En": "Cast — Google Nest Mini"
+              }
+             }
+            },
+            "path": "cast.json"
+           }
+          ]
+         }
+        ],
+        "source": "plugin:cast"
+       }
+      ]
+     ]
+    },
+    {
+     "at": 0,
+     "restate": true,
+     "expect": [
+      [
+       "APK.audio/System/Gui/Panels/cast-Speaker-Garage",
+       {
+        "device": {
+         "model": "Google Nest Mini",
+         "resource": "APK.audio/System/Protocols/cast/Device/Speaker/Garage",
+         "serial": "SN1",
+         "type": "cast",
+         "write_topic": "APK.audio/System/Protocols/cast/Device/Speaker/Garage/Control"
+        },
+        "folder": "Garage_cast",
+        "key": "cast-Speaker-Garage",
+        "placements": [
+         {
+          "at": "Device_Consoles",
+          "frames": [
+           {
+            "content": {
+             "Console": {
+              "blocks": {
+               "I": {
+                "fields": {
+                 "model": {
+                  "device_state": "model",
+                  "topic": "APK.audio/System/Protocols/cast/Device/Speaker/Garage/model"
+                 },
+                 "volume": {
+                  "device_control": "Volume",
+                  "topic": "APK.audio/System/Protocols/cast/Device/Speaker/Garage/Control/Volume"
+                 }
+                }
+               }
+              },
+              "description": {
+               "En": "Cast — Google Nest Mini"
+              }
+             }
+            },
+            "path": "cast.json"
+           }
+          ]
+         }
+        ],
+        "source": "plugin:cast"
+       }
+      ]
+     ]
+    },
+    {
+     "at": 0,
+     "observe": [
+      "APK.audio/System/Protocols/cast/Device/Speaker/Garage/last_online",
+      "1761830000"
+     ],
+     "expect": [
+      [
+       "APK.audio/System/Gui/Panels/cast-Speaker-Garage",
+       ""
+      ]
+     ]
+    },
+    {
+     "at": 0,
+     "restate": true,
+     "expect": []
+    }
+   ]
+  },
+  {
+   "name": "silence expires only after panels_expire_after_s",
+   "token": "cast",
+   "manifest": {
+    "cast": {
+     "tree": "7_Device_Consoles"
+    }
+   },
+   "families": {
+    "cast": {
+     "Console": {
+      "description": {
+       "En": "Cast — ${model}"
+      },
+      "blocks": {
+       "I": {
+        "fields": {
+         "model": {
+          "device_state": "model"
+         },
+         "volume": {
+          "device_control": "Volume"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "expire_after_s": 120,
+   "steps": [
+    {
+     "at": 0,
+     "observe": [
+      "APK.audio/System/Protocols/cast/Device/Speaker/Garage/name",
+      "Garage"
+     ],
+     "expect": [
+      [
+       "APK.audio/System/Gui/Panels/cast-Speaker-Garage",
+       {
+        "device": {
+         "model": "Garage",
+         "resource": "APK.audio/System/Protocols/cast/Device/Speaker/Garage",
+         "serial": null,
+         "type": "cast",
+         "write_topic": "APK.audio/System/Protocols/cast/Device/Speaker/Garage/Control"
+        },
+        "folder": "Garage_cast",
+        "key": "cast-Speaker-Garage",
+        "placements": [
+         {
+          "at": "Device_Consoles",
+          "frames": [
+           {
+            "content": {
+             "Console": {
+              "blocks": {
+               "I": {
+                "fields": {
+                 "model": {
+                  "device_state": "model",
+                  "topic": "APK.audio/System/Protocols/cast/Device/Speaker/Garage/model"
+                 },
+                 "volume": {
+                  "device_control": "Volume",
+                  "topic": "APK.audio/System/Protocols/cast/Device/Speaker/Garage/Control/Volume"
+                 }
+                }
+               }
+              },
+              "description": {
+               "En": "Cast — Garage"
+              }
+             }
+            },
+            "path": "cast.json"
+           }
+          ]
+         }
+        ],
+        "source": "plugin:cast"
+       }
+      ]
+     ]
+    },
+    {
+     "at": 60,
+     "expire": true,
+     "expect": []
+    },
+    {
+     "at": 600,
+     "expire": true,
+     "expect": [
+      [
+       "APK.audio/System/Gui/Panels/cast-Speaker-Garage",
+       ""
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "an earlier process's panel is emptied after the grace unless claimed",
+   "token": "cast",
+   "manifest": {
+    "cast": {
+     "tree": "7_Device_Consoles"
+    }
+   },
+   "families": {
+    "cast": {
+     "Console": {
+      "description": {
+       "En": "Cast — ${model}"
+      },
+      "blocks": {
+       "I": {
+        "fields": {
+         "model": {
+          "device_state": "model"
+         },
+         "volume": {
+          "device_control": "Volume"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "expire_after_s": null,
+   "steps": [
+    {
+     "at": 0,
+     "observe": [
+      "APK.audio/System/Gui/Panels/cast-Speaker-Gone",
+      "{\"key\": \"cast-Speaker-Gone\", \"source\": \"plugin:cast\"}"
+     ],
+     "expect": []
+    },
+    {
+     "at": 0,
+     "observe": [
+      "APK.audio/System/Gui/Panels/dnssd-Host-X",
+      "{\"key\": \"dnssd-Host-X\", \"source\": \"plugin:dnssd\"}"
+     ],
+     "expect": []
+    },
+    {
+     "at": 0,
+     "observe": [
+      "APK.audio/System/Gui/Panels/cast-Speaker-Garage",
+      "{\"key\": \"cast-Speaker-Garage\", \"source\": \"plugin:cast\"}"
+     ],
+     "expect": []
+    },
+    {
+     "at": 0,
+     "observe": [
+      "APK.audio/System/Protocols/cast/Device/Speaker/Garage/name",
+      "Garage"
+     ],
+     "expect": [
+      [
+       "APK.audio/System/Gui/Panels/cast-Speaker-Garage",
+       {
+        "device": {
+         "model": "Garage",
+         "resource": "APK.audio/System/Protocols/cast/Device/Speaker/Garage",
+         "serial": null,
+         "type": "cast",
+         "write_topic": "APK.audio/System/Protocols/cast/Device/Speaker/Garage/Control"
+        },
+        "folder": "Garage_cast",
+        "key": "cast-Speaker-Garage",
+        "placements": [
+         {
+          "at": "Device_Consoles",
+          "frames": [
+           {
+            "content": {
+             "Console": {
+              "blocks": {
+               "I": {
+                "fields": {
+                 "model": {
+                  "device_state": "model",
+                  "topic": "APK.audio/System/Protocols/cast/Device/Speaker/Garage/model"
+                 },
+                 "volume": {
+                  "device_control": "Volume",
+                  "topic": "APK.audio/System/Protocols/cast/Device/Speaker/Garage/Control/Volume"
+                 }
+                }
+               }
+              },
+              "description": {
+               "En": "Cast — Garage"
+              }
+             }
+            },
+            "path": "cast.json"
+           }
+          ]
+         }
+        ],
+        "source": "plugin:cast"
+       }
+      ]
+     ]
+    },
+    {
+     "at": 120,
+     "expire": true,
+     "expect": []
+    },
+    {
+     "at": 121,
+     "expire": true,
+     "expect": [
+      [
+       "APK.audio/System/Gui/Panels/cast-Speaker-Gone",
+       ""
+      ]
+     ]
+    },
+    {
+     "at": 1200,
+     "expire": true,
+     "expect": []
+    }
+   ]
+  },
+  {
+   "name": "a flat device tree at depth one",
+   "token": "playstation",
+   "manifest": {
+    "ps": {
+     "tree": "7_Device_Consoles",
+     "device_depth": 1
+    }
+   },
+   "families": {
+    "ps": {
+     "Console": {
+      "description": {
+       "En": "Cast — ${model}"
+      },
+      "blocks": {
+       "I": {
+        "fields": {
+         "model": {
+          "device_state": "model"
+         },
+         "volume": {
+          "device_control": "Volume"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "expire_after_s": null,
+   "steps": [
+    {
+     "at": 0,
+     "observe": [
+      "APK.audio/System/Protocols/playstation/Device/B41F4D477C99/model",
+      "PS5"
+     ],
+     "expect": [
+      [
+       "APK.audio/System/Gui/Panels/playstation-B41F4D477C99",
+       {
+        "device": {
+         "model": "PS5",
+         "resource": "APK.audio/System/Protocols/playstation/Device/B41F4D477C99",
+         "serial": null,
+         "type": "ps",
+         "write_topic": "APK.audio/System/Protocols/playstation/Device/B41F4D477C99/Control"
+        },
+        "folder": "B41F4D477C99_playstation",
+        "key": "playstation-B41F4D477C99",
+        "placements": [
+         {
+          "at": "Device_Consoles",
+          "frames": [
+           {
+            "content": {
+             "Console": {
+              "blocks": {
+               "I": {
+                "fields": {
+                 "model": {
+                  "device_state": "model",
+                  "topic": "APK.audio/System/Protocols/playstation/Device/B41F4D477C99/model"
+                 },
+                 "volume": {
+                  "device_control": "Volume",
+                  "topic": "APK.audio/System/Protocols/playstation/Device/B41F4D477C99/Control/Volume"
+                 }
+                }
+               }
+              },
+              "description": {
+               "En": "Cast — PS5"
+              }
+             }
+            },
+            "path": "ps.json"
+           }
+          ]
+         }
+        ],
+        "source": "plugin:playstation"
+       }
+      ]
+     ]
+    },
+    {
+     "at": 0,
+     "observe": [
+      "APK.audio/System/Protocols/playstation/Device/B41F4D477C99/Channel/Ch1/id",
+      "1"
+     ],
+     "expect": []
+    },
+    {
+     "at": 0,
+     "observe": [
+      "APK.audio/System/Protocols/playstation/Device/B41F4D477C99/Control/Wake",
+      "1"
+     ],
+     "expect": []
+    }
+   ]
+  },
+  {
+   "name": "a device path makes each channel its own panel",
+   "token": "dante",
+   "manifest": {
+    "dante": {
+     "tree": "7_Device_Consoles",
+     "device_depth": 1
+    },
+    "dante_channels": {
+     "tree": "7_Device_Consoles",
+     "device_path": "+/Channel/+"
+    }
+   },
+   "families": {
+    "dante": {
+     "Console": {
+      "description": {
+       "En": "Cast — ${model}"
+      },
+      "blocks": {
+       "I": {
+        "fields": {
+         "model": {
+          "device_state": "model"
+         },
+         "volume": {
+          "device_control": "Volume"
+         }
+        }
+       }
+      }
+     }
+    },
+    "dante_channels": {
+     "Console": {
+      "description": {
+       "En": "Ch ${name}"
+      },
+      "blocks": {
+       "I": {
+        "fields": {
+         "id": {
+          "device_state": "id"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "expire_after_s": null,
+   "steps": [
+    {
+     "at": 0,
+     "observe": [
+      "APK.audio/System/Protocols/dante/Device/AVIO-1/Channel/3/id",
+      "3"
+     ],
+     "expect": [
+      [
+       "APK.audio/System/Gui/Panels/dante-AVIO-1",
+       {
+        "device": {
+         "model": "AVIO-1",
+         "resource": "APK.audio/System/Protocols/dante/Device/AVIO-1",
+         "serial": null,
+         "type": "dante",
+         "write_topic": "APK.audio/System/Protocols/dante/Device/AVIO-1/Control"
+        },
+        "folder": "AVIO-1_dante",
+        "key": "dante-AVIO-1",
+        "placements": [
+         {
+          "at": "Device_Consoles",
+          "frames": [
+           {
+            "content": {
+             "Console": {
+              "blocks": {
+               "I": {
+                "fields": {
+                 "model": {
+                  "device_state": "model",
+                  "topic": "APK.audio/System/Protocols/dante/Device/AVIO-1/model"
+                 },
+                 "volume": {
+                  "device_control": "Volume",
+                  "topic": "APK.audio/System/Protocols/dante/Device/AVIO-1/Control/Volume"
+                 }
+                }
+               }
+              },
+              "description": {
+               "En": "Cast — AVIO-1"
+              }
+             }
+            },
+            "path": "dante.json"
+           }
+          ]
+         }
+        ],
+        "source": "plugin:dante"
+       }
+      ],
+      [
+       "APK.audio/System/Gui/Panels/dante-AVIO-1-Channel-3",
+       {
+        "device": {
+         "model": "AVIO-1_3",
+         "resource": "APK.audio/System/Protocols/dante/Device/AVIO-1/Channel/3",
+         "serial": null,
+         "type": "dante_channels",
+         "write_topic": "APK.audio/System/Protocols/dante/Device/AVIO-1/Channel/3/Control"
+        },
+        "folder": "AVIO-1_3_dante",
+        "key": "dante-AVIO-1-Channel-3",
+        "placements": [
+         {
+          "at": "Device_Consoles",
+          "frames": [
+           {
+            "content": {
+             "Console": {
+              "blocks": {
+               "I": {
+                "fields": {
+                 "id": {
+                  "device_state": "id",
+                  "topic": "APK.audio/System/Protocols/dante/Device/AVIO-1/Channel/3/id"
+                 }
+                }
+               }
+              },
+              "description": {
+               "En": "Ch AVIO-1_3"
+              }
+             }
+            },
+            "path": "dante_channels.json"
+           }
+          ]
+         }
+        ],
+        "source": "plugin:dante"
+       }
+      ]
+     ]
+    },
+    {
+     "at": 0,
+     "observe": [
+      "APK.audio/System/Protocols/dante/Device/AVIO-1/Channel/3/last_online",
+      "1761830000"
+     ],
+     "expect": [
+      [
+       "APK.audio/System/Gui/Panels/dante-AVIO-1-Channel-3",
+       ""
+      ]
+     ]
+    },
+    {
+     "at": 0,
+     "observe": [
+      "APK.audio/System/Protocols/dante/Device/AVIO-1/Flow/1/id",
+      "1"
+     ],
+     "expect": []
+    }
+   ]
+  },
+  {
+   "name": "a device document is the device",
+   "token": "sap",
+   "manifest": {
+    "sap": {
+     "tree": "7_Device_Consoles",
+     "device_depth": 1,
+     "device_document": true
+    }
+   },
+   "families": {
+    "sap": {
+     "Console": {
+      "description": {
+       "En": "SAP — ${model}"
+      },
+      "blocks": {
+       "I": {
+        "fields": {
+         "device": {
+          "device_doc": true
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "expire_after_s": null,
+   "steps": [
+    {
+     "at": 0,
+     "observe": [
+      "APK.audio/System/Protocols/sap/Device/44_44_44_158",
+      "{\"origin\": \"44.44.44.158\", \"last_online\": \"-1\", \"sessions\": {}, \"model\": \"Box\"}"
+     ],
+     "expect": [
+      [
+       "APK.audio/System/Gui/Panels/sap-44_44_44_158",
+       {
+        "device": {
+         "model": "Box",
+         "resource": "APK.audio/System/Protocols/sap/Device/44_44_44_158",
+         "serial": null,
+         "type": "sap",
+         "write_topic": "APK.audio/System/Protocols/sap/Device/44_44_44_158/Control"
+        },
+        "folder": "44_44_44_158_sap",
+        "key": "sap-44_44_44_158",
+        "placements": [
+         {
+          "at": "Device_Consoles",
+          "frames": [
+           {
+            "content": {
+             "Console": {
+              "blocks": {
+               "I": {
+                "fields": {
+                 "device": {
+                  "device_doc": true,
+                  "topic": "APK.audio/System/Protocols/sap/Device/44_44_44_158"
+                 }
+                }
+               }
+              },
+              "description": {
+               "En": "SAP — Box"
+              }
+             }
+            },
+            "path": "sap.json"
+           }
+          ]
+         }
+        ],
+        "source": "plugin:sap"
+       }
+      ]
+     ]
+    },
+    {
+     "at": 0,
+     "observe": [
+      "APK.audio/System/Protocols/sap/Device/44_44_44_158/extra",
+      "1"
+     ],
+     "expect": []
+    },
+    {
+     "at": 0,
+     "observe": [
+      "APK.audio/System/Protocols/sap/Device/44_44_44_158",
+      "{\"last_online\": 1761830000}"
+     ],
+     "expect": [
+      [
+       "APK.audio/System/Gui/Panels/sap-44_44_44_158",
+       ""
+      ]
+     ]
+    }
+   ]
+  }
+ ],
+ "rejected_manifests": [
+  {
+   "family": "ps",
+   "manifest": {
+    "ps": {
+     "device_depth": 3
+    }
+   }
+  },
+  {
+   "family": "x",
+   "manifest": {
+    "x": {
+     "device_path": "+/Channel/"
+    }
+   }
+  },
+  {
+   "family": "x",
+   "manifest": {
+    "x": {
+     "device_path": "Channel"
+    }
+   }
+  },
+  {
+   "family": "x",
+   "manifest": {
+    "x": {
+     "device_path": "+/Control"
+    }
+   }
+  },
+  {
+   "family": "x",
+   "manifest": {
+    "x": {
+     "device_path": 3
+    }
+   }
+  },
+  {
+   "family": "sap",
+   "manifest": {
+    "sap": {
+     "device_document": "yes"
+    }
+   }
+  },
+  {
+   "family": "other",
+   "manifest": {
+    "cast": {}
+   }
+  }
+ ],
+ "template": {
+  "Console": {
+   "description": {
+    "En": "Cast — ${model}"
+   },
+   "blocks": {
+    "I": {
+     "fields": {
+      "model": {
+       "device_state": "model"
+      },
+      "volume": {
+       "device_control": "Volume"
+      }
+     }
+    }
+   }
+  }
+ }
+}

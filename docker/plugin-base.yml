@@ -5,7 +5,8 @@
 # anchor cannot cross files, and every container is its own stack folder at the
 # pod root (PLUGIN.DANTE, PLUGIN.MILAN, …). `extends` is compose's
 # cross-file form of the same merge. What it does NOT carry is a top-level
-# `volumes:` declaration, so each plugin file repeats the two volumes it mounts.
+# `volumes:` declaration — that is plugin-volumes.yml, which a plugin stack
+# `include:`s instead of repeating the block (see that file for the two lines).
 #
 # PATHS: an extended service's relative paths resolve against THIS file, so
 # `../../../..` below is the repo root no matter which stack extends it.
@@ -126,10 +127,11 @@ services:
       start_period: 20s
 
 # DECLARED FOR THIS FILE'S OWN PARSE ONLY. `extends:` carries a service, never
-# a top-level `volumes:` — what a running plugin gets is the block in its own
-# stack file, which every plugin repeats. Kept identical to that block (NOT
-# `external:`, PLAN-3399.01; the owner's bind, LOOSE-plugin-osc) so nobody
-# reads a rule here that applies nowhere.
+# a top-level `volumes:` — what a running plugin gets is plugin-volumes.yml,
+# `include:`d by its stack file (or, until it adopts that, its own copy). Kept
+# IDENTICAL to plugin-volumes.yml — SRC/check.sh fails when it is not — and
+# not `include:`d here, so this file still parses where it is published alone
+# (the SDK's docker/plugin-base.yml). NOT `external:` (PLAN-3399.01).
 volumes:
   apk-audio-logs:
     name: apk-audio-logs

@@ -1,0 +1,72 @@
+{
+  "v": 1,
+  "timestamp": "2026-10-30T22:00:00-04:00",
+  "hostname": "APK-Shop",
+  "machine_id": "0f3c9e",
+  "mac": "aa:bb:cc:dd:ee:ff",
+  "os": {
+    "system": "Linux",
+    "release": "7.0.0",
+    "architecture": "x86_64",
+    "uptime_sec": 1234
+  },
+  "cpu": {
+    "overall_percent": 12.5,
+    "cores_percent": [
+      10,
+      15
+    ],
+    "core_count": 2,
+    "physical_cores": 2,
+    "load_avg": {
+      "1m": 0.5,
+      "5m": 0.4,
+      "15m": 0.3
+    },
+    "frequency": {},
+    "temperatures": {}
+  },
+  "memory": {
+    "total_mb": 16000,
+    "available_mb": 8000,
+    "used_mb": 8000,
+    "percent": 50
+  },
+  "swap": {
+    "total_mb": 2048,
+    "used_mb": 0,
+    "percent": 0
+  },
+  "storage": {
+    "partitions": [
+      {
+        "device": "/dev/nvme0n1p2",
+        "fstype": "ext4",
+        "total_gb": 500,
+        "used_gb": 200,
+        "free_gb": 300,
+        "percent": 40
+      }
+    ],
+    "io_rate": {
+      "read_bytes_sec": 0,
+      "write_bytes_sec": 1024
+    }
+  },
+  "network": {
+    "interfaces": {
+      "eth0": {
+        "addresses": [
+          "10.0.0.5"
+        ]
+      }
+    },
+    "io_rate": {
+      "rx_bytes_sec": 100,
+      "tx_bytes_sec": 200
+    }
+  },
+  "processes": {
+    "total_count": 321
+  }
+}

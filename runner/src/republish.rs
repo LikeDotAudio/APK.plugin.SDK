@@ -126,18 +126,14 @@ pub fn republish(client: &rumqttc::Client, tally: &mut PublishTally, topic: &str
     tally.record(topic, sent)
 }
 
-/// A publisher client for a pump, with its connection drained on a plain
-/// thread and paced by `broker_backoff` — the shape all three bridges had.
+/// A publisher client for a pump — the shape all three bridges had. The
+/// caller drains the connection (on a plain thread, paced by `broker_backoff`).
 ///
-/// `id` is suffixed with the process id for the reason the runner's session
-/// gives: MQTT silently drops the older of two sessions with one client id.
+/// `id` names the pump; the client id is [`crate::session::client_id`]'s, unique
+/// per node and process, for the reason the runner's session gives: MQTT
+/// silently drops the older of two sessions with one client id.
 pub fn publisher(id: &str, host: &str, port: u16) -> (rumqttc::Client, rumqttc::Connection) {
-    let mut options = rumqttc::MqttOptions::new(format!("{id}-{}", std::process::id()), host, port);
-    options.set_keep_alive(std::time::Duration::from_secs(30));
-    if let Some((username, password)) = apkaudio_contracts::broker_auth::credentials() {
-        options.set_credentials(username, password);
-    }
-    rumqttc::Client::new(options, 10)
+    crate::session::Session::new(id, "pump").to(host, port).capacity(10).connect()
 }
 
 #[cfg(test)]

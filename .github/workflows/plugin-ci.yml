@@ -18,7 +18,8 @@
 #   3. api shape      the SDK at that same tag: the Rust and Python halves of
 #                     `incoming/api` still publish the same keys.
 #   4. compose        `docker compose config` on Docker/docker-compose.yml, with the
-#                     SDK's docker/plugin-base.yml placed where `extends:` looks for it.
+#                     SDK's docker/plugin-base.yml (and plugin-volumes.yml) placed
+#                     where `extends:` / `include:` look for them.
 # A plugin with no Cargo.toml (a Python probe) skips 1-2 and byte-compiles SRC/.
 #
 # PRIVATE DEPENDENCIES. The SDK is public; a plugin that also links a private
@@ -133,5 +134,10 @@ jobs:
           if [ ! -f "$f" ]; then echo "no $f — nothing to check"; exit 0; fi
           mkdir -p DISCOVERY.Engine/Docker
           cp sdk/docker/plugin-base.yml DISCOVERY.Engine/Docker/plugin-base.yml
+          # The shared volume declarations a plugin `include:`s (audit 2026-10-30);
+          # an SDK tag older than the file has none, and no plugin includes it yet.
+          if [ -f sdk/docker/plugin-volumes.yml ]; then
+            cp sdk/docker/plugin-volumes.yml DISCOVERY.Engine/Docker/plugin-volumes.yml
+          fi
           docker compose -f "$f" config -q
           echo "compose ok"

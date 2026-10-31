@@ -38,6 +38,8 @@ adding.
 | TypeScript | `import { ACCENT } from '@apkaudio/contracts'` — or the JSON directly by relative path, which is what a Soft App with no dependency on this package does |
 | Rust | `apkaudio_contracts::tokens::ACCENT` — `include_str!`d, so a malformed edit fails the build |
 | Python | `json.load(open('APK:BareMetal/contracts/tokens/brand.json'))` |
+| A page with no build (plain HTML/JS softapp, OS window) | `<link rel="stylesheet" href="/APK:OS/vendor/apk-contracts/apk-tokens.css">` then `var(--apk-accent)`, `rgba(var(--apk-accent-rgb), .3)`, `var(--apk-state-good)`, or `<span class="apk-state-text" data-apk-state="offline">`; in script, `window.APKContracts.stateTone(word)` / `.ACCENT` from `apk-contracts.global.js` beside it |
+| A softapp that deploys its own site | the same files copied into its own `vendor/apk-contracts/` by `python3 .apk.scripts/vendor_contract_web.py <app>/vendor/apk-contracts`, held byte-identical by `check.sh webtokens` |
 
 `state.json` has a fourth reader and it is the awkward one: **three browsers that
 cannot import anything.** The widget engine loads plain JSX with no bundler, the OS
@@ -48,6 +50,16 @@ brand` holds the accent under, for the same reason. That check also **censuses**
 tracked JSON for status words the token does not name; those draw amber, which is
 the honest default, but they are reported so a sixth vocabulary is a decision rather
 than a fall-through.
+
+## The browser copies are generated, not written
+
+`contracts/scripts/gen.ts` writes `generated/web/apk-tokens.css` (both tokens as
+CSS variables and `[data-apk-state="<word>"]` rules) and `apk-contracts.{mjs,global.js}`
+(an esbuild bundle of `src/web.ts`: the state and brand readers in `src/tokens.ts`
+beside the topic builders and the presence and heartbeat rules), and mirrors the
+CSS and the global script into the OS shell's `vendor/apk-contracts/`. `npm run
+gen:check` fails when any of them is not what the tokens say today; copies
+elsewhere are held by `check.sh webtokens`. Edit a token, run `npm run gen`.
 
 ## What holds it
 

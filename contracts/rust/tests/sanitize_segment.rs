@@ -92,3 +92,14 @@ fn sanitizing_twice_changes_nothing_further() {
         assert_eq!(sanitize_segment(&once), once, "not idempotent for {raw:?}");
     }
 }
+
+/// The shared cases the Python twin (`apkaudio_contracts.segments`) also reads.
+#[test]
+fn shared_vectors() {
+    let doc: serde_json::Value =
+        serde_json::from_str(include_str!("../../vectors/sanitize_segment.json")).expect("vectors parse");
+    for case in doc["cases"].as_array().expect("cases") {
+        let raw = case["raw"].as_str().unwrap();
+        assert_eq!(sanitize_segment(raw), case["segment"].as_str().unwrap(), "{raw:?}");
+    }
+}

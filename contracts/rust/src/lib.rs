@@ -83,6 +83,18 @@ pub mod komand_clock;
 /// Every bare-metal item's `incoming/` and `outgoing/` landing spots.
 pub mod baremetal_io;
 
+/// `APK_SERIAL_SETTINGS` — the operator's declared serial line settings, one
+/// grammar for PLUGIN.VISA and PLUGIN.SERIAL_COM, which each held a copy of
+/// the parser (2026-10-30 audit). Vector-held with the Python twin.
+pub mod serial_settings;
+
+/// The `nmos` device table row schema shared by PLUGIN.NMOS and PLUGIN.NMOS_CONTROL
+/// (2026-10-30 audit). Vector-held (`vectors/nmos_rows.json`).
+pub mod nmos_rows;
+
+/// PLUGIN.NDI's `System/Vendors/NDI` tree as a versioned schema (2026-10-30 audit).
+pub mod vendors_ndi;
+
 /// What may be written on a machine's `outgoing/command` (power, a named
 /// command, a deploy), who may write it, and the retained answer. PLAN-3394.01.
 pub mod machine_command;

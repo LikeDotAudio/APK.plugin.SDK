@@ -1,0 +1,24 @@
+{
+  "$comment": "Golden vectors for the DiscoveryPresence rule: online iff lastOnline is later than lastOffline (or lastOffline is null); null for anything that is not a presence document. Consumed by contracts/src/discovery-presence-rule.test.ts (presenceIsActive with zod AND discoveryPresenceActive without it, which must agree) and by the OS shell's PODS/POD.THIN/OS/DataBus/presence/discovery-presence.test.js through the generated browser bundle. A reader that answers any of these differently is restating the rule.",
+  "cases": [
+    { "doc": { "lastOnline": "2026-10-30T10:00:00Z", "lastOffline": null, "lastDiscovered": "2026-10-30T10:00:00Z" }, "active": true, "why": "came up and never went down" },
+    { "doc": { "lastOnline": null, "lastOffline": null, "lastDiscovered": null }, "active": false, "why": "never online: a document is not a sighting" },
+    { "doc": { "lastOnline": null, "lastOffline": "2026-10-30T10:00:00Z", "lastDiscovered": null }, "active": false },
+    { "doc": { "lastOnline": "2026-10-30T10:00:05Z", "lastOffline": "2026-10-30T10:00:00Z", "lastDiscovered": "2026-10-30T10:00:05Z" }, "active": true, "why": "went down, came back" },
+    { "doc": { "lastOnline": "2026-10-30T10:00:00Z", "lastOffline": "2026-10-30T10:00:05Z", "lastDiscovered": "2026-10-30T10:00:05Z" }, "active": false, "why": "expired after its last arrival" },
+    { "doc": { "lastOnline": "2026-10-30T10:00:00Z", "lastOffline": "2026-10-30T10:00:00Z", "lastDiscovered": "2026-10-30T10:00:00Z" }, "active": false, "why": "equal stamps: later means strictly later" },
+    { "doc": { "lastOnline": "2026-10-30T10:00:00.5Z", "lastOffline": "2026-10-30T10:00:00.25Z", "lastDiscovered": null }, "active": true, "why": "instants, not strings: '.5' sorts before '.25' as text and after it as time" },
+    { "doc": { "lastOnline": "2026-10-30T10:00:00.1Z", "lastOffline": "2026-10-30T10:00:00.100001Z", "lastDiscovered": null }, "active": false, "why": "fractional digits of different lengths" },
+    { "doc": { "lastOnline": "2026-10-30T10:00Z", "lastOffline": null, "lastDiscovered": null }, "active": true, "why": "seconds are optional in the stamp grammar" },
+    { "doc": { "lastOnline": "2026-10-30T10:00:00+01:00", "lastOffline": null, "lastDiscovered": null }, "active": null, "why": "an offset is not the contract's stamp: UTC with Z only" },
+    { "doc": { "lastOnline": "2026-10-30 10:00:00Z", "lastOffline": null, "lastDiscovered": null }, "active": null, "why": "a space is not a T" },
+    { "doc": { "lastOnline": "1788436572", "lastOffline": null, "lastDiscovered": null }, "active": null, "why": "unix seconds belong to presence.ts's online_since, not here" },
+    { "doc": { "lastOnline": "2026-10-30T10:00:00Z", "lastOffline": null }, "active": null, "why": "a missing key is not a presence document" },
+    { "doc": { "lastOnline": "2026-10-30T10:00:00Z", "lastOffline": null, "lastDiscovered": null, "ip": "192.168.1.9" }, "active": null, "why": "strict: identity never rides on this document" },
+    { "doc": { "deviceId": "visa:MY1", "status": "online", "lastSeen": "2026-10-30T10:00:00Z" }, "active": null, "why": "a v1 DeviceRecord is not presence, whatever its status says" },
+    { "doc": null, "active": null, "why": "an empty retraction" },
+    { "doc": "online", "active": null },
+    { "doc": [], "active": null },
+    { "doc": { "lastOnline": 1, "lastOffline": null, "lastDiscovered": null }, "active": null }
+  ]
+}

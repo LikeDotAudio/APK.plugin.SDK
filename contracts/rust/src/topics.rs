@@ -67,9 +67,19 @@ pub const CAPTURE_POINT_RESERVED: [&str; 2] = ["Sweep", "Poke"];
 /// `ESP32` and `PI` are the manifest trees under `APK:BareMetal/`, `HID` and
 /// `MonitorProbes` are the two live probe roots, and `ESP32_Beskar2d2` /
 /// `HAL_Fader` are the two single devices `Storage:MQTT/mqtt_agent.py`
-/// addresses directly, with no host segment.
-pub const BAREMETAL_TARGETS: [&str; 6] =
-    ["ESP32", "PI", "HID", "MonitorProbes", "ESP32_Beskar2d2", "HAL_Fader"];
+/// addresses directly, with no host segment. `NETWORK` and `NTP` are the
+/// node-addressed manifest trees of `DATA.NETWORK` and `DATA.NTP`, whose
+/// readers validate through [`baremetal`] (DA-03).
+pub const BAREMETAL_TARGETS: [&str; 8] = [
+    "ESP32",
+    "PI",
+    "HID",
+    "MonitorProbes",
+    "ESP32_Beskar2d2",
+    "HAL_Fader",
+    "NETWORK",
+    "NTP",
+];
 
 /// The one-shot leaf — a `_GuiActuator`; a retained command re-fires on every
 /// reconnect. `enable` is NOT one: it is a sticky `_SmartToggle` setpoint.
@@ -338,6 +348,30 @@ pub fn discovery(protocol: &str, device_id: &str) -> Result<String, TopicError> 
         return Err(err("deviceId", device_id));
     }
     Ok(format!("{ROOT}/Discovery/{protocol}/{device_id}"))
+}
+
+/// `APK.audio/Discovery/_engine/{leaf}/{...path}` — the discovery engine's own
+/// retained facts (`status`, `_Counter`, `_Counter/{field}`). TS twin:
+/// `Topics.discoveryEngine`.
+pub fn discovery_engine(leaf: &str, path: &[&str]) -> Result<String, TopicError> {
+    require_segment("leaf", leaf)?;
+    let mut out = format!("{ROOT}/Discovery/_engine/{leaf}");
+    for p in path {
+        require_segment("path", p)?;
+        out.push('/');
+        out.push_str(p);
+    }
+    Ok(out)
+}
+
+/// `APK.audio/Discovery/_lifecycle` — a plugin launched or stopped. Live event.
+pub fn discovery_lifecycle() -> String {
+    format!("{ROOT}/Discovery/_lifecycle")
+}
+
+/// `APK.audio/Discovery/_death` — a device declared dead. Live event.
+pub fn discovery_death() -> String {
+    format!("{ROOT}/Discovery/_death")
 }
 
 pub fn discovery_wildcard(protocol: Option<&str>) -> Result<String, TopicError> {
@@ -640,6 +674,21 @@ pub fn protocols_scan_log(proto: &str) -> Result<String, TopicError> {
     Ok(format!("{ROOT}/System/Protocols/{proto}/Scan/Log"))
 }
 
+/// `APK.audio/System/Gui/Panels` — where apk-plugin-runner's panels live.
+/// TS twin: `Topics.guiPanels`.
+pub const GUI_PANELS_ROOT: &str = "APK.audio/System/Gui/Panels";
+
+/// `APK.audio/System/Gui/Panels/{key}` — one device panel, retained.
+pub fn gui_panels(key: &str) -> Result<String, TopicError> {
+    require_segment("key", key)?;
+    Ok(format!("{GUI_PANELS_ROOT}/{key}"))
+}
+
+/// `APK.audio/System/Gui/Panels/+` — every device panel.
+pub fn gui_panels_wildcard() -> String {
+    format!("{GUI_PANELS_ROOT}/+")
+}
+
 /// The Folder Navigator's selected path / trigger — browser-only, no agent
 /// serves it, which `tree.ts` states rather than leaves implied.
 pub fn file_browser(key: &str) -> Result<String, TopicError> {
@@ -703,6 +752,321 @@ pub fn log(source: &str, level: &str) -> Result<String, TopicError> {
     Ok(format!("{ROOT}/System/Log/{source}/{level}"))
 }
 
+// ------------------------------------------------- builders added 2026-10-30
+// The families and shapes the 2026-10-30 architecture audit found consumers
+// hand-writing. Each has a TS twin in `topics/builders.ts` and vectors in
+// `vectors/topics.json`; the Python binding builds the same ones from the
+// generated grammar (`apkaudio_contracts.families`).
+
+/// Any other topic under `Gui/` — a widget's gesture or a status field a panel
+/// binds to (`Gui/Chat/Message`, `Gui/Sql/Status/Connected`). Refuses a path
+/// that starts at a state root (use [`gui_state`]) or whose second-to-last
+/// segment is a seat leaf (use [`gui_seat`]), so the retain class a caller
+/// gets never depends on where its path happened to end.
+pub fn gui(path: &[&str]) -> Result<String, TopicError> {
+    let Some(first) = path.first() else { return Err(err("gui path", "")) };
+    for seg in path {
+        require_segment("path segment", seg)?;
+    }
+    if GUI_STATE_ROOTS.contains(first) {
+        return Err(err("gui path (a state root: use gui_state)", first));
+    }
+    if path.len() >= 2 && SHELL_SEAT_LEAVES.contains(&path[path.len() - 2]) {
+        return Err(err("gui path (a seat leaf: use gui_seat)", path[path.len() - 2]));
+    }
+    Ok(format!("{GUI_ROOT}/{}", path.join("/")))
+}
+
+/// The bench chat's room-wide line, `Gui/Chat/Message` (YoControl + the shell's Chat).
+pub fn gui_chat_message() -> String {
+    format!("{GUI_ROOT}/Chat/Message")
+}
+
+/// One chat roster seat, `Gui/Chat/Presence/{clientId}` (retained claim).
+pub fn gui_chat_presence(client_id: &str) -> Result<String, TopicError> {
+    gui_seat(&["Chat"], "Presence", client_id)
+}
+
+pub fn gui_chat_presence_wildcard() -> String {
+    format!("{GUI_ROOT}/Chat/Presence/+")
+}
+
+/// A standing SOS, `Gui/Chat/SOS/{caller}` (retained until stood down).
+pub fn gui_chat_sos(caller: &str) -> Result<String, TopicError> {
+    gui_seat(&["Chat"], "SOS", caller)
+}
+
+pub fn gui_chat_sos_wildcard() -> String {
+    format!("{GUI_ROOT}/Chat/SOS/+")
+}
+
+/// PLUGIN.SQL's panel status field, `Gui/Sql/Status/{field}`.
+pub fn gui_sql_status(field: &str) -> Result<String, TopicError> {
+    gui(&["Sql", "Status", field])
+}
+
+/// PLUGIN.SQL's capture counters, `Gui/Sql/Capture/{field}`.
+pub fn gui_sql_capture(field: &str) -> Result<String, TopicError> {
+    gui(&["Sql", "Capture", field])
+}
+
+pub fn gui_sql_wildcard() -> String {
+    format!("{GUI_ROOT}/Sql/#")
+}
+
+/// The leaf a VISA instrument takes a SCPI write on. TS twin `DEVICE_WRITE_LEAF`.
+pub const DEVICE_WRITE_LEAF: &str = "Write";
+
+/// A VISA instrument's own subtree, `System/Protocols/visa/Device/{family}/{model}/{dev}`
+/// — the prefix every field and the `Write`/`Reply` leaves hang off. Still
+/// parses as the legacy `visaDeviceTree` family; it is the live wire until VISA
+/// publishes DeviceRecord docs, so it is built here once rather than formatted
+/// at every call site.
+pub fn visa_device(family: &str, model: &str, dev: &str) -> Result<String, TopicError> {
+    protocols("visa", &["Device", family, model, dev])
+}
+
+/// One instrument's write leaf.
+pub fn visa_write(family: &str, model: &str, dev: &str) -> Result<String, TopicError> {
+    Ok(format!("{}/{DEVICE_WRITE_LEAF}", visa_device(family, model, dev)?))
+}
+
+/// Every instrument's write leaf — the VISA write daemon's subscription.
+pub fn visa_write_wildcard() -> String {
+    format!("{ROOT}/System/Protocols/visa/Device/+/+/+/{DEVICE_WRITE_LEAF}")
+}
+
+/// PLUGIN.MIDI's retained device tree root, `System/Protocols/midi/Device`
+/// (legacy `midiDeviceTree`).
+pub fn midi_device() -> String {
+    format!("{ROOT}/System/Protocols/midi/Device")
+}
+
+/// What PLUGIN.MIDI subscribes to for output, `.../midi/Device/Output/#`.
+pub fn midi_output_wildcard() -> String {
+    format!("{ROOT}/System/Protocols/midi/Device/Output/#")
+}
+
+/// A game's retained state, `Games/{game}/{leaf}`.
+pub fn games(game: &str, leaf: &str) -> Result<String, TopicError> {
+    require_segment("game", game)?;
+    require_segment("leaf", leaf)?;
+    Ok(format!("{ROOT}/Games/{game}/{leaf}"))
+}
+
+/// The bingo caller's drawn numbers, `Games/Bingo/Drawn` — payload `BingoDrawn`
+/// (`src/games-rule.ts`; `{"drawn":[…],"at":<ms>}`, retained, empty = game over).
+pub fn games_bingo_drawn() -> String {
+    format!("{ROOT}/Games/Bingo/Drawn")
+}
+
+pub fn games_wildcard(game: Option<&str>) -> Result<String, TopicError> {
+    match game {
+        None => Ok(format!("{ROOT}/Games/#")),
+        Some(g) => {
+            require_segment("game", g)?;
+            Ok(format!("{ROOT}/Games/{g}/+"))
+        }
+    }
+}
+
+/// A CEPO Executive Level rack unit, `Cepo/{unit}/{...path}` (YoControl's tool
+/// stage: `{unit}/{command}/Set`, `{unit}/Status/Get`). The path may not be empty.
+pub fn cepo(unit: &str, path: &[&str]) -> Result<String, TopicError> {
+    require_segment("unit", unit)?;
+    if path.is_empty() {
+        return Err(err("cepo path", ""));
+    }
+    let mut topic = format!("{ROOT}/Cepo/{unit}");
+    for s in path {
+        require_segment("path segment", s)?;
+        topic.push('/');
+        topic.push_str(s);
+    }
+    Ok(topic)
+}
+
+pub fn cepo_wildcard(unit: Option<&str>) -> Result<String, TopicError> {
+    match unit {
+        None => Ok(format!("{ROOT}/Cepo/#")),
+        Some(u) => {
+            require_segment("unit", u)?;
+            Ok(format!("{ROOT}/Cepo/{u}/#"))
+        }
+    }
+}
+
+fn require_address(what: &'static str, s: &str) -> Result<(), TopicError> {
+    if is_address(s) { Ok(()) } else { Err(err(what, s)) }
+}
+
+/// DockTor's event stream, the bare `System/ContainerManager` (live).
+pub fn container_manager_events() -> String {
+    format!("{ROOT}/System/ContainerManager")
+}
+
+/// The whole bench in one retained document.
+pub fn container_manager_status() -> String {
+    format!("{ROOT}/System/ContainerManager/status")
+}
+
+/// The publisher itself (retained).
+pub fn container_manager_manager() -> String {
+    format!("{ROOT}/System/ContainerManager/Manager")
+}
+
+/// One container, `containers/{stack}/{name}` (retained; tombstoned empty).
+pub fn container_manager_container(stack: &str, name: &str) -> Result<String, TopicError> {
+    require_address("stack", stack)?;
+    require_address("name", name)?;
+    Ok(format!("{ROOT}/System/ContainerManager/containers/{stack}/{name}"))
+}
+
+/// One app inside a container, `containers/{stack}/{name}/apps/{app}`.
+pub fn container_manager_app(stack: &str, name: &str, app: &str) -> Result<String, TopicError> {
+    require_address("app", app)?;
+    Ok(format!("{}/apps/{app}", container_manager_container(stack, name)?))
+}
+
+pub fn container_manager_containers_wildcard(stack: Option<&str>) -> Result<String, TopicError> {
+    match stack {
+        None => Ok(format!("{ROOT}/System/ContainerManager/containers/#")),
+        Some(s) => {
+            require_address("stack", s)?;
+            Ok(format!("{ROOT}/System/ContainerManager/containers/{s}/#"))
+        }
+    }
+}
+
+/// The engine's Docker-over-the-bus request (live; DockTor answers).
+pub fn container_manager_docker_request() -> String {
+    format!("{ROOT}/System/ContainerManager/docker/request")
+}
+
+/// Where DockTor answers one requester, `docker/reply/{client}` (live).
+pub fn container_manager_docker_reply(client: &str) -> Result<String, TopicError> {
+    require_address("client", client)?;
+    Ok(format!("{ROOT}/System/ContainerManager/docker/reply/{client}"))
+}
+
+pub fn container_manager_docker_reply_wildcard() -> String {
+    format!("{ROOT}/System/ContainerManager/docker/reply/+")
+}
+
+// ------------------------------------- round 2 of the 2026-10-30 audit
+// Shapes OsApi, NODE.BareMetal, DockTor and Frontend-Assets built on ROOT by hand.
+
+/// `APK.audio/System`.
+pub const SYSTEM_ROOT: &str = "APK.audio/System";
+
+/// Every System topic, `APK.audio/System/#`.
+pub fn system_wildcard() -> String {
+    format!("{SYSTEM_ROOT}/#")
+}
+
+/// The browser's retained nearest-Rust-agent hand-off flag,
+/// `System/Agents/NearestRustAgent/HandOff` (exact; retained).
+pub fn nearest_rust_agent_handoff() -> String {
+    format!("{SYSTEM_ROOT}/Agents/NearestRustAgent/HandOff")
+}
+
+/// DockTor's chat line, `System/Chat` (live).
+pub fn system_chat() -> String {
+    format!("{SYSTEM_ROOT}/Chat")
+}
+
+/// NODE.BareMetal's census of one node, `System/Census/{node}/{...path}` (retained).
+pub fn census(node: &str, path: &[&str]) -> Result<String, TopicError> {
+    require_segment("node", node)?;
+    if path.is_empty() {
+        return Err(err("census path", ""));
+    }
+    for s in path {
+        require_segment("path segment", s)?;
+    }
+    Ok(format!("{SYSTEM_ROOT}/Census/{node}/{}", path.join("/")))
+}
+
+pub fn census_wildcard(node: Option<&str>) -> Result<String, TopicError> {
+    match node {
+        None => Ok(format!("{SYSTEM_ROOT}/Census/#")),
+        Some(n) => {
+            require_segment("node", n)?;
+            Ok(format!("{SYSTEM_ROOT}/Census/{n}/#"))
+        }
+    }
+}
+
+/// The orchestrator's live discovery tables, `System/Gui/Discovered/{...path}` (retained).
+pub fn gui_discovered(path: &[&str]) -> Result<String, TopicError> {
+    if path.is_empty() {
+        return Err(err("guiDiscovered path", ""));
+    }
+    for s in path {
+        require_segment("path segment", s)?;
+    }
+    Ok(format!("{SYSTEM_ROOT}/Gui/Discovered/{}", path.join("/")))
+}
+
+pub fn gui_discovered_wildcard() -> String {
+    format!("{SYSTEM_ROOT}/Gui/Discovered/#")
+}
+
+pub fn device_groups_state() -> String {
+    format!("{SYSTEM_ROOT}/DeviceGroups/State")
+}
+pub fn device_groups_command() -> String {
+    format!("{SYSTEM_ROOT}/DeviceGroups/Command")
+}
+pub fn hour_chime_state() -> String {
+    format!("{SYSTEM_ROOT}/HourChime/State")
+}
+pub fn hour_chime_struck() -> String {
+    format!("{SYSTEM_ROOT}/HourChime/Struck")
+}
+pub fn capture_filed() -> String {
+    format!("{SYSTEM_ROOT}/Capture/Filed")
+}
+pub fn system_writes() -> String {
+    format!("{SYSTEM_ROOT}/Writes")
+}
+pub fn client_breadcrumb() -> String {
+    format!("{SYSTEM_ROOT}/Client/Breadcrumb")
+}
+pub fn bench_two_state() -> String {
+    format!("{SYSTEM_ROOT}/Bench/TwoState")
+}
+
+/// Every instrument's `Read` leaf, `.../visa/Device/+/+/+/Read`.
+pub fn visa_read_wildcard() -> String {
+    format!("{ROOT}/System/Protocols/visa/Device/+/+/+/Read")
+}
+
+/// Every measurement (optionally of one family), `.../visa/Device/{family|+}/+/+/Reading/#`.
+pub fn visa_reading_wildcard(family: Option<&str>) -> Result<String, TopicError> {
+    let f = match family {
+        None => "+",
+        Some(f) => {
+            require_segment("family", f)?;
+            f
+        }
+    };
+    Ok(format!("{ROOT}/System/Protocols/visa/Device/{f}/+/+/Reading/#"))
+}
+
+/// One instrument's reading for one command, `.../Reading/{command}`.
+pub fn visa_reading(family: &str, model: &str, dev: &str, command: &str) -> Result<String, TopicError> {
+    require_segment("command", command)?;
+    Ok(format!("{}/Reading/{command}", visa_device(family, model, dev)?))
+}
+
+/// One command's reading across a family, e.g. every DMM's `Read_Next`.
+pub fn visa_reading_across(family: &str, command: &str) -> Result<String, TopicError> {
+    require_segment("family", family)?;
+    require_segment("command", command)?;
+    Ok(format!("{ROOT}/System/Protocols/visa/Device/{family}/+/+/Reading/{command}"))
+}
+
 // ------------------------------------------------------------------ parse
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -738,6 +1102,12 @@ pub enum ParsedTopic {
         #[serde(rename = "deviceId")]
         device_id: String,
     },
+    #[serde(rename = "discoveryEngine")]
+    DiscoveryEngine { leaf: String, path: Vec<String> },
+    #[serde(rename = "discoveryLifecycle")]
+    DiscoveryLifecycle,
+    #[serde(rename = "discoveryDeath")]
+    DiscoveryDeath,
     #[serde(rename = "gui")]
     Gui { segments: Vec<String> },
     #[serde(rename = "guiState")]
@@ -801,6 +1171,8 @@ pub enum ParsedTopic {
     ProtocolsScanLog { proto: String },
     #[serde(rename = "fileBrowser")]
     FileBrowser { key: String },
+    #[serde(rename = "guiPanels")]
+    GuiPanels { key: String },
     #[serde(rename = "agentCounters")]
     AgentCounters { agent: String },
     #[serde(rename = "bareMetal")]
@@ -809,6 +1181,50 @@ pub enum ParsedTopic {
     BareMetalCommand { target: String, path: Vec<String> },
     #[serde(rename = "bareMetalStream")]
     BareMetalStream { target: String, path: Vec<String>, leaf: String },
+    #[serde(rename = "games")]
+    Games { game: String, leaf: String },
+    #[serde(rename = "gamesBingoDrawn")]
+    GamesBingoDrawn,
+    #[serde(rename = "cepo")]
+    Cepo { unit: String, path: Vec<String> },
+    #[serde(rename = "containerManagerEvent")]
+    ContainerManagerEvent,
+    #[serde(rename = "containerManagerStatus")]
+    ContainerManagerStatus,
+    #[serde(rename = "containerManagerManager")]
+    ContainerManagerManager,
+    #[serde(rename = "containerManagerContainer")]
+    ContainerManagerContainer { stack: String, name: String },
+    #[serde(rename = "containerManagerApp")]
+    ContainerManagerApp { stack: String, name: String, app: String },
+    #[serde(rename = "containerManagerDockerRequest")]
+    ContainerManagerDockerRequest,
+    #[serde(rename = "containerManagerDockerReply")]
+    ContainerManagerDockerReply { client: String },
+    #[serde(rename = "systemChat")]
+    SystemChat,
+    #[serde(rename = "nearestRustAgentHandOff")]
+    NearestRustAgentHandOff,
+    #[serde(rename = "census")]
+    Census { node: String, path: Vec<String> },
+    #[serde(rename = "guiDiscovered")]
+    GuiDiscovered { path: Vec<String> },
+    #[serde(rename = "deviceGroupsState")]
+    DeviceGroupsState,
+    #[serde(rename = "deviceGroupsCommand")]
+    DeviceGroupsCommand,
+    #[serde(rename = "hourChimeState")]
+    HourChimeState,
+    #[serde(rename = "hourChimeStruck")]
+    HourChimeStruck,
+    #[serde(rename = "captureFiled")]
+    CaptureFiled,
+    #[serde(rename = "systemWrites")]
+    SystemWrites,
+    #[serde(rename = "clientBreadcrumb")]
+    ClientBreadcrumb,
+    #[serde(rename = "benchTwoState")]
+    BenchTwoState,
     #[serde(rename = "legacy")]
     Legacy(LegacyTopic),
     #[serde(rename = "unknown")]
@@ -948,11 +1364,37 @@ pub fn parse(raw: &str) -> ParsedTopic {
         },
         // The whole family, and an exact leaf: `Time/Mark` alone. Anything
         // else under `Time/` is a topic nobody declared, and says so.
+        Some("Games") => match (s2, s3, s4) {
+            (Some("Bingo"), Some("Drawn"), None) => ParsedTopic::GamesBingoDrawn,
+            (Some(game), Some(leaf), None) if is_segment(game) && is_segment(leaf) => {
+                ParsedTopic::Games { game: game.to_string(), leaf: leaf.to_string() }
+            }
+            _ => unknown,
+        },
+        Some("Cepo") => match (s2, s3) {
+            (Some(unit), Some(_)) if is_segment(unit) && segs.iter().skip(3).all(|s| is_segment(s)) => {
+                ParsedTopic::Cepo {
+                    unit: unit.to_string(),
+                    path: segs.iter().skip(3).map(|s| s.to_string()).collect(),
+                }
+            }
+            _ => unknown,
+        },
         Some("Time") => match (s2, s3) {
             (Some("Mark"), None) => ParsedTopic::TimeMark,
             _ => unknown,
         },
         Some("Discovery") => match (s2, s3, s4) {
+            (Some("_lifecycle"), None, None) => ParsedTopic::DiscoveryLifecycle,
+            (Some("_death"), None, None) => ParsedTopic::DiscoveryDeath,
+            (Some("_engine"), Some(leaf), _) if is_segment(leaf) => {
+                let path: Vec<String> = segs[4..].iter().map(|s| s.to_string()).collect();
+                if path.iter().all(|s| is_segment(s)) {
+                    ParsedTopic::DiscoveryEngine { leaf: leaf.to_string(), path }
+                } else {
+                    unknown
+                }
+            }
             (Some(p), Some(id), None) if is_segment(p) && is_device_id(id) => ParsedTopic::Discovery {
                 protocol: p.to_string(),
                 device_id: id.to_string(),
@@ -1031,6 +1473,72 @@ pub fn parse(raw: &str) -> ParsedTopic {
             },
             _ => unknown,
         },
+        Some("System")
+            if matches!(
+                (s2, s3, s4),
+                (Some("Chat"), None, _)
+                    | (Some("Agents"), Some("NearestRustAgent"), Some("HandOff"))
+                    | (Some("Writes"), None, _)
+                    | (Some("Census"), Some(_), Some(_))
+                    | (Some("Gui"), Some("Discovered"), Some(_))
+                    | (Some("DeviceGroups"), Some("State" | "Command"), None)
+                    | (Some("HourChime"), Some("State" | "Struck"), None)
+                    | (Some("Capture"), Some("Filed"), None)
+                    | (Some("Client"), Some("Breadcrumb"), None)
+                    | (Some("Bench"), Some("TwoState"), None)
+            ) =>
+        {
+            let tail = |from: usize| -> Option<Vec<String>> {
+                let t: Vec<&str> = segs.iter().skip(from).copied().collect();
+                t.iter().all(|s| is_segment(s)).then(|| t.iter().map(|s| s.to_string()).collect())
+            };
+            match (s2, s3) {
+                (Some("Chat"), _) => ParsedTopic::SystemChat,
+                (Some("Agents"), _) if segs.len() == 5 => ParsedTopic::NearestRustAgentHandOff,
+                (Some("Writes"), _) => ParsedTopic::SystemWrites,
+                (Some("Census"), Some(node)) if is_segment(node) => match tail(4) {
+                    Some(path) => ParsedTopic::Census { node: node.to_string(), path },
+                    None => unknown,
+                },
+                (Some("Gui"), _) => match tail(4) {
+                    Some(path) => ParsedTopic::GuiDiscovered { path },
+                    None => unknown,
+                },
+                (Some("DeviceGroups"), Some("State")) => ParsedTopic::DeviceGroupsState,
+                (Some("DeviceGroups"), _) => ParsedTopic::DeviceGroupsCommand,
+                (Some("HourChime"), Some("State")) => ParsedTopic::HourChimeState,
+                (Some("HourChime"), _) => ParsedTopic::HourChimeStruck,
+                (Some("Capture"), _) => ParsedTopic::CaptureFiled,
+                (Some("Client"), _) => ParsedTopic::ClientBreadcrumb,
+                (Some("Bench"), _) => ParsedTopic::BenchTwoState,
+                _ => unknown,
+            }
+        }
+        Some("System") if s2 == Some("ContainerManager") => {
+            let tail: Vec<&str> = segs.iter().skip(3).copied().collect();
+            match tail.as_slice() {
+                [] => ParsedTopic::ContainerManagerEvent,
+                ["status"] => ParsedTopic::ContainerManagerStatus,
+                ["Manager"] => ParsedTopic::ContainerManagerManager,
+                ["docker", "request"] => ParsedTopic::ContainerManagerDockerRequest,
+                ["docker", "reply", client] if is_address(client) => {
+                    ParsedTopic::ContainerManagerDockerReply { client: client.to_string() }
+                }
+                ["containers", stack, name] if is_address(stack) && is_address(name) => {
+                    ParsedTopic::ContainerManagerContainer { stack: stack.to_string(), name: name.to_string() }
+                }
+                ["containers", stack, name, "apps", app]
+                    if is_address(stack) && is_address(name) && is_address(app) =>
+                {
+                    ParsedTopic::ContainerManagerApp {
+                        stack: stack.to_string(),
+                        name: name.to_string(),
+                        app: app.to_string(),
+                    }
+                }
+                _ => unknown,
+            }
+        }
         Some("System") => match (s2, s3, s4, s5) {
             (Some("Agents"), Some(agent), None, _) if is_segment(agent) => {
                 ParsedTopic::Agents { agent: agent.to_string() }
@@ -1080,6 +1588,9 @@ pub fn parse(raw: &str) -> ParsedTopic {
                     capture_kind: kind.to_string(),
                     capture: capture.to_string(),
                 }
+            }
+            (Some("Gui"), Some("Panels"), Some(key), None) if is_segment(key) => {
+                ParsedTopic::GuiPanels { key: key.to_string() }
             }
             (Some("FileBrowser"), Some(key), None, _) if is_segment(key) => {
                 ParsedTopic::FileBrowser { key: key.to_string() }

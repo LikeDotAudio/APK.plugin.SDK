@@ -68,6 +68,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 if HERE not in sys.path:
     sys.path.insert(0, HERE)
 import apk_plugin_api  # noqa: E402  (beside this file, in the SDK and the image)
+import apk_plugin_panels  # noqa: E402  (the panels.rs twin, beside this file)
 
 # ------------------------------------------------------------ the contract
 
@@ -503,6 +504,11 @@ class Session:
         self.client.will_set(module_incoming(token, "state"), "unavailable", qos=1, retain=True)
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
+        # DEVICE PANELS (panels.rs): only for a plugin that registered a gui/
+        # template; for every other plugin the book is inert and subscribes nothing.
+        self.book = apk_plugin_panels.Book(token, apk_plugin_panels.templates(),
+                                           apk_plugin_panels.expire_after_from_config(config, token))
+        self.book_lock = threading.Lock()
 
     # -- the publishes
 
@@ -544,11 +550,27 @@ class Session:
         self.publish_api()
         client.subscribe(module_inbox(self.token), qos=1)
         client.subscribe("%s/%s/Device/+/last_online" % (MODULE_ROOT, self.token), qos=1)
+        if self.book.is_active():
+            client.subscribe(self.book.filter(), qos=1)
+            # Read back what an earlier process left, so a panel no device
+            # claims is emptied, not kept.
+            client.subscribe(self.book.panels_filter(), qos=1)
+            with self.book_lock:
+                restated = self.book.restate()
+            self.publish_panels(restated)
 
     def on_message(self, client, userdata, message):
         topic = message.topic
         payload = message.payload.decode("utf-8", "replace") if message.payload else ""
         retained = bool(getattr(message, "retain", False))
+        # Every device leaf feeds the panel book first; the presence set below
+        # still sees its own `last_online`.
+        if self.book.is_active():
+            with self.book_lock:
+                out = self.book.observe(topic, payload, time.monotonic())
+            self.publish_panels(out)
+            if topic.startswith(apk_plugin_panels.PANELS_TOPIC_ROOT + "/"):
+                return
         if topic.endswith("/last_online"):
             with self.lock:
                 (self.presence.add if is_online_now(payload) else self.presence.discard)(topic)
@@ -608,6 +630,11 @@ class Session:
         print("🧪 [%s] %s" % (self.token, report.headline()))
         self.publish_report(report)
 
+    def publish_panels(self, out) -> None:
+        """Device panels, retained; an empty payload clears one."""
+        for topic, payload in out:
+            self.publish(topic, payload, True)
+
     def publish_report(self, report: Report) -> None:
         for topic, payload, retain in report.publications():
             self.publish(topic, payload, retain)
@@ -616,6 +643,11 @@ class Session:
 
     def telemetry_forever(self) -> None:
         while True:
+            # A silent device's panel leaves on the tick (`panels_expire_after_s`).
+            if self.book.is_active():
+                with self.book_lock:
+                    expired = self.book.expire(time.monotonic())
+                self.publish_panels(expired)
             stale = stalest_tick()
             sample = {"uptime_s": int(time.monotonic() - self.started), "pid": os.getpid(),
                       "last_tick_age_s": stale[1] if stale else None,
@@ -670,8 +702,13 @@ def _on_terminate(signum, frame):
 def serve(token: str, config_text: str, config_source: str, self_test: Callable[[str], str],
           run: List[Callable[[str, int], None]], plugin_crate: Optional[str] = None,
           plugin_version: Optional[str] = None, pod: Optional[str] = "POD.THICK",
-          config_overlay: Optional[Callable[[Dict[str, Dict[str, str]]], Dict[str, Dict[str, str]]]] = None) -> None:
+          config_overlay: Optional[Callable[[Dict[str, Dict[str, str]]], Dict[str, Dict[str, str]]]] = None,
+          panels: Optional[List[str]] = None, gui_dir: Optional[str] = None) -> None:
     """Run the plugin until something says it must not keep running. Never returns.
+
+    `panels=["family", …]` is `main!(…, panels = [family])`: each family's
+    `gui/manifest.json` + `gui/<family>/<family>.json` is read from `gui_dir`
+    and every device the plugin publishes presents its panel (apk_plugin_panels).
 
     `config_overlay(config) -> config` lets a plugin lay its environment
     variables over the file BEFORE anything is published, so `<topic>/config`
@@ -685,6 +722,8 @@ def serve(token: str, config_text: str, config_source: str, self_test: Callable[
         loaded = overlaid
     _CONFIG.clear()
     _CONFIG.update(loaded)
+    for family in panels or []:
+        apk_plugin_panels.register_from_dir(gui_dir or os.path.join(os.getcwd(), "gui"), family)
     host, port = broker_address()
     stall = stall_after_s()
     names = [fn.__name__ for fn in run]
@@ -770,11 +809,17 @@ def load_config(path: str) -> Tuple[str, str]:
 def main(token: str, config_ini: str, self_test: Callable[[str], str],
          run: List[Callable[[str, int], None]], plugin_crate: Optional[str] = None,
          plugin_version: Optional[str] = None, pod: Optional[str] = "POD.THICK",
-         config_overlay=None) -> None:
-    """A Python plugin's whole `__main__`: the twin of `apk_plugin_runner::main!`."""
+         config_overlay=None, panels: Optional[List[str]] = None, gui_dir: Optional[str] = None) -> None:
+    """A Python plugin's whole `__main__`: the twin of `apk_plugin_runner::main!`.
+
+    `panels=[...]` reads the templates from `gui_dir`, by default the `gui/`
+    folder beside `config_ini` — where every plugin keeps it."""
     version = "%s %s" % (plugin_crate, plugin_version) if plugin_crate else None
     code = answer_arguments(sys.argv[1:], token, [fn.__name__ for fn in run], version)
     if code is not None:
         sys.exit(code)
     text, source = load_config(config_ini)
-    serve(token, text, source, self_test, run, plugin_crate, plugin_version, pod, config_overlay)
+    if panels and gui_dir is None:
+        gui_dir = os.path.join(os.path.dirname(os.path.abspath(config_ini)), "gui")
+    serve(token, text, source, self_test, run, plugin_crate, plugin_version, pod, config_overlay,
+          panels=panels, gui_dir=gui_dir)

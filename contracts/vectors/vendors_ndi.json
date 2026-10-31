@@ -1,0 +1,15 @@
+{
+  "$comment": "PLUGIN.NDI's retained tree (contracts/rust/src/vendors_ndi.rs). schemaVersion moves with any key change. Consumers: PLUGIN.NDI's tests (its SOURCE_KEYS/SERVER_KEYS must equal these), the bus ledger, OS panels.",
+  "schemaVersion": 1,
+  "sourceKeys": ["online", "full_name", "machine", "stream", "host", "addresses", "port", "groups", "seen_by", "last_seen"],
+  "offlineKeeps": ["full_name", "machine", "stream", "host", "port", "last_seen"],
+  "serverKeys": ["reachable", "host", "port", "rtt_ms", "last_seen"],
+  "topics": [
+    {"source": "ndi:STUDIO_Cam_1", "key": "online", "topic": "APK.audio/System/Vendors/NDI/Source/ndi:STUDIO_Cam_1/online"},
+    {"serverHost": "10.0.0.2", "serverPort": 5959, "key": "reachable", "topic": "APK.audio/System/Vendors/NDI/DiscoveryServer/10_0_0_2_5959/reachable"}
+  ],
+  "invalid": [
+    {"source": "ndi:a/b", "key": "online", "why": "a slash in a source id"},
+    {"source": "ndi:x", "key": "colour", "why": "not a source key"}
+  ]
+}

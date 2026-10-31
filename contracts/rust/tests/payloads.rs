@@ -414,12 +414,36 @@ const RUST_READS: &[&str] = &[
 /// seven required fields is an invitation to the deserialisation that rule
 /// exists to punish, so the abstention is the contract — not an omission, and
 /// not a gap waiting to be filled.
-const RUST_ABSTAINS: &[(&str, &str)] = &[(
-    "TimeMark",
-    "PLAN-656.01: the only Rust consumer must stay a tolerant two-field reader \
-     of a retained message; a generated seven-field struct invites the \
-     deserialisation the retained-instant rule forbids",
-)];
+const RUST_ABSTAINS: &[(&str, &str)] = &[
+    (
+        "TimeMark",
+        "PLAN-656.01: the only Rust consumer must stay a tolerant two-field reader \
+         of a retained message; a generated seven-field struct invites the \
+         deserialisation the retained-instant rule forbids",
+    ),
+    (
+        "WebRtcSignal",
+        "2026-10-30 audit: the Rust producer owns its serde enum (PLUGIN.SOUNDCARD_IN \
+         src/signal.rs `Signal`, linked by SOUNDCARD_OUT); contracts publishes the \
+         JSON Schema and these cases for it to test against",
+    ),
+    (
+        "MonitorProbeTelemetry",
+        "2026-10-30 audit: PLUGIN.DESKTOP_MONITOR builds the document as serde_json \
+         and holds its key sets in SRC/vectors/probe_documents.json; contracts \
+         publishes the JSON Schema for the readers (multiviewer, NMOS bridge)",
+    ),
+    (
+        "MonitorProbeStatus",
+        "2026-10-30 audit: as MonitorProbeTelemetry — the producer's own test holds it",
+    ),
+    (
+        "BingoDrawn",
+        "2026-10-30 audit: both ends are plain-HTML pages (GAME.bingo publishes, \
+         GAME.BingoCard reads) and no Rust process touches Games/Bingo/Drawn; \
+         the zod schema and the zod-free rule in the browser bundle are its readers",
+    ),
+];
 
 #[test]
 fn payload_vector_families_all_have_a_reader() {

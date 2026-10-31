@@ -67,7 +67,14 @@ pub const DIRECTIONS: [&str; 2] = [DIR_INCOMING, DIR_OUTGOING];
 /// A reader gets it with NO ROUND TRIP because it is retained; `outgoing/api_get`
 /// only asks for it to be taken again. Live counters stay in `telemetry`, which
 /// is a sample and must not be retained.
-pub const INCOMING_RETAINED: [&str; 7] = [
+///
+/// `ports` and `port` are PLUGIN.SERIAL_COM's (2026-10-30 audit, RP-07):
+/// `incoming/ports` is the host's whole port inventory and
+/// `incoming/port/{identity}` one port's document — both conclusions about what
+/// is plugged in now, retained, and a port that is unplugged has its
+/// `port/{identity}` ERASED with a zero-length retained publish. `port` is the
+/// one two-level leaf: build it with [`module_port`].
+pub const INCOMING_RETAINED: [&str; 9] = [
     "state",
     "detail",
     "interface",
@@ -75,6 +82,8 @@ pub const INCOMING_RETAINED: [&str; 7] = [
     "selftest_result",
     "selftest_report",
     "api",
+    "ports",
+    "port",
 ];
 
 /// Incoming leaves that are SAMPLES, and are never retained.
@@ -83,7 +92,10 @@ pub const INCOMING_RETAINED: [&str; 7] = [
 /// sample in the same sense as `telemetry`: it answers the job that carried its
 /// `job_id` and nothing else, and a retained one would hand the next reader an
 /// answer to a question it never asked.
-pub const INCOMING_SAMPLED: [&str; 3] = ["telemetry", "discovered", "result"];
+///
+/// `exchange` is PLUGIN.SERIAL_COM's answer to one `outgoing/open` request
+/// (what was sent, what came back) — a sample for the reason `result` is.
+pub const INCOMING_SAMPLED: [&str; 4] = ["telemetry", "discovered", "result", "exchange"];
 
 /// Outgoing leaves that are GESTURES, and are never retained.
 ///
@@ -97,7 +109,11 @@ pub const INCOMING_SAMPLED: [&str; 3] = ["telemetry", "discovered", "result"];
 /// `job` asks a worker (`PODS/POD.workers`, PLAN-3423.01) to run its tool once
 /// on the payload it carries. It is a gesture for the reason `command` is: a
 /// retained job would run again on every reconnect of every worker.
-pub const OUTGOING_ONESHOT: [&str; 4] = ["command", "selftest_run", "api_get", "job"];
+///
+/// `open` asks PLUGIN.SERIAL_COM to open one port, send, read and close — a
+/// gesture: a retained request would re-open the port on every reconnect, and
+/// the plugin ignores a retained one for that reason.
+pub const OUTGOING_ONESHOT: [&str; 5] = ["command", "selftest_run", "api_get", "job", "open"];
 
 /// Outgoing leaves that are POSITIONS, and are retained.
 ///
@@ -168,6 +184,22 @@ pub const LEAF_JOB: &str = "job";
 
 /// The leaf a worker publishes the answer to one job on.
 pub const LEAF_RESULT: &str = "result";
+
+/// PLUGIN.SERIAL_COM's leaves (2026-10-30 audit, RP-07).
+pub const LEAF_PORTS: &str = "ports";
+pub const LEAF_PORT: &str = "port";
+pub const LEAF_EXCHANGE: &str = "exchange";
+pub const LEAF_OPEN: &str = "open";
+
+/// One port's retained document, `.../{module}/incoming/port/{identity}`. The
+/// identity is an ADDRESS (`dev:_dev_ttyS0` keeps its colon); retained.
+pub fn module_port(module: &str, identity: &str) -> Result<(String, bool), TopicError> {
+    if !is_address(identity) {
+        return Err(error("port identity", identity));
+    }
+    let (base, retain) = module_incoming(module, LEAF_PORT)?;
+    Ok((format!("{base}/{identity}"), retain))
+}
 
 /// `APK.audio/System/Protocols/{module}/outgoing/job` — not retained.
 pub fn module_job(module: &str) -> Result<(String, bool), TopicError> {

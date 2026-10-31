@@ -81,9 +81,17 @@ use crate::presence::ADOPT_GRACE;
 use apkaudio_contracts::topics::{sanitize_segment, DEVICE_CONTROL_LEAF};
 use serde_json::{json, Map, Value};
 
-/// Where every device panel is retained. `present.rs` in NODE.BareMetal and
-/// the shell's `OS.PANELS_TOPIC_ROOT` (OS/Apps/Frames/bus-panels) say the same.
-pub const PANELS_TOPIC_ROOT: &str = "APK.audio/System/Gui/Panels";
+/// Where every device panel is retained: the contract's `guiPanels` family
+/// (`topics::GUI_PANELS_ROOT`, SDK audit SC-02/RP-15). `present.rs` in
+/// NODE.BareMetal and the shell's `OS.PANELS_TOPIC_ROOT` say the same.
+pub const PANELS_TOPIC_ROOT: &str = apkaudio_contracts::topics::GUI_PANELS_ROOT;
+
+/// `APK.audio/System/Gui/Panels/<key>` through `topics::gui_panels`. A key is
+/// `sanitize_segment` output, so the builder accepts it; the fallback only
+/// keeps a hunter alive if a future key rule ever disagreed.
+fn panel_topic(key: &str) -> String {
+    apkaudio_contracts::topics::gui_panels(key).unwrap_or_else(|_| format!("{PANELS_TOPIC_ROOT}/{key}"))
+}
 
 /// One family's compiled-in template, parsed once.
 #[derive(Clone, Debug)]
@@ -262,11 +270,17 @@ impl Book {
     /// The panels this module may have left on the broker: `Gui/Panels/+`,
     /// read back so a panel no device claims can be emptied.
     pub fn panels_filter(&self) -> String {
-        format!("{PANELS_TOPIC_ROOT}/+")
+        apkaudio_contracts::topics::gui_panels_wildcard()
     }
 
+    /// `…/Protocols/<token>/Device/`, built by `topics::protocols`; a token
+    /// that is no topic segment (a bug in the plugin) falls back to the
+    /// literal shape so a panel book never panics a hunter.
     fn device_root(&self) -> String {
-        format!("APK.audio/System/Protocols/{}/Device/", self.token)
+        match apkaudio_contracts::topics::protocols(&self.token, &["Device"]) {
+            Ok(t) => format!("{t}/"),
+            Err(_) => format!("{}/System/Protocols/{}/Device/", apkaudio_contracts::topics::ROOT, self.token),
+        }
     }
 
     /// One message off the device tree. Returns what must be published.
@@ -375,7 +389,7 @@ impl Book {
     pub fn restate(&self) -> Vec<Publication> {
         self.ledger
             .iter()
-            .map(|(key, text)| (format!("{PANELS_TOPIC_ROOT}/{key}"), text.clone()))
+            .map(|(key, text)| (panel_topic(key), text.clone()))
             .collect()
     }
 
@@ -389,7 +403,7 @@ impl Book {
         let ours = self.ledger.remove(key).is_some();
         let inherited = self.inherited.remove(key).is_some();
         if ours || inherited {
-            vec![(format!("{PANELS_TOPIC_ROOT}/{key}"), String::new())]
+            vec![(panel_topic(key), String::new())]
         } else {
             Vec::new()
         }
@@ -408,7 +422,7 @@ impl Book {
         }
         self.inherited.remove(&key);
         self.ledger.insert(key.clone(), text.clone());
-        vec![(format!("{PANELS_TOPIC_ROOT}/{key}"), text)]
+        vec![(panel_topic(&key), text)]
     }
 
     /// The `present.rs` shape: `{key, folder, device, placements:[{at, frames}]}`,
@@ -697,6 +711,46 @@ mod tests {
         let out = b.observe(dev, r#"{"last_online": 1761830000}"#, now);
         assert_eq!(out, vec![("APK.audio/System/Gui/Panels/sap-44_44_44_158".to_string(), String::new())]);
         assert!(parse_template("sap", r#"{"sap": {"device_document": "yes"}}"#, tpl).is_err());
+    }
+
+    /// RUNNER/vectors/panels.json — the cases the Python twin
+    /// (`python/apk_plugin_panels.py`) runs too, so the two cannot drift.
+    #[test]
+    fn the_shared_vectors_hold() {
+        let doc: Value = serde_json::from_str(include_str!("../vectors/panels.json")).expect("vectors parse");
+        for case in doc["cases"].as_array().expect("cases") {
+            let name = case["name"].as_str().unwrap_or("?");
+            let manifest = case["manifest"].to_string();
+            let templates: Vec<Template> = case["families"]
+                .as_object()
+                .expect("families")
+                .iter()
+                .map(|(family, body)| parse_template(family, &manifest, &body.to_string()).expect(name))
+                .collect();
+            let expire = case["expire_after_s"].as_u64().map(Duration::from_secs);
+            let mut book = Book::new(case["token"].as_str().unwrap(), templates, expire);
+            let start = Instant::now();
+            for (i, step) in case["steps"].as_array().unwrap().iter().enumerate() {
+                let now = start + Duration::from_secs(step["at"].as_u64().unwrap());
+                let out = if let Some(o) = step.get("observe") {
+                    book.observe(o[0].as_str().unwrap(), o[1].as_str().unwrap(), now)
+                } else if step.get("expire").is_some() {
+                    book.expire(now)
+                } else {
+                    book.restate()
+                };
+                let got: Vec<Value> = out
+                    .iter()
+                    .map(|(t, p)| json!([t, if p.is_empty() { json!("") } else { serde_json::from_str::<Value>(p).unwrap() }]))
+                    .collect();
+                assert_eq!(Value::Array(got), step["expect"], "{name}, step {i}");
+            }
+        }
+        let template = doc["template"].to_string();
+        for bad in doc["rejected_manifests"].as_array().unwrap() {
+            let family = bad["family"].as_str().unwrap();
+            assert!(parse_template(family, &bad["manifest"].to_string(), &template).is_err(), "{bad}");
+        }
     }
 
     #[test]
