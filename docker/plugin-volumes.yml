@@ -1,0 +1,44 @@
+# The two named volumes every plugin container mounts — declared ONCE, here.
+#
+# WHY A FILE OF ITS OWN (audit 2026-10-30, W02). `extends:` (plugin-base.yml)
+# carries a service and never a top-level `volumes:`, so thirty-odd plugin
+# stack files each repeated this block word for word — and it must stay word
+# for word: compose hashes a volume's declaration, and one that differs from
+# the owner's (DATABASE.volume.Log-STORAGE's bind onto Documentation/LOGS)
+# makes a lone `up` ask "Recreate (data will be lost)?" (LOOSE-plugin-osc).
+# `include:` DOES carry top-level resources, and compose merges the same
+# declaration included from many files into one (checked with compose 2.40:
+# the engine's aggregator includes every plugin, each of which includes this).
+#
+# HOW A PLUGIN STACK USES IT — in place of its own `volumes:` block:
+#
+#   include:
+#     - path: "../../../DISCOVERY.Engine/Docker/plugin-volumes.yml"
+#   services:
+#     dnssd:
+#       extends:
+#         file: "../../../DISCOVERY.Engine/Docker/plugin-base.yml"
+#         service: plugin-host
+#       …
+#
+# (the same `../../../` that already reaches plugin-base.yml from
+# PLUGINS/<stack>/Docker/). plugin-base.yml's own `volumes:` block is for its
+# own parse only and is kept identical to this one; `SRC/check.sh` fails when
+# they differ.
+#
+# NOT `external:` (PLAN-3399.01): a clean host's first `up` must make the bind,
+# not refuse. APKAUDIO_REPO is exported by up-stack.sh; run by hand from the
+# checkout root, $PWD is the same path.
+
+volumes:
+  # LOGGER STORAGE — owned by DATABASE.volume.Log-STORAGE, which is up first.
+  apk-audio-logs:
+    name: apk-audio-logs
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "${APKAUDIO_REPO:-${PWD}}/Documentation/LOGS"
+  # One OUI cache for every plugin that names a vendor.
+  mac-lookup-cache:
+    name: apk-audio-mac-lookup-cache
