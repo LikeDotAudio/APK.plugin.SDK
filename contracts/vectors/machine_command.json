@@ -1,10 +1,11 @@
 {
-  "$comment": "Golden vectors for the machine command envelope (PLAN-3394.01): what may be written on APK.audio/System/BareMetal/MonitorProbes/{probe}/{host}/outgoing/command. Consumed by contracts/rust/tests/machine_command.rs, contracts/python/tests/test_machine_command.py and contracts/src/machine-command.test.ts. `refused_id` is the id the refusal is answered against (null when none could be read).",
+  "$comment": "Golden vectors for the machine command envelope (PLAN-3394.01): what may be written on APK.audio/System/BareMetal/MonitorProbes/{probe}/{host}/outgoing/command. Consumed by contracts/rust/tests/machine_command.rs, contracts/python/tests/test_machine_command.py and contracts/src/machine-command.test.ts. `refused_id` is the id the refusal is answered against (null when none could be read). An `invalid` case may carry `body` (the exact wire text) instead of `doc`, for spellings a parsed document cannot keep (1.0 vs 1); every harness parses `body` as-is.",
   "valid": [
     {"why": "a reboot, confirmed and logged", "doc": {"id": "cmd-0001-abcd", "verb": "power", "action": "cycle", "session": "mlog-20261030-0001", "operator": "APK/Anthony", "issued_at_ms": 1793000000000}},
     {"why": "power on through a wake relay, to the MAC the machine published", "doc": {"id": "cmd-0002-abcd", "verb": "power", "action": "on", "mac": "AA:bb:cc:00:11:22", "session": "mlog-20261030-0002", "operator": "RACK/Rack", "issued_at_ms": 1793000000000}},
     {"why": "a named command from the agent's allow-list, rehearsed", "doc": {"id": "cmd-0003-abcd", "verb": "run", "name": "uptime", "session": "mlog-20261030-0003", "operator": "APK/Anthony", "issued_at_ms": 1793000000000, "dry_run": true}},
-    {"why": "a deploy by allow-list name", "doc": {"id": "cmd-0004-abcd", "verb": "deploy", "name": "apk-plugins", "session": "mlog-20261030-0004", "operator": "APK/Anthony", "issued_at_ms": 1793000000000}}
+    {"why": "a deploy by allow-list name", "doc": {"id": "cmd-0004-abcd", "verb": "deploy", "name": "apk-plugins", "session": "mlog-20261030-0004", "operator": "APK/Anthony", "issued_at_ms": 1793000000000}},
+    {"why": "an operator of 80 UTF-8 bytes (40 × é) is the most there is", "doc": {"id": "cmd-0005-abcd", "verb": "power", "action": "cycle", "session": "mlog-20261030-0005", "operator": "éééééééééééééééééééééééééééééééééééééééé", "issued_at_ms": 1793000000000}}
   ],
   "invalid": [
     {"why": "a command line riding along is never half-read", "refused_id": "cmd-0101-abcd", "doc": {"id": "cmd-0101-abcd", "verb": "run", "name": "uptime", "argv": ["rm", "-rf", "/"], "session": "mlog-20261030-0101", "operator": "APK/Anthony", "issued_at_ms": 1793000000000}},
@@ -18,7 +19,10 @@
     {"why": "a deploy with no name", "refused_id": "cmd-0109-abcd", "doc": {"id": "cmd-0109-abcd", "verb": "deploy", "session": "mlog-20261030-0109", "operator": "APK/Anthony", "issued_at_ms": 1793000000000}},
     {"why": "no id: refused, and there is nothing to answer against", "refused_id": null, "doc": {"verb": "power", "action": "cycle", "session": "mlog-20261030-0110", "operator": "APK/Anthony", "issued_at_ms": 1793000000000}},
     {"why": "no issue time: a replay cannot be told from a press", "refused_id": "cmd-0111-abcd", "doc": {"id": "cmd-0111-abcd", "verb": "power", "action": "cycle", "session": "mlog-20261030-0111", "operator": "APK/Anthony"}},
-    {"why": "dry_run spelled as a string", "refused_id": "cmd-0112-abcd", "doc": {"id": "cmd-0112-abcd", "verb": "power", "action": "cycle", "dry_run": "yes", "session": "mlog-20261030-0112", "operator": "APK/Anthony", "issued_at_ms": 1793000000000}}
+    {"why": "dry_run spelled as a string", "refused_id": "cmd-0112-abcd", "doc": {"id": "cmd-0112-abcd", "verb": "power", "action": "cycle", "dry_run": "yes", "session": "mlog-20261030-0112", "operator": "APK/Anthony", "issued_at_ms": 1793000000000}},
+    {"why": "an operator of 41 characters but 82 UTF-8 bytes: the limit is counted in bytes, in every twin", "refused_id": "cmd-0113-abcd", "doc": {"id": "cmd-0113-abcd", "verb": "power", "action": "cycle", "session": "mlog-20261030-0113", "operator": "ééééééééééééééééééééééééééééééééééééééééé", "issued_at_ms": 1793000000000}},
+    {"why": "an issue time spelled 1.0 is a float, not unix ms — carried as raw `body` because a parsed doc cannot keep the spelling", "refused_id": "cmd-0114-abcd", "body": "{\"id\":\"cmd-0114-abcd\",\"verb\":\"power\",\"action\":\"cycle\",\"session\":\"mlog-20261030-0114\",\"operator\":\"APK/Anthony\",\"issued_at_ms\":1.0}"},
+    {"why": "an issue time in exponent form (1e12) is a float too", "refused_id": "cmd-0115-abcd", "body": "{\"id\":\"cmd-0115-abcd\",\"verb\":\"power\",\"action\":\"cycle\",\"session\":\"mlog-20261030-0115\",\"operator\":\"APK/Anthony\",\"issued_at_ms\":1e12}"}
   ],
   "acl_deny": [
     "APK.audio/System/BareMetal/+/outgoing/command",

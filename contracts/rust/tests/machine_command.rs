@@ -23,7 +23,8 @@ fn valid_commands_parse_and_round_trip() {
 #[test]
 fn invalid_commands_are_refused_against_their_id() {
     for case in vectors()["invalid"].as_array().unwrap() {
-        let body = case["doc"].to_string();
+        // `body` is the exact wire text, for spellings a parsed doc cannot keep (1.0 vs 1).
+        let body = case["body"].as_str().map(str::to_string).unwrap_or_else(|| case["doc"].to_string());
         let r = parse(body.as_bytes()).err().unwrap_or_else(|| panic!("accepted: {}", case["why"]));
         assert_eq!(r.id.as_deref(), case["refused_id"].as_str(), "{}", case["why"]);
     }

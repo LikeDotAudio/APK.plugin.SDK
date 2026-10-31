@@ -76,6 +76,21 @@ services:
       retries: 3
       start_period: 20s
 
+  # A PYTHON PLUGIN (LOOSE-bluetooth-no-runtime): plugin-host in every respect
+  # but the image — apk-plugins-python:local, from Dockerfile.python, which
+  # carries python3, paho, RUNNER/python (apk_plugin_runner, the Python twin of
+  # the runner crate) and an `apk-plugin-health` of the same name, so the
+  # healthcheck above stands. Its command is
+  # `python3 /src/PODS/POD.THICK/PLUGINS/<stack>/SRC/<file>.py`.
+  plugin-host-python:
+    extends:
+      service: plugin-host
+    build:
+      context: "../../../.."
+      dockerfile: "PODS/POD.THICK/DISCOVERY.Engine/Docker/Dockerfile.python"
+      target: plugins-python
+    image: apk-plugins-python:local
+
   plugin-bridge:
     build: *plugin-build
     image: apk-plugins:local

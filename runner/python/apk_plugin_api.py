@@ -101,8 +101,27 @@ class PluginApi:
                  broker_host: str = "", broker_port: int = 0,
                  authenticated: bool = False,
                  plugin_crate: Optional[str] = None,
-                 plugin_version: Optional[str] = None):
+                 plugin_version: Optional[str] = None,
+                 broker_is_ours: Optional[bool] = None,
+                 stall_after_s: Optional[int] = None,
+                 tick_s: Optional[int] = None,
+                 health_file: Optional[str] = None,
+                 kind: str = "plugin",
+                 pod: Optional[str] = "POD.THICK",
+                 siblings: Iterable[str] = ()):
         self.token = token
+        # LOOSE-template-python-twin: what `apk_plugin_runner.py` knows and a
+        # bare probe does not — the watchdog's threshold and tick, the health
+        # file, whether the broker is the bench's. Left None by a probe that
+        # runs no watchdog, so the document never claims a threshold that
+        # governs nothing.
+        self.broker_is_ours = broker_is_ours
+        self.stall_after_s = stall_after_s
+        self.tick_s = tick_s
+        self.health_file = health_file
+        self.kind = kind
+        self.pod = pod
+        self.siblings = list(siblings)
         # PLAN-3407.01: the PLUGIN's own name and version, as the Rust side's
         # `stamp!` records them. None is published as null, never guessed.
         self.plugin_crate = plugin_crate
@@ -130,12 +149,12 @@ class PluginApi:
         """
         document = {
             "token": self.token,
-            "kind": "plugin",
-            "pod": "POD.THICK",
-            # Python probes are one module per process; the grouped case is the
+            "kind": self.kind,
+            "pod": self.pod,
+            # Python plugins are one module per process; the grouped case is the
             # Rust runner's and this stays empty rather than absent, so the
             # gateway's readers find the same keys either way.
-            "siblings": [],
+            "siblings": list(self.siblings),
             "build": {
                 # There is no crate version here to report; the language is the
                 # honest answer to "what built this", and it is what tells a
@@ -155,21 +174,21 @@ class PluginApi:
             },
             "liveness": {
                 "last_tick_age_s": last_tick_age_s,
-                # The runner's watchdog is the Rust crate's; a probe is
-                # restarted by Docker on exit and nothing else, and saying so
-                # is better than publishing a threshold that governs nothing.
-                "stall_after_s": None,
-                "tick_s": None,
+                # A bare probe runs no watchdog and is restarted by Docker on
+                # exit only: None, rather than a threshold that governs
+                # nothing. `apk_plugin_runner.py` fills all three.
+                "stall_after_s": self.stall_after_s,
+                "tick_s": self.tick_s,
                 "stall_detection": last_tick_age_s is not None,
-                "health_file": None,
+                "health_file": self.health_file,
             },
             "broker": {
                 "host": self.broker_host,
                 "port": self.broker_port,
                 "authenticated": bool(self.authenticated),
-                # `ours` is the Rust side's broker_is_local test, which a probe
-                # does not make. None, not a guess.
-                "ours": None,
+                # `ours` is broker_is_local; the Python runner makes the same
+                # test, a bare probe does not (None, not a guess).
+                "ours": self.broker_is_ours,
             },
             "config": {"source": self.config_source, "value": self.config},
             "presence": {"online_devices": presence_online},
