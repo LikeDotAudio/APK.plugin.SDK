@@ -12,8 +12,8 @@
 # An edit made in the SDK repository is overwritten by the next publish.
 #
 # A plugin names a TAG, never a branch:
-#   apk-plugin-runner  = { git = "https://github.com/LikeDotAudio/APK.plugin.SDK", tag = "sdk-v0.6" }
-#   apkaudio-contracts = { git = "https://github.com/LikeDotAudio/APK.plugin.SDK", tag = "sdk-v0.6" }
+#   apk-plugin-runner  = { git = "https://github.com/LikeDotAudio/APK.plugin.SDK", tag = "sdk-v0.7" }
+#   apkaudio-contracts = { git = "https://github.com/LikeDotAudio/APK.plugin.SDK", tag = "sdk-v0.7" }
 # Cargo finds each package by name anywhere in this repository.
 [workspace]
 resolver = "2"

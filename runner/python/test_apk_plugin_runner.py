@@ -281,3 +281,30 @@ class TheHealthCheck(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ServeForwardsKind(unittest.TestCase):
+    """`kind="worker"` (main!'s kind) reaches the incoming/api document."""
+
+    def test_serve_passes_kind_to_the_api_document(self):
+        import apk_plugin_runner as runner
+        seen = {}
+
+        class Stop(Exception):
+            pass
+
+        real = runner.apk_plugin_api.PluginApi
+
+        def capture(*args, **kwargs):
+            seen["kind"] = kwargs.get("kind")
+            raise Stop()
+
+        runner.apk_plugin_api.PluginApi = capture
+        try:
+            for kind in ("worker", "plugin"):
+                with self.assertRaises(Stop):
+                    runner.serve("zz", "[zz]\ntopic = APK.audio/System/Protocols/zz\n", "config.ini",
+                                 lambda depth: "{}", [], kind=kind)
+                self.assertEqual(seen["kind"], kind)
+        finally:
+            runner.apk_plugin_api.PluginApi = real

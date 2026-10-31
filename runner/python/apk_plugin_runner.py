@@ -703,8 +703,12 @@ def serve(token: str, config_text: str, config_source: str, self_test: Callable[
           run: List[Callable[[str, int], None]], plugin_crate: Optional[str] = None,
           plugin_version: Optional[str] = None, pod: Optional[str] = "POD.THICK",
           config_overlay: Optional[Callable[[Dict[str, Dict[str, str]]], Dict[str, Dict[str, str]]]] = None,
-          panels: Optional[List[str]] = None, gui_dir: Optional[str] = None) -> None:
+          panels: Optional[List[str]] = None, gui_dir: Optional[str] = None,
+          kind: str = "plugin") -> None:
     """Run the plugin until something says it must not keep running. Never returns.
+
+    `kind="worker"` is `main!(kind = "worker", …)`: incoming/api says what this
+    process is (a POD.workers job answerer), not the default `plugin`.
 
     `panels=["family", …]` is `main!(…, panels = [family])`: each family's
     `gui/manifest.json` + `gui/<family>/<family>.json` is read from `gui_dir`
@@ -734,7 +738,7 @@ def serve(token: str, config_text: str, config_source: str, self_test: Callable[
         broker_host=host, broker_port=port, authenticated=credentials() is not None,
         plugin_crate=plugin_crate, plugin_version=plugin_version,
         broker_is_ours=broker_is_local(host), stall_after_s=stall, tick_s=TICK_S,
-        health_file=health_file(), pod=pod)
+        health_file=health_file(), pod=pod, kind=kind)
     session = Session(token, loaded, config_source, self_test, api, names)
 
     failures: List[Tuple[str, int]] = []
@@ -809,7 +813,8 @@ def load_config(path: str) -> Tuple[str, str]:
 def main(token: str, config_ini: str, self_test: Callable[[str], str],
          run: List[Callable[[str, int], None]], plugin_crate: Optional[str] = None,
          plugin_version: Optional[str] = None, pod: Optional[str] = "POD.THICK",
-         config_overlay=None, panels: Optional[List[str]] = None, gui_dir: Optional[str] = None) -> None:
+         config_overlay=None, panels: Optional[List[str]] = None, gui_dir: Optional[str] = None,
+         kind: str = "plugin") -> None:
     """A Python plugin's whole `__main__`: the twin of `apk_plugin_runner::main!`.
 
     `panels=[...]` reads the templates from `gui_dir`, by default the `gui/`
@@ -822,4 +827,4 @@ def main(token: str, config_ini: str, self_test: Callable[[str], str],
     if panels and gui_dir is None:
         gui_dir = os.path.join(os.path.dirname(os.path.abspath(config_ini)), "gui")
     serve(token, text, source, self_test, run, plugin_crate, plugin_version, pod, config_overlay,
-          panels=panels, gui_dir=gui_dir)
+          panels=panels, gui_dir=gui_dir, kind=kind)
