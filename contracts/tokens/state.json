@@ -67,7 +67,7 @@
     "other four was obviously the wrong colour, so each was ruled on its own",
     "producer rather than on the word:",
     "",
-    "  `degraded` -> DEAD. Baremetal:Manager/agent_supervision.py health() mints",
+    "  `degraded` -> DEAD. Baremetal.Manager/agent_supervision.py health() mints",
     "  it, and only it, when an agent expected_up() says should be running is",
     "  measurably not -- and has been started before, so this is not a cold node.",
     "  That is an absence somebody asked about, which is what red means here. Its",

@@ -128,6 +128,7 @@ fn build(family: &str, args: &Value) -> Result<String, topics::TopicError> {
         "containerManagerDockerReply" => topics::container_manager_docker_reply(s(args, "client")),
         "containerManagerDockerReplyWildcard" => Ok(topics::container_manager_docker_reply_wildcard()),
         "systemChat" => Ok(topics::system_chat()),
+        "bareMetalEsp32Heartbeat" => topics::baremetal_esp32_heartbeat(s(args, "node")),
         "nearestRustAgentHandOff" => Ok(topics::nearest_rust_agent_handoff()),
         "census" => topics::census(s(args, "node"), &path_argument(args)),
         "censusWildcard" => topics::census_wildcard(args["node"].as_str()),
@@ -182,6 +183,21 @@ fn gui_from_panel_path_vectors() {
     for v in vectors()["guiFromPanelPath"].as_array().expect("guiFromPanelPath array") {
         let path = s(v, "filePath");
         assert_eq!(topics::gui_prefix_from_panel_path(path), s(v, "topic"), "path {path:?}");
+    }
+}
+
+#[test]
+fn declared_filter_vectors() {
+    let all = vectors();
+    let cases = all["filters"].as_array().expect("filters array");
+    for v in cases {
+        let filter = s(v, "filter");
+        let declared = v["declared"].as_bool().expect("declared is a bool");
+        assert_eq!(topics::is_declared_filter(filter), declared, "isDeclaredFilter {filter}: {}", s(v, "why"));
+    }
+    for f in topics::DECLARED_FILTERS {
+        assert!(cases.iter().any(|v| v["filter"] == f && v["declared"] == true), "{f} has no vector");
+        assert_eq!(serde_json::to_value(topics::parse(f)).expect("serialize")["kind"], "unknown", "{f} is a filter, not a topic");
     }
 }
 

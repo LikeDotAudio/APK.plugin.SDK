@@ -75,7 +75,8 @@ pub struct Context {
     /// `plugin`, or what the binary declared through `main!(kind = …)` — a
     /// worker on this runner is not a plugin, and GET /plugins must not say so.
     pub kind: &'static str,
-    /// The `POD.*` folder the binary's crate lives in, off its source path —
+    /// `APK_POD` when the container sets it, else the `POD.*` folder the
+    /// binary's crate lives in, off its source path (`crate::plugin_pod`) —
     /// never a constant, or every worker reads as a THICK plugin.
     pub pod: Option<&'static str>,
 }

@@ -6,6 +6,7 @@ The two crates every APK.audio plugin links, so a plugin repository builds on it
 |---|---|---|
 | `apk-plugin-runner` | `runner/` | The five things every plugin container does once: connect with a last will, publish its `config.ini` and `incoming/api` retained, answer `outgoing/selftest_run`, keep the health file, stop cleanly on SIGTERM. `apk_plugin_runner::main!` is a plugin's whole `main`. `runner/python/apk_plugin_api.py` is the same `incoming/api` document for a Python probe. |
 | `apkaudio-contracts` | `contracts/rust/` | The bus contract: topic grammar and the generated payload types. serde + serde_json + regress and nothing else. |
+| `apkaudio_contracts` (Python) | `contracts/python/` | The same contract for a Python plugin or worker: topic families, segments, payload builders, brand tokens. Standard library only. Ships beside `runner/python` so one tag pins both. |
 
 **Wiki:** [Documentation/README.md](Documentation/README.md) — principles, architecture, delivery.
 
@@ -18,6 +19,10 @@ apkaudio-contracts = { git = "https://github.com/LikeDotAudio/APK.plugin.SDK", t
 ```
 
 Pin a **tag**. Tags are never moved; a change is a new `sdk-vX.Y`.
+
+A Python plugin takes both halves from the same tag: clone it at `--branch sdk-vX.Y` and put
+`runner/python` and `contracts/python` on `PYTHONPATH` (`import apk_plugin_runner`,
+`from apkaudio_contracts import families`).
 
 CI for a plugin repository is five lines in `.github/workflows/ci.yml`:
 

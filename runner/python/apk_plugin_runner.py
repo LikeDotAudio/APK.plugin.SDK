@@ -58,6 +58,7 @@ from __future__ import annotations
 import ipaddress
 import json
 import os
+import re
 import signal
 import sys
 import threading
@@ -699,6 +700,22 @@ def _on_terminate(signum, frame):
     _TERMINATE.set()
 
 
+def pod_declared(raw: Optional[str]) -> Optional[str]:
+    """`APK_POD`'s value as a pod, if it is one: trimmed, one `POD.<name>`
+    segment. The twin of the Rust runner's `pod_declared` (PLAN-3430.01)."""
+    pod = (raw or "").strip()
+    if len(pod) > len("POD.") and pod.startswith("POD.") and not re.search(r"[/\\\s]", pod):
+        return pod
+    return None
+
+
+def resolve_pod(given: Optional[str]) -> Optional[str]:
+    """The pod incoming/api reports: `APK_POD` when the container sets it to a
+    pod name, else what the plugin's `main(pod=…)` said — as the Rust runner
+    takes `APK_POD` before the `POD.` folder on its source path."""
+    return pod_declared(os.environ.get("APK_POD")) or given
+
+
 def serve(token: str, config_text: str, config_source: str, self_test: Callable[[str], str],
           run: List[Callable[[str, int], None]], plugin_crate: Optional[str] = None,
           plugin_version: Optional[str] = None, pod: Optional[str] = "POD.THICK",
@@ -738,7 +755,7 @@ def serve(token: str, config_text: str, config_source: str, self_test: Callable[
         broker_host=host, broker_port=port, authenticated=credentials() is not None,
         plugin_crate=plugin_crate, plugin_version=plugin_version,
         broker_is_ours=broker_is_local(host), stall_after_s=stall, tick_s=TICK_S,
-        health_file=health_file(), pod=pod, kind=kind)
+        health_file=health_file(), pod=resolve_pod(pod), kind=kind)
     session = Session(token, loaded, config_source, self_test, api, names)
 
     failures: List[Tuple[str, int]] = []

@@ -120,6 +120,7 @@
     {"family": "containerManagerDockerReply", "args": {"client": "engine-APK-Shop"}, "topic": "APK.audio/System/ContainerManager/docker/reply/engine-APK-Shop"},
     {"family": "containerManagerDockerReplyWildcard", "args": {}, "topic": "APK.audio/System/ContainerManager/docker/reply/+"},
     {"family": "systemChat", "args": {}, "topic": "APK.audio/System/Chat", "why": "DockTor's chat line (api.py CHAT_TOPIC)"},
+    {"family": "bareMetalEsp32Heartbeat", "args": {"node": "24DCC3A1B2C4"}, "topic": "APK.audio/System/BareMetal/ESP32/24DCC3A1B2C4/identity/heartbeat", "why": "ESP32_Beskar2d2 0.3.0's status and Will leaf"},
     {"family": "nearestRustAgentHandOff", "args": {}, "topic": "APK.audio/System/Agents/NearestRustAgent/HandOff", "why": "MqttProvider.jsx flagNearestRustAgentHandoff, retained"},
     {"family": "census", "args": {"node": "baremetal-bench", "path": ["summary"]}, "topic": "APK.audio/System/Census/baremetal-bench/summary", "why": "the census summary, also the node's Last Will"},
     {"family": "censusWildcard", "args": {}, "topic": "APK.audio/System/Census/#"},
@@ -324,6 +325,8 @@
     {"topic": "APK.audio/System/ContainerManager/docker/reply/engine-APK-Shop", "parsed": {"kind": "containerManagerDockerReply", "client": "engine-APK-Shop"}},
     {"topic": "APK.audio/System/ContainerManager/containers/Storage", "parsed": {"kind": "unknown", "raw": "APK.audio/System/ContainerManager/containers/Storage"}},
     {"topic": "APK.audio/System/Chat", "parsed": {"kind": "systemChat"}},
+    {"topic": "APK.audio/System/BareMetal/ESP32/24DCC3A1B2C4/identity", "parsed": {"kind": "bareMetal", "target": "ESP32", "path": ["24DCC3A1B2C4", "identity"]}},
+    {"topic": "APK.audio/System/BareMetal/ESP32/24DCC3A1B2C4/identity/heartbeat", "parsed": {"kind": "bareMetalEsp32Heartbeat", "node": "24DCC3A1B2C4"}},
     {"topic": "APK.audio/System/Agents/NearestRustAgent/Other", "parsed": {"kind": "unknown", "raw": "APK.audio/System/Agents/NearestRustAgent/Other"}},
     {"topic": "APK.audio/System/Agents/NearestRustAgent/HandOff", "parsed": {"kind": "nearestRustAgentHandOff"}},
     {"topic": "APK.audio/System/Census/baremetal-bench/summary", "parsed": {"kind": "census", "node": "baremetal-bench", "path": ["summary"]}},
@@ -346,5 +349,13 @@
     { "filePath": "oagui/5_Protocols/10_Komand/1_N9340B/0_Frequency", "topic": "APK.audio/Gui/GUI/Protocols/Komand/N9340B/Frequency" },
     { "filePath": "/Window_1/bottom_25/0_/frame.json", "topic": "APK.audio/Gui" },
     { "filePath": "", "topic": "APK.audio/Gui" }
+  ],
+  "filters": [
+    { "filter": "APK.audio/+/monitor/in", "declared": true, "why": "every agent's mirror, no agent named: the copy an agent keeps of the traffic it read (AUDIO.komand's Komand/monitor/in); PLUGIN.SQL's topic_ignore skips it" },
+    { "filter": "APK.audio/+/monitor/out", "declared": true, "why": "every agent's onward half of the mirror: what it sent on (Komand/monitor/out)" },
+    { "filter": "APK.audio/+/monitor/#", "declared": false, "why": "monitor holds exactly two directions; a `#` under it names leaves the convention does not have" },
+    { "filter": "APK.audio/+/monitor/sideways", "declared": false, "why": "outside the closed monitorDir vocabulary" },
+    { "filter": "APK.audio/+/+/monitor/in", "declared": false, "why": "the mirror sits one segment under the root; a deeper `+` matches nothing the convention publishes" },
+    { "filter": "APK.audio/Komand/monitor/in", "declared": false, "why": "an exact topic, not a filter: it parses as komandMonitor and needs no declaration" }
   ]
 }

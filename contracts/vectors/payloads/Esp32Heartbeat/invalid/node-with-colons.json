@@ -1,0 +1,26 @@
+[
+  {
+    "node": "24:DC:C3:A1:B2:C4",
+    "key": "status",
+    "value": "online",
+    "last_seen": "2026-10-31T04:05:06Z"
+  },
+  {
+    "node": "24:DC:C3:A1:B2:C4",
+    "key": "firmware",
+    "value": "0.3.0",
+    "last_seen": "2026-10-31T04:05:06Z"
+  },
+  {
+    "node": "24:DC:C3:A1:B2:C4",
+    "key": "mac",
+    "value": "24:DC:C3:A1:B2:C4",
+    "last_seen": "2026-10-31T04:05:06Z"
+  },
+  {
+    "node": "24:DC:C3:A1:B2:C4",
+    "key": "ip",
+    "value": "10.0.0.42",
+    "last_seen": "2026-10-31T04:05:06Z"
+  }
+]

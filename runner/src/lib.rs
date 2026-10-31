@@ -43,7 +43,8 @@
 //!               called [`tick`] and then stops calling it is a stall and
 //!               exits too — judged per agent, so a ticking sibling cannot
 //!               hide it. SIGTERM/SIGINT exit 143 within a second, so a
-//!               `docker stop` is a stop and not a SIGKILL.
+//!               `docker stop` is a stop and not a SIGKILL — after the
+//!               drains plugins registered with [`at_stop`] have run.
 //!
 //! AND ONE THING BESIDE THE FIVE: [`presence`]. A plugin whose `config.ini`
 //! declares `presence_protocols` reports every sighting through
@@ -141,19 +142,33 @@ pub fn plugin_kind() -> &'static str {
     PLUGIN_KIND.get().copied().unwrap_or("plugin")
 }
 
-/// The pod the binary's crate lives in: the `POD.*` folder on its source path.
+/// The pod the binary runs for: `APK_POD` when the container sets it, else
+/// the `POD.*` folder on its crate's source path.
 ///
-/// READ OFF THE PATH, NOT A CONSTANT. Both images build at the checkout's own
-/// paths (`/src/PODS/POD.THICK/…`, `/src/PODS/POD.THIN/…`), so the manifest dir
-/// names the pod in the image exactly as it does on disk. A binary that never
-/// stamped itself was built in the runner's own workspace, so it takes the
-/// runner's pod; `None` only if neither path carries a `POD.` folder.
+/// `APK_POD` FIRST (PLAN-3430.01). An image that builds outside the checkout's
+/// own paths has no `POD.` folder on its manifest dir — the POD.workers images
+/// build their `SRC/` at `/src/SRC` — and reported `pod: null`. Their compose
+/// says `APK_POD=POD.workers` instead. A value that is blank, or not a `POD.`
+/// name, is ignored in favour of the path, so a typo cannot invent a pod.
+///
+/// OTHERWISE READ OFF THE PATH, NOT A CONSTANT. Both engine images build at the
+/// checkout's own paths (`/src/PODS/POD.THICK/…`, `/src/PODS/POD.THIN/…`), so
+/// the manifest dir names the pod in the image exactly as it does on disk. A
+/// binary that never stamped itself was built in the runner's own workspace,
+/// so it takes the runner's pod; `None` only if nothing names a `POD.`.
 pub fn plugin_pod() -> Option<&'static str> {
-    PLUGIN_HOME
-        .get()
-        .copied()
-        .and_then(pod_of)
-        .or_else(|| pod_of(env!("CARGO_MANIFEST_DIR")))
+    static FROM_ENV: std::sync::OnceLock<Option<&'static str>> = std::sync::OnceLock::new();
+    let declared = *FROM_ENV.get_or_init(|| {
+        pod_declared(std::env::var("APK_POD").ok().as_deref()).map(|pod| &*Box::leak(pod.into_boxed_str()))
+    });
+    declared.or_else(|| PLUGIN_HOME.get().copied().and_then(pod_of)).or_else(|| pod_of(env!("CARGO_MANIFEST_DIR")))
+}
+
+/// `APK_POD`'s value as a pod, if it is one: trimmed, and a single `POD.<name>` segment.
+fn pod_declared(raw: Option<&str>) -> Option<String> {
+    let pod = raw?.trim();
+    (pod.len() > "POD.".len() && pod.starts_with("POD.") && !pod.contains(['/', '\\']) && !pod.contains(char::is_whitespace))
+        .then(|| pod.to_string())
 }
 
 fn pod_of(path: &str) -> Option<&str> {
@@ -255,6 +270,60 @@ fn handle_termination() {
     }
 }
 
+/// A plugin's last word before a stop: run once, on the watchdog's thread
+/// pool, between SIGTERM and the runner's exit 143.
+type Drain = (&'static str, Box<dyn FnOnce() + Send>);
+
+/// The drains [`at_stop`] registered, in registration order.
+static DRAINS: Mutex<Vec<Drain>> = Mutex::new(Vec::new());
+
+/// The longest the runner waits for every drain together, unless
+/// `APK_PLUGIN_DRAIN_SECS` says otherwise: under Docker's 10 s stop grace, so
+/// a slow drain is cut short by the runner's 143, not by a SIGKILL's 137.
+const DRAIN_CEILING: Duration = Duration::from_secs(8);
+
+/// Register something that must happen when the container is stopped
+/// (PLAN-3428.01, RP-01): VISA destroying its open VXI-11 links,
+/// DESKTOP_MONITOR stamping its `graceful_shutdown` status before its own
+/// DISCONNECT. THE PLUGIN NEVER CATCHES SIGTERM ITSELF — a second handler
+/// replaces the runner's (one per signal per process), and the plugin then
+/// decided the exit code too (two of them exited 0 instead of 143). The
+/// Python runner's `at_stop(hook)` is the same door (its budget is 2 s).
+///
+/// On SIGTERM/SIGINT the runner starts every registered drain on its own
+/// thread, waits until all have returned or `APK_PLUGIN_DRAIN_SECS` (default
+/// 8) has passed, and exits 143. A drain bounds itself by its own grace; the
+/// ceiling is the backstop. Call it from the agent once it holds what the
+/// drain needs; a drain registered after the stop began is not run.
+pub fn at_stop(name: &'static str, drain: impl FnOnce() + Send + 'static) {
+    DRAINS.lock().unwrap_or_else(|e| e.into_inner()).push((name, Box::new(drain)));
+}
+
+/// Run `drains` concurrently, each on a named thread, for at most `ceiling`.
+/// Returns the names of the drains still running when it gave up (none when
+/// every drain returned in time). A drain that panics counts as finished.
+fn run_drains(token: &str, drains: Vec<Drain>, ceiling: Duration) -> Vec<&'static str> {
+    let until = Instant::now() + ceiling;
+    let running: Vec<(&'static str, Option<JoinHandle<()>>)> = drains
+        .into_iter()
+        .map(|(name, drain)| {
+            let handle = std::thread::Builder::new().name(format!("{token}:drain:{name}")).spawn(drain);
+            if let Err(e) = &handle {
+                eprintln!("⚠️  [{token}] could not start drain {name}: {e}");
+            }
+            (name, handle.ok())
+        })
+        .collect();
+    while Instant::now() < until && running.iter().any(|(_, h)| h.as_ref().is_some_and(|h| !h.is_finished())) {
+        std::thread::sleep(Duration::from_millis(20));
+    }
+    running
+        .into_iter()
+        .filter(|(_, h)| h.as_ref().is_some_and(|h| !h.is_finished()))
+        .map(|(name, _)| name)
+        .collect()
+}
+
 /// `MQTT_HOST` / `MQTT_PORT`, the two names every Rust agent in this repository
 /// already reads, with the loopback defaults `agents.json` assumed.
 pub fn broker_address() -> (String, u16) {
@@ -290,7 +359,9 @@ pub fn answer_arguments(
          \x20 MQTT_HOST              broker host (default 127.0.0.1)\n\
          \x20 MQTT_PORT              broker port (default 1883)\n\
          \x20 APK_PLUGIN_CONFIG      a config.ini to use instead of the compiled-in one\n\
-         \x20 APK_PLUGIN_STALL_SECS  seconds without a tick before the agent counts as stalled (default 120)\n",
+         \x20 APK_PLUGIN_STALL_SECS  seconds without a tick before the agent counts as stalled (default 120)\n\
+         \x20 APK_PLUGIN_DRAIN_SECS  seconds a stop waits for the plugin's shutdown drains (default 8)\n\
+         \x20 APK_POD                the pod incoming/api reports (default: the POD.* folder it was built in)\n",
         tokens.join("+"),
         agents.join(", "),
     );
@@ -416,6 +487,19 @@ pub fn serve_group(plugins: Vec<Plugin>, agents: Vec<Agent>) -> ! {
         std::thread::sleep(Duration::from_secs(1));
 
         if TERMINATE.load(Ordering::Relaxed) {
+            let drains = std::mem::take(&mut *DRAINS.lock().unwrap_or_else(|e| e.into_inner()));
+            if !drains.is_empty() {
+                let ceiling = std::env::var("APK_PLUGIN_DRAIN_SECS")
+                    .ok()
+                    .and_then(|s| s.trim().parse::<u64>().ok())
+                    .map_or(DRAIN_CEILING, Duration::from_secs);
+                let names: Vec<&str> = drains.iter().map(|(name, _)| *name).collect();
+                println!("🧹 [{token}] stop requested — draining {} (at most {ceiling:?})", names.join(", "));
+                let late = run_drains(token, drains, ceiling);
+                if !late.is_empty() {
+                    eprintln!("⚠️  [{token}] drain(s) {} still running after {ceiling:?} — exiting anyway", late.join(", "));
+                }
+            }
             println!("👋 [{token}] stop requested (SIGTERM/SIGINT) — exiting; the broker sends the last will");
             std::process::exit(EXIT_TERMINATED);
         }
@@ -801,7 +885,7 @@ pub fn module_topic(config: &Value, token: &str) -> String {
 }
 
 /// Syntactic, no DNS — a copy of `broker_is_local` in
-/// `NODE.BareMetal/SRC/Core/ORCHESTRATOR:hunter:VISA/src/mqtt.rs`,
+/// `NODE.BareMetal/SRC/Core/ORCHESTRATOR.hunter.VISA/src/mqtt.rs`,
 /// which this process does not link. Anything not obviously ours is public.
 pub fn broker_is_local(host: &str) -> bool {
     let host = host.trim().trim_start_matches('[').trim_end_matches(']');
@@ -1011,6 +1095,19 @@ mod tests {
     }
 
     #[test]
+    fn apk_pod_names_the_pod_when_it_is_one() {
+        assert_eq!(pod_declared(Some("POD.workers")).as_deref(), Some("POD.workers"));
+        assert_eq!(pod_declared(Some("  POD.workers\n")).as_deref(), Some("POD.workers"));
+        // Unset, blank or not a pod name: the path decides.
+        assert_eq!(pod_declared(None), None);
+        assert_eq!(pod_declared(Some("")), None);
+        assert_eq!(pod_declared(Some("POD.")), None);
+        assert_eq!(pod_declared(Some("workers")), None);
+        assert_eq!(pod_declared(Some("POD.a/POD.b")), None);
+        assert_eq!(pod_declared(Some("POD.a b")), None);
+    }
+
+    #[test]
     fn a_config_ini_becomes_sections_of_strings() {
         let v = ini_to_json("# c\n[dante]\nenabled = true\ndomain = local.\n; x\n[other]\nk=v\n");
         assert_eq!(v["dante"]["enabled"], "true");
@@ -1046,6 +1143,34 @@ mod tests {
         let ticks = AGENT_TICKS.get().unwrap();
         assert_eq!(ticks[0].1.load(Ordering::Relaxed), 0);
         assert_ne!(ticks[1].1.load(Ordering::Relaxed), 0);
+    }
+
+    #[test]
+    fn drains_run_together_and_a_slow_one_is_cut_off_at_the_ceiling() {
+        use std::sync::atomic::AtomicBool;
+        static QUICK: AtomicBool = AtomicBool::new(false);
+        let drains: Vec<Drain> = vec![
+            ("quick", Box::new(|| QUICK.store(true, Ordering::Relaxed))),
+            ("slow", Box::new(|| std::thread::sleep(Duration::from_secs(5)))),
+            ("panics", Box::new(|| panic!("a drain that panics is finished, not late"))),
+        ];
+        let started = Instant::now();
+        let late = run_drains("t", drains, Duration::from_millis(300));
+        assert!(started.elapsed() < Duration::from_secs(2), "the ceiling bounds the wait");
+        assert_eq!(late, vec!["slow"]);
+        assert!(QUICK.load(Ordering::Relaxed));
+        // Everything in time: nothing late, and no waiting out the ceiling.
+        let started = Instant::now();
+        assert!(run_drains("t", vec![("a", Box::new(|| {}))], Duration::from_secs(5)).is_empty());
+        assert!(started.elapsed() < Duration::from_secs(1));
+    }
+
+    #[test]
+    fn at_stop_queues_drains_in_order() {
+        at_stop("first", || {});
+        at_stop("second", || {});
+        let names: Vec<&str> = DRAINS.lock().unwrap().iter().map(|(n, _)| *n).collect();
+        assert!(names.windows(2).any(|w| w == ["first", "second"]), "{names:?}");
     }
 
     #[test]

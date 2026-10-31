@@ -422,6 +422,12 @@ const RUST_ABSTAINS: &[(&str, &str)] = &[
          deserialisation the retained-instant rule forbids",
     ),
     (
+        "Esp32Heartbeat",
+        "2026-10-31: the producer is C++ firmware (ESP32_Beskar2d2 src/bus.cpp); a Rust \
+         reader decodes it as BareMetalTelemetry rows (gen::bare_metal_telemetry) and \
+         the heartbeat's extra rule (online keys / last_will Will) is the zod schema's",
+    ),
+    (
         "WebRtcSignal",
         "2026-10-30 audit: the Rust producer owns its serde enum (PLUGIN.SOUNDCARD_IN \
          src/signal.rs `Signal`, linked by SOUNDCARD_OUT); contracts publishes the \

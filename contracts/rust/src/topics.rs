@@ -27,6 +27,20 @@ pub const MQTT_LOOPBACK_HOST: &str = "127.0.0.1";
 
 pub const KOMAND_VERBS: [&str; 4] = ["set", "rig", "nab", "do"];
 pub const MONITOR_DIRS: [&str; 2] = ["in", "out"];
+
+/// DECLARED WILDCARD FILTERS — subscription forms that cut across families, so
+/// no family's own `#` wildcard spells them. The mirror convention: an agent
+/// that copies bus traffic publishes the copy at `APK.audio/{Agent}/monitor/in`
+/// and what it sends on at `.../monitor/out` (AUDIO.komand's `Komand/monitor`).
+/// `APK.audio/+/monitor/in` is "every agent's mirror" (PLUGIN.SQL's
+/// `topic_ignore`). A filter, not a topic: `parse` still refuses it. TS twin:
+/// `topics/grammar.ts` DECLARED_FILTERS; vectors: `filters` in topics.json.
+pub const DECLARED_FILTERS: [&str; 2] = ["APK.audio/+/monitor/in", "APK.audio/+/monitor/out"];
+
+/// True when `filter` is one of [`DECLARED_FILTERS`], spelled exactly.
+pub fn is_declared_filter(filter: &str) -> bool {
+    DECLARED_FILTERS.contains(&filter)
+}
 pub const LOG_LEVELS: [&str; 5] = ["trace", "debug", "info", "warn", "error"];
 
 /// The two halves of a WebRTC signalling room — a CLOSED set of exactly two,
@@ -603,8 +617,8 @@ pub fn protocols_wildcard() -> String {
 /// `.../Device/{category}/{device}/Control/{verb}`.
 ///
 /// THIS STRING WAS AGREED BY FOUR LITERALS AND HELD BY NOTHING. Fourteen device
-/// consoles publish onto that shape; `Discovery:ChromeCast/src/control.rs` and
-/// `Discovery:AppleTV/src/control.rs` each arrived at `["Control", verb]`
+/// consoles publish onto that shape; `Discovery.ChromeCast/src/control.rs` and
+/// `Discovery.AppleTV/src/control.rs` each arrived at `["Control", verb]`
 /// independently, and `instruments/panel_template.rs::bind_control` writes
 /// `{base}/Control/{verb}` a third time. `protocols()` builds the ROOT and takes
 /// a free `&[&str]` tail, so the contract had no opinion at all about the part
@@ -723,6 +737,12 @@ pub fn baremetal(target: &str, path: &[&str]) -> Result<String, TopicError> {
         }
     }
     baremetal_head(target, path)
+}
+
+/// An ESP32 node's status / Last Will, `System/BareMetal/ESP32/{node}/identity/heartbeat`
+/// (payload `Esp32Heartbeat`; `{node}` = the MAC without colons).
+pub fn baremetal_esp32_heartbeat(node: &str) -> Result<String, TopicError> {
+    baremetal_head("ESP32", &[node, "identity", "heartbeat"])
 }
 
 pub fn baremetal_command(target: &str, path: &[&str]) -> Result<String, TopicError> {
@@ -1203,6 +1223,8 @@ pub enum ParsedTopic {
     ContainerManagerDockerReply { client: String },
     #[serde(rename = "systemChat")]
     SystemChat,
+    #[serde(rename = "bareMetalEsp32Heartbeat")]
+    BareMetalEsp32Heartbeat { node: String },
     #[serde(rename = "nearestRustAgentHandOff")]
     NearestRustAgentHandOff,
     #[serde(rename = "census")]
@@ -1628,6 +1650,9 @@ pub fn parse(raw: &str) -> ParsedTopic {
                 let tail: Vec<&str> = segs.iter().skip(4).copied().collect();
                 if !tail.iter().all(|s| is_address(s)) {
                     return unknown;
+                }
+                if target == "ESP32" && tail.len() == 3 && tail[1] == "identity" && tail[2] == "heartbeat" {
+                    return ParsedTopic::BareMetalEsp32Heartbeat { node: tail[0].to_string() };
                 }
                 let own = |t: &[&str]| -> Vec<String> { t.iter().map(|s| s.to_string()).collect() };
                 match tail.last().copied() {

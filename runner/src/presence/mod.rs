@@ -131,5 +131,5 @@ pub const LINK_LEAF: &str = "presence_topic";
 /// The identity leaves written retained beside [`LINK_LEAF`], in the order
 /// `shared::identity_of` fills them: the sighting's make, model, class, the
 /// hunter's row name, serial and notes. The spellings are the ones
-/// `Baremetal:Manager/discovered.py` reads.
+/// `Baremetal.Manager/discovered.py` reads.
 pub const IDENTITY_LEAVES: [&str; 6] = ["manufacturer", "model", "device_class", "name", "serial", "notes"];

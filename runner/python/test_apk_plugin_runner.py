@@ -126,6 +126,24 @@ class ConfigAsTheRustRunnerReadsIt(unittest.TestCase):
         self.assertFalse(runner.broker_is_local("test.mosquitto.org"))
         self.assertFalse(runner.broker_is_local("8.8.8.8"))
 
+    def test_apk_pod_names_the_pod_when_it_is_one(self):
+        # PLAN-3430.01: the twin of the Rust runner's pod_declared.
+        self.assertEqual(runner.pod_declared("POD.workers"), "POD.workers")
+        self.assertEqual(runner.pod_declared("  POD.workers\n"), "POD.workers")
+        for raw in (None, "", "POD.", "workers", "POD.a/POD.b", "POD.a b"):
+            self.assertIsNone(runner.pod_declared(raw), raw)
+        saved = os.environ.pop("APK_POD", None)
+        try:
+            self.assertEqual(runner.resolve_pod("POD.THICK"), "POD.THICK")
+            os.environ["APK_POD"] = "POD.workers"
+            self.assertEqual(runner.resolve_pod("POD.THICK"), "POD.workers")
+            os.environ["APK_POD"] = "nonsense"
+            self.assertEqual(runner.resolve_pod("POD.THICK"), "POD.THICK")
+        finally:
+            os.environ.pop("APK_POD", None)
+            if saved is not None:
+                os.environ["APK_POD"] = saved
+
     def test_arguments_stop_before_the_broker(self):
         self.assertIsNone(runner.answer_arguments([], "x", ["a"]))
         self.assertEqual(runner.answer_arguments(["--help"], "x", ["a"]), 0)
