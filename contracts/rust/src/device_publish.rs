@@ -177,6 +177,19 @@ impl Sighting {
         self.record_seen_since(now_ms, now_ms)
     }
 
+    /// The document with `firstSeen` at `first_ms` — the start of the spell the
+    /// caller already tracks (the runner's presence keeps one per online
+    /// device and writes this at `Discovery/{protocol}/{deviceId}/record`).
+    pub fn record_since(&self, first_ms: i64, now_ms: i64) -> Result<DeviceRecord, String> {
+        self.record_seen_since(first_ms, now_ms)
+    }
+
+    /// `APK.audio/Discovery/{protocol}/{deviceId}/record` — where this
+    /// device's identity is retained beside its status (contracts 0.5.0).
+    pub fn record_topic(&self) -> Result<String, topics::TopicError> {
+        topics::discovery_record(&self.protocol, &self.device_id())
+    }
+
     fn record_seen_since(&self, first_ms: i64, now_ms: i64) -> Result<DeviceRecord, String> {
         let conv = |e: ConversionError| e.to_string();
         Ok(DeviceRecord {
@@ -334,10 +347,14 @@ impl Register {
 ///
 /// The exclusion is the contract — see the module header. `firstSeen` IS
 /// included: it moving means the device left and came back, which is a change
-/// a reader should get.
-fn fingerprint(r: &DeviceRecord) -> String {
+/// a reader should get. Since contracts 0.5.0 `notes`, `rawIdn` and the typed
+/// `extra` are included too: the engine reads its tables off the record
+/// (`Discovery/{protocol}/{deviceId}/record`), so a stream added to a RAVENNA
+/// node or an interface's new address must be republished. The extras carry
+/// no per-sweep measurement for exactly that reason (`device-record.ts`).
+pub fn fingerprint(r: &DeviceRecord) -> String {
     format!(
-        "{}|{}|{}|{}|{}|{}|{}|{}|{}|{}",
+        "{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}",
         &*r.device_id,
         &*r.protocol,
         r.device_class,
@@ -348,6 +365,9 @@ fn fingerprint(r: &DeviceRecord) -> String {
         r.firmware.as_deref().unwrap_or(""),
         &*r.first_seen,
         r.status,
+        r.notes.as_deref().unwrap_or(""),
+        r.raw_idn.as_deref().unwrap_or(""),
+        r.extra.as_ref().and_then(|x| serde_json::to_string(x).ok()).unwrap_or_default(),
     )
 }
 
@@ -399,6 +419,37 @@ mod tests {
         assert!(register.observe(&appletv(), 1_000_000).unwrap().is_some());
         let identified = appletv().status(DeviceRecordStatus::Identified);
         assert!(register.observe(&identified, 1_060_000).unwrap().is_some());
+    }
+
+    /// The record the engine reads its tables off (contracts 0.5.0) is
+    /// republished when its typed extra changes — a stream added to a node —
+    /// and stays silent when only the moment moved.
+    #[test]
+    fn a_changed_extra_is_a_change_and_the_record_topic_is_the_leaf() {
+        use crate::device_record::{DeviceRecordExtraRavenna, DeviceRecordExtraRavennaStreamsItem};
+        let stream = |session: &str| DeviceRecordExtraRavennaStreamsItem {
+            session: session.into(),
+            channels: Some(8),
+            ..serde_json::from_str(r#"{"session":""}"#).unwrap()
+        };
+        let node = |sessions: &[&str]| {
+            Sighting::new("ravenna", "WBS-32ME-RIGHT.local").extra(DeviceRecordExtra {
+                ravenna: Some(DeviceRecordExtraRavenna { streams: sessions.iter().map(|s| stream(s)).collect() }),
+                ..Default::default()
+            })
+        };
+        let mut register = Register::new();
+        assert!(register.observe(&node(&["A"]), 1_000).unwrap().is_some());
+        assert!(register.observe(&node(&["A"]), 9_000).unwrap().is_none(), "only lastSeen moved");
+        assert!(register.observe(&node(&["A", "B"]), 10_000).unwrap().is_some(), "a stream was added");
+        assert_eq!(
+            node(&["A"]).record_topic().unwrap(),
+            "APK.audio/Discovery/ravenna/ravenna:WBS-32ME-RIGHT.local/record"
+        );
+        let a = node(&["A"]).record_since(1_000, 5_000).unwrap();
+        let b = node(&["A"]).record_since(1_000, 7_000).unwrap();
+        assert_eq!(fingerprint(&a), fingerprint(&b));
+        assert_eq!(&*a.first_seen, "1970-01-01T00:00:01.000Z");
     }
 
     /// `firstSeen` does not move under re-announcement, and `lastSeen` does.

@@ -144,3 +144,23 @@ fn presence_writes_are_held_while_reading_back() {
     assert!(t.expire(T0 + 1_000_000).is_empty());
     assert_eq!(t.finish_readback(T0 + 1_000_001).len(), 1);
 }
+
+/// A record an earlier process left: kept for a device online here (and
+/// restated on its next sighting), retracted for one nobody vouches for.
+#[test]
+fn retained_records_are_kept_for_the_online_and_retracted_for_the_rest() {
+    let mut t = Tracker::booting(Some(AFTER));
+    let live_topic = cast().topic().unwrap();
+    t.restore(&live_topic, br#"{"lastOnline":"2026-09-09T00:00:00.000Z","lastOffline":null,"lastDiscovered":"2026-09-09T00:00:00.000Z"}"#);
+    t.restore_record(&format!("{live_topic}/record"), br#"{"schemaVersion":1}"#);
+    let dead = "APK.audio/Discovery/chromecast/chromecast:10.0.0.99/record";
+    t.restore_record(dead, br#"{"schemaVersion":1}"#);
+    t.seen(&cast(), T0).unwrap();
+    let out = t.finish_readback(T0 + 3_000);
+    let records: Vec<_> = out.iter().filter(|p| p.topic.ends_with("/record")).collect();
+    assert_eq!(records.len(), 1, "{out:?}");
+    assert_eq!(records[0].topic, dead);
+    assert!(records[0].is_retraction());
+    // The live one is restated in full on its next sighting.
+    assert!(t.record(&cast(), T0 + 4_000).unwrap().is_some());
+}

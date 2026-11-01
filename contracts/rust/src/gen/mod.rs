@@ -7,4 +7,5 @@ pub mod bare_metal_telemetry;
 pub mod control_value;
 pub mod device_record;
 pub mod discovery_presence;
+pub mod discovery_verified;
 pub mod scan_log_line;

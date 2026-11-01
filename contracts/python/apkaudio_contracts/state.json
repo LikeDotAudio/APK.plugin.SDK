@@ -224,7 +224,7 @@
     "`.apk.scripts/` on 2026-09-10 (2240c51e5) and REWRITTEN against today's tree",
     "(LOOSE-apk-audio-about-360-comments): `check.sh statewords` runs",
     "`check_state_words.py` again and holds the four renderer copies (tones and",
-    "word map exactly), the three closed enums, the minted readers and the JSON",
+    "word map exactly), the four closed enums, the minted readers and the JSON",
     "census. What it does NOT carry is the hex census, the near-miss ladder and",
     "the selector census: a renderer that invents its own palette -- a fourth",
     "green spelled as a hex -- still reaches the bench with nothing saying no.",
@@ -278,7 +278,36 @@
     "`stub` is amber: an optional peripheral that is simply not attached is a",
     "permanent, intended state, and painting it red trains an operator to",
     "ignore red. Green is refused because nothing answered. Amber, nobody can",
-    "say more -- until a probe publishes, which lights the same window green."
+    "say more -- until a probe publishes, which lights the same window green.",
+    "",
+    "AND FOUR CAME FROM THE AGENT SERVING RULE (contracts 0.9.0, ROAD-3472),",
+    "ruled here in 0.10.0 (ROAD-3478) so the OS Bare Metal window's `Node",
+    "agents` rack spends them through data-apk-state like the rest of the shell",
+    "instead of restating a tone per row. AGENT_SERVING_STATES in",
+    "baremetal-telemetry-rule.ts (SERVING_STATES in baremetal_telemetry.rs) is",
+    "`running | serving | failed | unknown | stub`; `unknown` and `stub` were",
+    "already here and keep their amber. Each was ruled on THE RULE that mints it:",
+    "",
+    "  `serving` -> GOOD. packets_received > 0 on the agent's own loopback",
+    "  telemetry: it processed traffic, which is something answering in the",
+    "  plainest sense this file knows.",
+    "",
+    "  `running` -> KINDA. The process is up and has processed NOTHING. That is",
+    "  the whole reason the rule exists -- a SAP listener on a segment nobody",
+    "  announces on was drawn green off its PID and told the operator the",
+    "  opposite of the truth. Red is refused too: nothing was found missing, it",
+    "  may simply be a quiet segment. agent_state.rs refuses `running` as a",
+    "  spelling of `listening`; that is the ADMITTED-versus-DRAWN split the `up`",
+    "  and `ok` paragraph above already explains, and it still holds.",
+    "",
+    "  `idle` -> KINDA. Not a contract word: the rack's own LABEL for `running`,",
+    "  because `running` reads as healthy to anyone who has not read the rule.",
+    "  Named so the badge can carry the word it shows and still draw `running`'s",
+    "  amber -- a label and its state must never be two colours.",
+    "",
+    "  `failed` -> DEAD. The agent's own telemetry document says it hit a fatal",
+    "  fault; that is a conclusion about its own ability to work, the same",
+    "  tested absence `unavailable` is for a protocol hunter."
   ],
 
   "tones": {
@@ -335,7 +364,12 @@
 
     "cleared": "kinda",
 
-    "absent": "kinda"
+    "absent": "kinda",
+
+    "serving": "good",
+    "running": "kinda",
+    "idle": "kinda",
+    "failed": "dead"
   },
 
   "default": "kinda"

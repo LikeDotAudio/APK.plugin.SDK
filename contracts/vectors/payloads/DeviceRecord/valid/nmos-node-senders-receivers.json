@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "protocol": "nmos",
+  "deviceId": "nmos:3b8be755-08ff-452b-b217-c9151eb21193",
+  "deviceClass": "Audio Interface",
+  "make": "-",
+  "model": "Dante AVIO",
+  "address": "192.168.1.40",
+  "status": "identified",
+  "firstSeen": "2026-10-31T10:00:00.000Z",
+  "lastSeen": "2026-10-31T10:00:00.000Z",
+  "notes": "1 sender, 2 receivers",
+  "extra": {
+    "nmos": {
+      "nodeId": "3b8be755-08ff-452b-b217-c9151eb21193",
+      "senders": [
+        {
+          "id": "c7c2f0a1-5e2b-4c43-9a51-0e5a9c3f8d11",
+          "label": "AVIO out 1-2",
+          "format": "urn:x-nmos:format:audio",
+          "transport": "urn:x-nmos:transport:rtp.mcast",
+          "flowId": "4a0e2c6d-1b7f-4f5e-8f3a-2d9c1e0b7a66"
+        }
+      ],
+      "receivers": [
+        {
+          "id": "9f1d3b2e-6c4a-4e8b-b7d5-1a2c3e4f5a6b",
+          "label": "AVIO in 1-2",
+          "format": "urn:x-nmos:format:audio",
+          "transport": "urn:x-nmos:transport:rtp",
+          "subscribedSender": "c7c2f0a1-5e2b-4c43-9a51-0e5a9c3f8d11"
+        },
+        {
+          "id": "0b2e4d6f-8a1c-4e3b-9d5f-7a9c1e3b5d7f",
+          "label": "AVIO in 3-4"
+        }
+      ]
+    }
+  }
+}

@@ -34,8 +34,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 def _contract_families():
     """`apkaudio_contracts.families` when importable (the image, the monorepo),
-    else None — the SDK carries runner/ and not contracts/python, and a probe
-    must start either way (the rule apk_plugin_api.py states)."""
+    else None — SDK tags before sdk-v0.9 carry runner/ and not contracts/python,
+    and a probe must start either way (the rule apk_plugin_api.py states)."""
     try:
         from apkaudio_contracts import families
         return families

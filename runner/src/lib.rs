@@ -68,6 +68,7 @@
 
 pub mod api;
 pub mod jobs;
+pub mod loopback;
 pub mod panels;
 pub mod presence;
 pub mod republish;
@@ -81,6 +82,10 @@ use std::thread::JoinHandle;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use apkaudio_contracts::agent_state::AgentReport;
+/// For [`main!`]'s `manifest =`: the contract's `embedded_manifest!`, reached
+/// through this crate so a plugin need not name the contracts crate itself.
+#[doc(hidden)]
+pub use apkaudio_contracts as __contracts;
 use apkaudio_contracts::baremetal_io;
 use apkaudio_contracts::self_test::{Check, Depth, Engaged, Engagement, Report, LEAF_ENGAGE, LEAF_RUN};
 use rumqttc::{Client, Event, Packet, QoS};
@@ -436,6 +441,32 @@ pub fn serve_group(plugins: Vec<Plugin>, agents: Vec<Agent>) -> ! {
         api_context.config_source = path.clone();
     }
 
+    // THE LOOPBACK TELEMETRY (ROAD-3472), before the sessions, so the port
+    // it bound is in the first `incoming/api` they publish. Nothing happens
+    // here for a binary that declared no manifest.
+    //
+    // `enabled = false` (ROAD-3478) is read HERE, once, for every plugin: the
+    // process still connects, describes itself and ticks — so it is seen to be
+    // alive and switched off rather than missing — but starts no agent, and
+    // says `stub` / "disabled in config" on the loopback and in the tick. A
+    // plugin that reads the key itself (nmos-control) is not contradicted: it
+    // is simply never started when the answer is no.
+    let mut disabled = false;
+    if let Some(first) = plugins.first() {
+        let config_text = override_path
+            .as_ref()
+            .and_then(|path| std::fs::read_to_string(path).ok())
+            .unwrap_or_else(|| first.config_ini.to_string());
+        let config = ini_to_json(&config_text);
+        if !module_enabled(&config, first.token) {
+            disabled = true;
+            loopback::disable(DISABLED_REASON);
+            api_context.agents.clear();
+            println!("💤 [{token}] enabled = false in config.ini — idling, no agent started");
+        }
+        loopback::start(first.token, &config);
+    }
+
     // 1 + 2 + 3 + 4: one session per module, each on its own thread.
     let sessions: Vec<JoinHandle<()>> = plugins
         .iter()
@@ -465,6 +496,7 @@ pub fn serve_group(plugins: Vec<Plugin>, agents: Vec<Agent>) -> ! {
 
     // 5: the agents, each on a named thread so a panic message names it, and
     // each with its own stall clock.
+    let agents = if disabled { Vec::new() } else { agents };
     let _ = AGENT_TICKS.set(agents.iter().map(|(name, _)| (*name, AtomicU64::new(0))).collect());
     handle_termination();
     let mut running: Vec<(&'static str, JoinHandle<()>)> = Vec::new();
@@ -534,6 +566,52 @@ pub fn serve_group(plugins: Vec<Plugin>, agents: Vec<Agent>) -> ! {
     }
 }
 
+/// The `incoming/telemetry` tick document.
+///
+/// `counters` is the loopback telemetry's own block (ROAD-3478) — the same
+/// four numbers `GET /telemetry` serves, in every binary whether or not it
+/// declared a manifest (the counters run regardless; only the HTTP surface is
+/// opt-in). So a bus reader can apply contracts' rule
+/// (`baremetal_telemetry::observed_state`, which reads
+/// `counters.packets_received`) to the tick exactly as the supervisor applies
+/// it to the loopback, without a port. No contract schema describes this
+/// document; adding a key is compatible with every reader of the other four.
+pub fn tick_sample(uptime_s: u64) -> Value {
+    let counters = loopback::counters();
+    let mut sample = json!({
+        "uptime_s": uptime_s,
+        "pid": std::process::id(),
+        "last_tick_age_s": stalest_tick().map(|(_, age)| age),
+        "image_rev": std::env::var("APK_IMAGE_REV").ok(),
+        "counters": {
+            "packets_received": counters.packets_received,
+            "messages_published": counters.messages_published,
+            "publish_failures": counters.publish_failures,
+            "unread_config_keys": counters.unread_config_keys,
+        },
+    });
+    // Switched off in config: the tick says so in the loopback's words, so a
+    // bus reader does not read zero packets as an idle-but-working hunter.
+    if let (Some(reason), Some(object)) = (loopback::disabled(), sample.as_object_mut()) {
+        object.insert("state".into(), json!("stub"));
+        object.insert("reason".into(), json!(reason));
+    }
+    sample
+}
+
+/// What the loopback and the tick say while `enabled = false`.
+pub const DISABLED_REASON: &str = "disabled in config";
+
+/// `enabled` in the token's own section: only an explicit no (`false`, `no`,
+/// `off`, `0`, any case) switches the plugin off. Absent, empty or anything
+/// else is on — the key is a switch, and a typo must not silence a hunter.
+pub fn module_enabled(config: &Value, token: &str) -> bool {
+    match module_key(config, token, "enabled") {
+        Some(value) => !["false", "no", "off", "0"].iter().any(|no| no.eq_ignore_ascii_case(value.trim())),
+        None => true,
+    }
+}
+
 /// The one broker session: config on connect, the self-test inbox, the
 /// telemetry tick. Returns the handle the watchdog polls.
 fn spawn_session(
@@ -588,14 +666,11 @@ fn spawn_session(
             // A silent device's panel leaves on the tick (`panels_expire_after_s`).
             let expired = book.lock().unwrap_or_else(|e| e.into_inner()).expire(Instant::now());
             publish_panels(&client, expired);
-            let sample = json!({
-                "uptime_s": started.elapsed().as_secs(),
-                "pid": std::process::id(),
-                "last_tick_age_s": stalest_tick().map(|(_, age)| age),
-                "image_rev": std::env::var("APK_IMAGE_REV").ok(),
-            });
+            let sample = tick_sample(started.elapsed().as_secs());
             if let Ok((t, retain)) = baremetal_io::module_incoming(token, "telemetry") {
-                let _ = client.try_publish(t, QoS::AtMostOnce, retain, sample.to_string());
+                // Counted like every other publish: a full queue drops this
+                // sample, and the drop is a `publish_failures`, not silence.
+                loopback::published(client.try_publish(t, QoS::AtMostOnce, retain, sample.to_string()).is_ok());
             }
             write_health_file();
             std::thread::sleep(TICK);
@@ -702,13 +777,13 @@ fn publish_config(client: &Client, topic: &str, token: &str, config: &Value, bro
         "path": format!("{token}/config.ini"),
         "source": "plugin",
     });
-    let _ = client.try_publish(format!("{topic}/config"), QoS::AtLeastOnce, true, payload.to_string());
-    let _ = client.try_publish(format!("{topic}/status"), QoS::AtLeastOnce, true, "online");
+    loopback::published(client.try_publish(format!("{topic}/config"), QoS::AtLeastOnce, true, payload.to_string()).is_ok());
+    loopback::published(client.try_publish(format!("{topic}/status"), QoS::AtLeastOnce, true, "online").is_ok());
     // The hostname only to a broker the bench owns — the rule beat.rs and
     // mqtt.rs follow, for the reason mqtt.rs::broker_is_local gives.
     if broker_is_ours {
         if let Some(machine) = machine_name() {
-            let _ = client.try_publish(format!("{topic}/host"), QoS::AtLeastOnce, true, machine);
+            loopback::published(client.try_publish(format!("{topic}/host"), QoS::AtLeastOnce, true, machine).is_ok());
         }
     }
     println!("📡 [{token}] config published retained to {topic}/config (+ /status=online)");
@@ -718,7 +793,7 @@ fn publish_config(client: &Client, topic: &str, token: &str, config: &Value, bro
 /// reason the telemetry tick gives.
 fn publish_panels(client: &Client, out: Vec<panels::Publication>) {
     for (topic, payload) in out {
-        let _ = client.try_publish(topic, QoS::AtLeastOnce, true, payload);
+        loopback::published(client.try_publish(topic, QoS::AtLeastOnce, true, payload).is_ok());
     }
 }
 
@@ -746,7 +821,7 @@ fn publish_api(
     };
     let document = api::document(token, context, config, &live);
     if let Ok((topic, retain)) = baremetal_io::module_api(token) {
-        let _ = client.try_publish(topic, QoS::AtLeastOnce, retain, document.to_string());
+        loopback::published(client.try_publish(topic, QoS::AtLeastOnce, retain, document.to_string()).is_ok());
     }
 }
 
@@ -770,12 +845,12 @@ fn engage(
         return;
     };
     for (topic, payload, retain) in withdrawal.publications().unwrap_or_default() {
-        let _ = client.try_publish(topic, QoS::AtLeastOnce, retain, payload);
+        loopback::published(client.try_publish(topic, QoS::AtLeastOnce, retain, payload).is_ok());
     }
     if let Some(state) = withdrawal.agent_state() {
         if let Ok(report) = AgentReport::new(token, state, "withdrawn onto the workbench — findings are not live") {
             for (topic, payload, retain) in report.publications().unwrap_or_default() {
-                let _ = client.try_publish(topic, QoS::AtLeastOnce, retain, payload);
+                loopback::published(client.try_publish(topic, QoS::AtLeastOnce, retain, payload).is_ok());
             }
         }
     }
@@ -783,7 +858,7 @@ fn engage(
         let stamp = withdrawal.device_last_online(unix_now());
         let topics: Vec<String> = presence.lock().unwrap_or_else(|e| e.into_inner()).iter().cloned().collect();
         for topic in &topics {
-            let _ = client.try_publish(topic.clone(), QoS::AtLeastOnce, true, stamp.clone());
+            loopback::published(client.try_publish(topic.clone(), QoS::AtLeastOnce, true, stamp.clone()).is_ok());
         }
         println!("🧪 [{token}] withdrawn — {} device(s) taken offline", topics.len());
     } else {
@@ -806,12 +881,12 @@ fn perform(client: &Client, register: &Mutex<Engagement>, token: &str, door: fn(
     if let Ok((topic, retain)) =
         baremetal_io::module_incoming(token, apkaudio_contracts::self_test::LEAF_RESULT)
     {
-        let _ = client.try_publish(
+        loopback::published(client.try_publish(
             topic,
             QoS::AtLeastOnce,
             retain,
             apkaudio_contracts::self_test::Verdict::Running.as_str(),
-        );
+        ).is_ok());
     }
     let permitted = register.lock().unwrap_or_else(|e| e.into_inner()).permit(token, depth);
     let mut report = match permitted {
@@ -831,7 +906,7 @@ fn perform(client: &Client, register: &Mutex<Engagement>, token: &str, door: fn(
 
 fn publish_report(client: &Client, report: &Report) {
     for (topic, payload, retain) in report.publications().unwrap_or_default() {
-        let _ = client.try_publish(topic, QoS::AtLeastOnce, retain, payload);
+        loopback::published(client.try_publish(topic, QoS::AtLeastOnce, retain, payload).is_ok());
     }
 }
 
@@ -882,6 +957,42 @@ pub fn module_topic(config: &Value, token: &str) -> String {
                 .map(str::to_string)
         })
         .unwrap_or_else(|| format!("APK.audio/System/Protocols/{token}"))
+}
+
+/// How a plugin is raised (contracts/DISCOVERY-LIFECYCLE.md, stage 2), as its
+/// own `[token]` section declares it: `raise = on-sighting | always-on | compose`.
+pub const RAISE_MODES: [&str; 3] = ["on-sighting", "always-on", "compose"];
+
+/// The token's own section, matched without case like [`module_topic`].
+fn module_key<'a>(config: &'a Value, token: &str, key: &str) -> Option<&'a str> {
+    config
+        .as_object()?
+        .iter()
+        .find(|(name, _)| name.eq_ignore_ascii_case(token))?
+        .1
+        .get(key)?
+        .as_str()
+}
+
+/// The declared `raise`, or `None` when it is missing or not one of
+/// [`RAISE_MODES`] — published as `null`, which `check-api-shape.py` and the
+/// engine read as "this plugin has not said how it is raised".
+pub fn module_raise(config: &Value, token: &str) -> Option<&'static str> {
+    let declared = module_key(config, token, "raise")?.trim();
+    RAISE_MODES.iter().copied().find(|mode| mode.eq_ignore_ascii_case(declared))
+}
+
+/// The protocols this plugin serves: `serves = a, b` in its section, else its
+/// own token. These are the `{protocol}` segments of the things it reports at
+/// `APK.audio/Discovery/{protocol}/{deviceId}`.
+pub fn module_serves(config: &Value, token: &str) -> Vec<String> {
+    let listed: Vec<String> = module_key(config, token, "serves")
+        .unwrap_or("")
+        .split(',')
+        .map(|p| p.trim().to_ascii_lowercase())
+        .filter(|p| !p.is_empty())
+        .collect();
+    if listed.is_empty() { vec![token.to_ascii_lowercase()] } else { listed }
 }
 
 /// Syntactic, no DNS — a copy of `broker_is_local` in
@@ -984,17 +1095,38 @@ fn unix_now() -> u64 {
 /// own path (LOOSE-runner-kind-pod).
 #[macro_export]
 macro_rules! main {
-    ($(kind = $kind:literal,)? token = $token:literal, lib = $lib:ident, run = [$($run:ident),+ $(,)?], panels = [$($family:ident),+ $(,)?] $(,)?) => {
+    ($(kind = $kind:literal,)? token = $token:literal, lib = $lib:ident, run = [$($run:ident),+ $(,)?], panels = [$($family:ident),+ $(,)?] $(, manifest = $manifest:literal)? $(,)?) => {
         fn main() {
             $($crate::stamp_plugin_kind($kind);)?
+            $($crate::__declare_manifest!($manifest);)?
             $($crate::panel!($family);)+
             $crate::__main_body!($token, $lib, [$($run),+]);
         }
     };
-    ($(kind = $kind:literal,)? token = $token:literal, lib = $lib:ident, run = [$($run:ident),+ $(,)?] $(,)?) => {
+    ($(kind = $kind:literal,)? token = $token:literal, lib = $lib:ident, run = [$($run:ident),+ $(,)?] $(, manifest = $manifest:literal)? $(,)?) => {
         fn main() {
             $($crate::stamp_plugin_kind($kind);)?
+            $($crate::__declare_manifest!($manifest);)?
             $crate::__main_body!($token, $lib, [$($run),+]);
+        }
+    };
+}
+
+/// Compile the CALLING crate's manifest in and declare it to [`loopback`]
+/// (ROAD-3472). [`main!`]'s `manifest = "agent.toml"` writes this; a
+/// hand-written `main` may write `apk_plugin_runner::__declare_manifest!("agent.toml");`
+/// before [`serve`]. A manifest that does not parse is a build defect said at
+/// startup, exit 78 (EX_CONFIG) — the crate's own `cargo test` should parse it first.
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __declare_manifest {
+    ($manifest:literal) => {
+        match $crate::__contracts::embedded_manifest!($manifest) {
+            Ok(manifest) => $crate::loopback::declare(manifest, env!("CARGO_PKG_VERSION")),
+            Err(error) => {
+                eprintln!("🛑 {} does not parse: {error}", $manifest);
+                ::std::process::exit(78);
+            }
         }
     };
 }
@@ -1075,6 +1207,36 @@ macro_rules! stamp {
 mod tests {
     use super::*;
 
+    /// `enabled` switches a plugin off only on an explicit no; absent or
+    /// garbled is on (ROAD-3478: the runner, not each plugin, honours it).
+    #[test]
+    fn enabled_is_off_only_on_an_explicit_no() {
+        let config = |v: &str| ini_to_json(&format!("[probe]\nenabled = {v}\n"));
+        for no in ["false", "FALSE", "no", "off", "0", " false "] {
+            assert!(!module_enabled(&config(no), "probe"), "{no:?} switches it off");
+        }
+        for yes in ["true", "yes", "1", "on", "flase", ""] {
+            assert!(module_enabled(&config(yes), "probe"), "{yes:?} leaves it on");
+        }
+        assert!(module_enabled(&ini_to_json("[probe]\nraise = always-on\n"), "probe"), "absent is on");
+        assert!(module_enabled(&config("false"), "other"), "another section's switch is not this one's");
+        assert!(!module_enabled(&ini_to_json("[PROBE]\nenabled = false\n"), "probe"), "section matched without case");
+    }
+
+    /// The tick carries the loopback's counters (ROAD-3478), and contracts'
+    /// rule reads it as it reads `GET /telemetry`: a number, never absent.
+    #[test]
+    fn the_telemetry_tick_carries_the_counters_the_rule_reads() {
+        let sample = tick_sample(7);
+        assert_eq!(sample["uptime_s"], 7);
+        for key in ["packets_received", "messages_published", "publish_failures"] {
+            assert!(sample["counters"][key].is_u64(), "counters.{key} is a number");
+        }
+        assert!(sample["counters"].get("unread_config_keys").is_some(), "null when undeclared, never absent");
+        let state = apkaudio_contracts::baremetal_telemetry::observed_state(Some(&sample));
+        assert_ne!(state, apkaudio_contracts::baremetal_telemetry::ServingState::Unknown);
+    }
+
     #[test]
     fn no_argument_starts_the_agent_and_any_argument_stops_it_first() {
         let none: Vec<String> = vec![];
@@ -1113,6 +1275,18 @@ mod tests {
         assert_eq!(v["dante"]["enabled"], "true");
         assert_eq!(v["dante"]["domain"], "local.");
         assert_eq!(v["other"]["k"], "v");
+    }
+
+    #[test]
+    fn raise_and_serves_are_read_off_the_tokens_section() {
+        let v = ini_to_json("[DANTE]\nraise = On-Sighting\nserves = dante, dante_ddm\n");
+        assert_eq!(module_raise(&v, "dante"), Some("on-sighting"));
+        assert_eq!(module_serves(&v, "dante"), vec!["dante", "dante_ddm"]);
+        let bare = ini_to_json("[ptp]\nenabled = true\n");
+        assert_eq!(module_raise(&bare, "ptp"), None, "undeclared is null, never guessed");
+        assert_eq!(module_serves(&bare, "ptp"), vec!["ptp"]);
+        let wrong = ini_to_json("[ptp]\nraise = sometimes\n");
+        assert_eq!(module_raise(&wrong, "ptp"), None);
     }
 
     #[test]

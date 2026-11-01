@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "protocol": "nic",
+  "deviceId": "nic:34-5a-60-be-6f-e8",
+  "deviceClass": "Network Interface",
+  "make": "",
+  "model": "eth0 \u2014 igb",
+  "serial": "34-5a-60-be-6f-e8",
+  "address": "34:5a:60:be:6f:e8",
+  "status": "identified",
+  "firstSeen": "2026-10-31T10:00:00.000Z",
+  "lastSeen": "2026-10-31T10:00:00.000Z",
+  "extra": {
+    "nicInterface": {
+      "name": "eth0",
+      "role": "ethernet",
+      "mac": "34:5a:60:be:6f:e8",
+      "ipv4": "44.44.44.168/16",
+      "operstate": "up",
+      "speed": "1000 Mb/s",
+      "driver": "igb",
+      "neighbours": "12",
+      "partnerSystem": "core-sw-1",
+      "partnerPort": "gi1/0/7"
+    }
+  }
+}

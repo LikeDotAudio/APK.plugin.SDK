@@ -7,10 +7,25 @@
 use serde::{Deserialize, Serialize};
 
 pub use crate::gen::device_record::{
-    DeviceRecord, DeviceRecordDeviceId, DeviceRecordExtra, DeviceRecordExtraMidi,
-    DeviceRecordExtraMidiDirection, DeviceRecordExtraVisa, DeviceRecordFirstSeen,
-    DeviceRecordLastSeen, DeviceRecordProtocol, DeviceRecordStatus,
+    DeviceRecord, DeviceRecordDeviceId, DeviceRecordExtra, DeviceRecordExtraBluetoothController,
+    DeviceRecordExtraBluetoothPeer, DeviceRecordExtraMidi, DeviceRecordExtraMidiDirection,
+    DeviceRecordExtraMidiPortsItem, DeviceRecordExtraMidiPortsItemDirection,
+    DeviceRecordExtraNicInterface, DeviceRecordExtraNmos, DeviceRecordExtraNmosReceiversItem,
+    DeviceRecordExtraNmosSendersItem, DeviceRecordExtraNicNeighbor, DeviceRecordExtraNicPartner,
+    DeviceRecordExtraPtp, DeviceRecordExtraRavenna, DeviceRecordExtraRavennaStreamsItem,
+    DeviceRecordExtraVisa, DeviceRecordExtraWifiNetwork, DeviceRecordExtraWifiRadio,
+    DeviceRecordFirstSeen, DeviceRecordLastSeen, DeviceRecordProtocol, DeviceRecordStatus,
 };
+
+/// A retained `Discovery/{protocol}/{deviceId}/record` body (contracts 0.5.0,
+/// ROAD-3437), or `None` for an empty retraction or anything that is not a
+/// `DeviceRecord`. A tolerant reader by policy, like every serde read here.
+pub fn parse_record(payload: &[u8]) -> Option<DeviceRecord> {
+    if payload.is_empty() {
+        return None;
+    }
+    serde_json::from_slice(payload).ok()
+}
 
 type ConvErr = crate::gen::device_record::error::ConversionError;
 
@@ -63,8 +78,8 @@ pub fn map_v40_visa_record(v0: &LegacyVisaRecordV0) -> Result<DeviceRecord, Stri
         device_class: v0.device_type.clone(),
         device_id: device_id.parse().map_err(|e: ConvErr| e.to_string())?,
         extra: Some(DeviceRecordExtra {
-            midi: None,
-            visa: Some(DeviceRecordExtraVisa { resource: v0.resource.clone() }),
+            visa: Some(DeviceRecordExtraVisa { resource: v0.resource.clone(), port: None, usb_serial: None }),
+            ..Default::default()
         }),
         firmware: none_if_empty(&v0.firmware),
         first_seen: last_seen.parse().map_err(|e: ConvErr| e.to_string())?,

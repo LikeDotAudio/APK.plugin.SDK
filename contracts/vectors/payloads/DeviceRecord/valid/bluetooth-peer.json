@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "protocol": "bluetooth",
+  "deviceId": "bluetooth:D2-AB-CD-EF-01-23",
+  "deviceClass": "Bluetooth Device",
+  "make": "",
+  "model": "MX Master 3",
+  "serial": "D2-AB-CD-EF-01-23",
+  "address": "D2:AB:CD:EF:01:23",
+  "status": "discovered",
+  "firstSeen": "2026-10-31T10:00:00.000Z",
+  "lastSeen": "2026-10-31T10:00:00.000Z",
+  "extra": { "bluetoothPeer": { "key": "D2_AB_CD_EF_01_23", "name": "MX Master 3", "address": "D2:AB:CD:EF:01:23", "addressType": "random", "icon": "input-mouse", "paired": "yes", "connected": "no", "source": "bluez", "adapter": "hci0" } }
+}

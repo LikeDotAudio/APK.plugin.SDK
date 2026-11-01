@@ -9,7 +9,7 @@
 
 use apkaudio_contracts::device_publish::{Publication, Sighting};
 
-use super::shared::{identity_of, now_ms, say, unsaid, with, Shared};
+use super::shared::{identity_of, now_ms, say, unsaid_rows, with, Shared};
 use super::sweep;
 use super::{KEY_PROTOCOLS, LINK_LEAF};
 
@@ -56,13 +56,21 @@ pub(super) fn sighted(s: &mut Shared, sighting: &Sighting, detail_topic: Option<
         Ok(None) => {}
         Err(e) => eprintln!("   ⚠️  [{}] {} not tracked for presence: {e}", s.token, sighting.address),
     }
+    // The proof beside it (ROAD-3437): restated at most every verify period.
+    let token = s.token.clone();
+    out.extend(s.tracker.verify(&sighting.device_id(), &token, now));
+    // And its identity (contracts 0.5.0): only when the record changed shape.
+    match s.tracker.record(sighting, now) {
+        Ok(p) => out.extend(p),
+        Err(e) => eprintln!("   ⚠️  [{}] {} has no record: {e}", s.token, sighting.address),
+    }
     if let (Some(detail), Ok(topic)) = (detail_topic, sighting.topic()) {
         s.orphans.remove(detail);
         let mut want = identity_of(sighting, detail);
         want.insert(LINK_LEAF, topic);
         if s.rows.get(detail).map(|r| &r.want) != Some(&want) {
             s.rows.entry(detail.to_string()).or_default().want = want;
-            out.extend(unsaid(s));
+            out.extend(unsaid_rows(s, [detail]));
         }
     }
     out
@@ -73,7 +81,8 @@ pub(super) fn sighted(s: &mut Shared, sighting: &Sighting, detail_topic: Option<
 /// Never waits on the broker, like [`seen`].
 pub fn gone(device_id: &str) {
     let (client, out) = with(|s| {
-        let p: Vec<_> = s.tracker.gone(device_id, now_ms()).into_iter().collect();
+        let mut p: Vec<_> = s.tracker.gone(device_id, now_ms()).into_iter().collect();
+        p.extend(s.tracker.unverify(device_id));
         for p in &p {
             println!("⚪ [{}] {} offline (departed)", s.token, p.topic);
         }
@@ -103,18 +112,21 @@ pub(super) fn retired(s: &mut Shared, old_id: &str, by: &Sighting) -> Vec<Public
         return Vec::new();
     }
     let mut out = Vec::new();
+    out.extend(s.tracker.unverify(old_id));
     if let Some(p) = s.tracker.retire(old_id) {
         println!("♻️  [{}] {} retired — now {new_topic}", s.token, p.topic);
         out.extend(sweep::expired(s, std::slice::from_ref(&p)));
         out.push(p);
     }
     let old_topic = apkaudio_contracts::topics::discovery(&by.protocol, old_id).ok();
-    for row in s.rows.values_mut() {
+    let mut relinked = Vec::new();
+    for (detail, row) in s.rows.iter_mut() {
         if old_topic.is_some() && row.link() == old_topic.as_ref() {
             row.want.insert(LINK_LEAF, new_topic.clone());
+            relinked.push(detail.clone());
         }
     }
-    out.extend(unsaid(s));
+    out.extend(unsaid_rows(s, relinked.iter().map(String::as_str)));
     out
 }
 

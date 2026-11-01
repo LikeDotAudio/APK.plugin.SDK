@@ -1,0 +1,267 @@
+{
+  "$comment": "Golden vectors for the trunk contract (ROAD-3440): the Ward-Beck line, identities, panel labels, the caster's command envelope and every trunk / trunk_sim topic. Consumed by contracts/rust/tests/trunk.rs, contracts/python/tests/test_trunk.py and contracts/src/trunk.test.ts. Topic cases name the builder in snake_case (TS uses the camelCase twin) and give its arguments in order. `refused_id` is the id a refusal is answered against (null when none could be read).",
+  "lines": {
+    "valid": [
+      {"why": "an end-to-end connection between two frames", "text": "HQ,dante-01,U00,Andrey,CLOSE,Sam,U05,sip-03,HQ", "render": "HQ,dante-01,U00,Andrey,CLOSE,Sam,U05,sip-03,HQ", "local": false, "checkin": false,
+       "line": {"site": "HQ", "frame": "dante-01", "input": "U00", "input_name": "Andrey", "switch": "CLOSE", "output_name": "Sam", "output": "U05", "out_frame": "sip-03", "out_site": "HQ"}},
+      {"why": "a crosspoint inside one frame, opened", "text": "HQ,rvon-02,U01,Kim,OPEN,C0,C0,rvon-02,HQ", "render": "HQ,rvon-02,U01,Kim,OPEN,C0,C0,rvon-02,HQ", "local": true, "checkin": false,
+       "line": {"site": "HQ", "frame": "rvon-02", "input": "U01", "input_name": "Kim", "switch": "OPEN", "output_name": "C0", "output": "C0", "out_frame": "rvon-02", "out_site": "HQ"}},
+      {"why": "a check-in", "text": "HQ,rvon-02,CHECKIN,2026-10-20T12:00:00Z,CLOSE,4 crosspoints,4,rvon-02,HQ", "render": "HQ,rvon-02,CHECKIN,2026-10-20T12:00:00Z,CLOSE,4 crosspoints,4,rvon-02,HQ", "local": true, "checkin": true,
+       "line": {"site": "HQ", "frame": "rvon-02", "input": "CHECKIN", "input_name": "2026-10-20T12:00:00Z", "switch": "CLOSE", "output_name": "4 crosspoints", "output": "4", "out_frame": "rvon-02", "out_site": "HQ"}},
+      {"why": "quoted fields keep their commas and quotes", "text": "\"Site, North\",f,U01,\"Smith, J \"\"Jo\"\"\",OPEN,x,C0,f,\"Site, North\"", "render": "\"Site, North\",f,U01,\"Smith, J \"\"Jo\"\"\",OPEN,x,C0,f,\"Site, North\"", "local": true, "checkin": false,
+       "line": {"site": "Site, North", "frame": "f", "input": "U01", "input_name": "Smith, J \"Jo\"", "switch": "OPEN", "output_name": "x", "output": "C0", "out_frame": "f", "out_site": "Site, North"}},
+      {"why": "spaces around fields are trimmed and the switch is read in any case", "text": "  HQ , f , U01 , A , close , B , U02 , f , HQ  ", "render": "HQ,f,U01,A,CLOSE,B,U02,f,HQ", "local": true, "checkin": false,
+       "line": {"site": "HQ", "frame": "f", "input": "U01", "input_name": "A", "switch": "CLOSE", "output_name": "B", "output": "U02", "out_frame": "f", "out_site": "HQ"}}
+    ],
+    "invalid": [
+      {"why": "three fields", "text": "a,b,c"},
+      {"why": "ten fields", "text": "HQ,f,U01,A,CLOSE,B,U02,f,HQ,extra"},
+      {"why": "the switch is neither CLOSE nor OPEN", "text": "HQ,f,U01,A,SHUT,B,U02,f,HQ"}
+    ]
+  },
+  "checkins": [
+    {"site": "HQ", "frame": "rvon-02", "when": "2026-10-20T12:00:00Z", "closed": 4, "text": "HQ,rvon-02,CHECKIN,2026-10-20T12:00:00Z,CLOSE,4 crosspoints,4,rvon-02,HQ"},
+    {"site": "HQ", "frame": "rvon-02", "when": "t", "closed": 0, "text": "HQ,rvon-02,CHECKIN,t,OPEN,0 crosspoints,0,rvon-02,HQ"}
+  ],
+  "rejects": [
+    {"reason": "no twin within 3000 ms", "line": "HQ,f,U01,A,CLOSE,B,U02,f,HQ", "payload": "no twin within 3000 ms|HQ,f,U01,A,CLOSE,B,U02,f,HQ"},
+    {"reason": "a|b", "line": "x", "payload": "a/b|x"}
+  ],
+  "batches": {
+    "$comment": "0.6.0 (ROAD-3457): …/line and …/ack carry a batch, one message per frame per flush. `payload` is what the writer renders exactly (and is read back); `read` is a payload only read (a 0.5.0 bare line, padding). Entries come back trimmed, in order, unparsed.",
+    "max": 500,
+    "valid": [
+      {"why": "three line twins in one flush, in TCP order", "leaf": "line", "entries": ["HQ,dante-01,U00,Andrey,CLOSE,Sam,U05,dante-01,HQ", "HQ,dante-01,U01,A,OPEN,B,U02,dante-01,HQ", "HQ,dante-01,U03,A,CLOSE,B,U04,sip-03,NY"], "payload": "{\"lines\":[\"HQ,dante-01,U00,Andrey,CLOSE,Sam,U05,dante-01,HQ\",\"HQ,dante-01,U01,A,OPEN,B,U02,dante-01,HQ\",\"HQ,dante-01,U03,A,CLOSE,B,U04,sip-03,NY\"]}"},
+      {"why": "a batch of one ack", "leaf": "ack", "entries": ["HQ,dante-01,U00,Andrey,CLOSE,Sam,U05,dante-01,HQ"], "payload": "{\"acks\":[\"HQ,dante-01,U00,Andrey,CLOSE,Sam,U05,dante-01,HQ\"]}"},
+      {"why": "the same line twice is two entries (two closes, two acks)", "leaf": "ack", "entries": ["HQ,f,U01,A,CLOSE,B,U02,f,HQ", "HQ,f,U01,A,CLOSE,B,U02,f,HQ"], "payload": "{\"acks\":[\"HQ,f,U01,A,CLOSE,B,U02,f,HQ\",\"HQ,f,U01,A,CLOSE,B,U02,f,HQ\"]}"},
+      {"why": "a quoted field and non-ASCII survive JSON", "leaf": "line", "entries": ["HQ,f,U01,\"Kuzub, A \"\"AK\"\"\",CLOSE,Zoë 🎙,U02,f,HQ"], "payload": "{\"lines\":[\"HQ,f,U01,\\\"Kuzub, A \\\"\\\"AK\\\"\\\"\\\",CLOSE,Zoë 🎙,U02,f,HQ\"]}"},
+      {"why": "a 0.5.0 writer's bare line reads as a batch of one", "leaf": "line", "entries": ["HQ,f,U01,A,CLOSE,B,U02,f,HQ"], "read": "HQ,f,U01,A,CLOSE,B,U02,f,HQ\n"},
+      {"why": "a 0.5.0 bare ack reads as a batch of one", "leaf": "ack", "entries": ["HQ,f,U01,A,OPEN,B,U02,f,HQ"], "read": "HQ,f,U01,A,OPEN,B,U02,f,HQ"},
+      {"why": "entries are trimmed; another key is ignored", "leaf": "line", "entries": ["HQ,f,U01,A,CLOSE,B,U02,f,HQ"], "read": "{\"lines\":[\"  HQ,f,U01,A,CLOSE,B,U02,f,HQ \"],\"note\":1}"}
+    ],
+    "invalid": [
+      {"why": "an empty payload", "leaf": "line", "payload": ""},
+      {"why": "an empty batch is never sent", "leaf": "line", "payload": "{\"lines\":[]}"},
+      {"why": "an ack batch on the line leaf", "leaf": "line", "payload": "{\"acks\":[\"HQ,f,U01,A,CLOSE,B,U02,f,HQ\"]}"},
+      {"why": "a line batch on the ack leaf", "leaf": "ack", "payload": "{\"lines\":[\"HQ,f,U01,A,CLOSE,B,U02,f,HQ\"]}"},
+      {"why": "an entry that is not text", "leaf": "ack", "payload": "{\"acks\":[\"HQ,f,U01,A,CLOSE,B,U02,f,HQ\",7]}"},
+      {"why": "a blank entry", "leaf": "line", "payload": "{\"lines\":[\" \"]}"},
+      {"why": "broken JSON", "leaf": "line", "payload": "{\"lines\":[\"HQ"}
+    ]
+  },
+  "protocol_batches": {
+    "$comment": "0.7.0 (ROAD-3467): trunk_sim/{protocol}/Frames/line|ack carry ONE batch per protocol per flush, each entry under the frame it is for. `payload` is what the writer renders exactly (frames sorted, compact) and is read back; `read` is only read. `frames` is what a parse gives: frame -> entries, each frame's in order, trimmed and unparsed. `max` entries across every frame.",
+    "max": 500,
+    "valid": [
+      {"why": "twins for two frames of one protocol in one flush: each frame's in TCP order, frames sorted", "leaf": "line", "frames": {"dante-01": ["HQ,dante-01,U00,Andrey,CLOSE,Sam,U05,dante-01,HQ", "HQ,dante-01,U01,A,OPEN,B,U02,dante-01,HQ"], "dante-02": ["HQ,dante-02,U03,A,CLOSE,B,U04,sip-03,NY"]}, "payload": "{\"lines\":{\"dante-01\":[\"HQ,dante-01,U00,Andrey,CLOSE,Sam,U05,dante-01,HQ\",\"HQ,dante-01,U01,A,OPEN,B,U02,dante-01,HQ\"],\"dante-02\":[\"HQ,dante-02,U03,A,CLOSE,B,U04,sip-03,NY\"]}}"},
+      {"why": "one frame's one ack", "leaf": "ack", "frames": {"dante-01": ["HQ,dante-01,U00,Andrey,CLOSE,Sam,U05,dante-01,HQ"]}, "payload": "{\"acks\":{\"dante-01\":[\"HQ,dante-01,U00,Andrey,CLOSE,Sam,U05,dante-01,HQ\"]}}"},
+      {"why": "the same line twice on one frame is two entries", "leaf": "ack", "frames": {"f": ["HQ,f,U01,A,CLOSE,B,U02,f,HQ", "HQ,f,U01,A,CLOSE,B,U02,f,HQ"]}, "payload": "{\"acks\":{\"f\":[\"HQ,f,U01,A,CLOSE,B,U02,f,HQ\",\"HQ,f,U01,A,CLOSE,B,U02,f,HQ\"]}}"},
+      {"why": "a quoted field and non-ASCII survive JSON", "leaf": "line", "frames": {"f": ["HQ,f,U01,\"Kuzub, A \"\"AK\"\"\",CLOSE,Zoë 🎙,U02,f,HQ"]}, "payload": "{\"lines\":{\"f\":[\"HQ,f,U01,\\\"Kuzub, A \\\"\\\"AK\\\"\\\"\\\",CLOSE,Zoë 🎙,U02,f,HQ\"]}}"},
+      {"why": "entries are trimmed, frames come back sorted, another key is ignored", "leaf": "line", "frames": {"a-01": ["HQ,a-01,U01,A,CLOSE,B,U02,a-01,HQ"], "b-01": ["HQ,b-01,U01,A,OPEN,B,U02,b-01,HQ"]}, "read": "{\"lines\":{\"b-01\":[\"HQ,b-01,U01,A,OPEN,B,U02,b-01,HQ\"],\"a-01\":[\" HQ,a-01,U01,A,CLOSE,B,U02,a-01,HQ  \"]},\"note\":1}"}
+    ],
+    "invalid": [
+      {"why": "an empty payload", "leaf": "line", "payload": ""},
+      {"why": "a bare line: the protocol topic was never bare", "leaf": "line", "payload": "HQ,dante-01,U00,Andrey,CLOSE,Sam,U05,dante-01,HQ"},
+      {"why": "a 0.6.0 per-frame batch on the protocol topic", "leaf": "line", "payload": "{\"lines\":[\"HQ,dante-01,U00,Andrey,CLOSE,Sam,U05,dante-01,HQ\"]}"},
+      {"why": "no frame named: an empty batch is never sent", "leaf": "ack", "payload": "{\"acks\":{}}"},
+      {"why": "a frame with no entries", "leaf": "ack", "payload": "{\"acks\":{\"dante-01\":[]}}"},
+      {"why": "an ack batch on the line leaf", "leaf": "line", "payload": "{\"acks\":{\"f\":[\"HQ,f,U01,A,CLOSE,B,U02,f,HQ\"]}}"},
+      {"why": "a frame key that is not one topic segment", "leaf": "line", "payload": "{\"lines\":{\"a/b\":[\"HQ,f,U01,A,CLOSE,B,U02,f,HQ\"]}}"},
+      {"why": "an entry that is not text", "leaf": "ack", "payload": "{\"acks\":{\"f\":[7]}}"},
+      {"why": "a blank entry", "leaf": "line", "payload": "{\"lines\":{\"f\":[\"  \"]}}"},
+      {"why": "broken JSON", "leaf": "ack", "payload": "{\"acks\":{\"f\":[\"HQ"}
+    ]
+  },
+  "protocol_states": {
+    "$comment": "0.7.0 (ROAD-3467): trunk_sim/{protocol}/Frames/state, RETAINED, every hosted frame's whole SimFrame keyed by frame. Twins compare the parse (protocol, frames), not the bytes: SimFrame key order is the writer's.",
+    "valid": [
+      {"why": "two frames of one protocol, whole", "protocol": "dante", "frames": {"dante-01": {"wire_version": 1, "protocol": "dante", "frame": "dante-01", "site": "HQ", "closed": [{"input": "U00", "output": "U05"}], "checked_in_at": "1793000000 @node", "applied": 3, "rejects": 0}, "dante-02": {"wire_version": 1, "protocol": "dante", "frame": "dante-02", "site": "HQ", "closed": [], "checked_in_at": "1793000000 @node", "applied": 3, "rejects": 0}}, "payload": "{\"wire_version\":1,\"protocol\":\"dante\",\"frames\":{\"dante-01\":{\"wire_version\":1,\"protocol\":\"dante\",\"frame\":\"dante-01\",\"site\":\"HQ\",\"closed\":[{\"input\":\"U00\",\"output\":\"U05\"}],\"checked_in_at\":\"1793000000 @node\",\"applied\":3,\"rejects\":0},\"dante-02\":{\"wire_version\":1,\"protocol\":\"dante\",\"frame\":\"dante-02\",\"site\":\"HQ\",\"closed\":[],\"checked_in_at\":\"1793000000 @node\",\"applied\":3,\"rejects\":0}}}"}
+    ],
+    "invalid": [
+      {"why": "an empty payload is an erase, not a document", "payload": ""},
+      {"why": "no protocol", "payload": "{\"wire_version\":1,\"frames\":{\"dante-01\":{\"wire_version\":1,\"protocol\":\"dante\",\"frame\":\"dante-01\",\"site\":\"HQ\",\"closed\":[],\"checked_in_at\":\"1793000000 @node\",\"applied\":3,\"rejects\":0}}}"},
+      {"why": "no frames: a protocol hosting none is erased", "payload": "{\"wire_version\":1,\"protocol\":\"dante\",\"frames\":{}}"},
+      {"why": "an entry that is not an object", "payload": "{\"wire_version\":1,\"protocol\":\"dante\",\"frames\":{\"dante-01\":3}}"},
+      {"why": "an entry filed under another frame", "payload": "{\"wire_version\":1,\"protocol\":\"dante\",\"frames\":{\"dante-02\":{\"wire_version\":1,\"protocol\":\"dante\",\"frame\":\"dante-01\",\"site\":\"HQ\",\"closed\":[],\"checked_in_at\":\"1793000000 @node\",\"applied\":3,\"rejects\":0}}}"},
+      {"why": "an entry of another protocol", "payload": "{\"wire_version\":1,\"protocol\":\"dante\",\"frames\":{\"dante-01\":{\"wire_version\":1,\"protocol\":\"sip\",\"frame\":\"dante-01\",\"site\":\"HQ\",\"closed\":[],\"checked_in_at\":\"1793000000 @node\",\"applied\":3,\"rejects\":0}}}"}
+    ]
+  },
+  "labels": [
+    {"full": "Andrey Kuzub", "l6": "Andrey", "l8": "Andrey K", "l16": "Andrey Kuzub", "chars": 12, "over6": true, "over8": true, "over16": false},
+    {"full": "Sam", "l6": "Sam", "l8": "Sam", "l16": "Sam", "chars": 3, "over6": false, "over8": false, "over16": false},
+    {"full": "🎙️ Studio B Director", "l6": "🎙️ Stud", "l8": "🎙️ Studio", "l16": "🎙️ Studio B Direc", "chars": 19, "over6": true, "over8": true, "over16": true},
+    {"full": "  padded  ", "l6": "padded", "l8": "padded", "l16": "padded", "chars": 6, "over6": false, "over8": false, "over16": false}
+  ],
+  "label_overrides": [
+    {"full": "Andrey Kuzub", "l6": "ANDREY!!", "l8": null, "l16": null, "want": {"l6": "ANDREY", "l8": "Andrey K", "l16": "Andrey Kuzub"}}
+  ],
+  "widths": [
+    {"s": "🎙️Dir", "width": 4, "why": "mic + variation selector is one"},
+    {"s": "👨‍👩‍👧 fam", "width": 5, "why": "a ZWJ family is one"},
+    {"s": "🇺🇸 NYC", "width": 5, "why": "a flag pair is one"},
+    {"s": "👍🏽ok", "width": 3, "why": "a skin tone glues to its emoji"},
+    {"s": "é", "width": 1, "why": "a combining accent glues to its letter"},
+    {"s": "a\r\nb", "width": 3, "why": "CRLF is one"}
+  ],
+  "ports": {
+    "user": [[0, "U00"], [5, "U05"], [55, "U55"], [100, "U100"]],
+    "caster": [[0, "C0"], [7, "C7"], [12, "C12"]],
+    "invalid": ["", "U", "U5", "U005", "C", "C01", "X01", "u05", "U-1", "U0a"]
+  },
+  "frames": [["dante", 1, "dante-01"], ["new-york", 10, "new-york-10"], ["2-wire", 0, "2-wire-00"]],
+  "trunks": [[1, "trunk-00001"], [12345, "trunk-12345"]],
+  "slugs": [["New York", "new-york"], ["  São Paulo!! ", "s-o-paulo"], ["Washington, D.C.", "washington-d-c"], ["---", ""]],
+  "commands": {
+    "valid": [
+      {"why": "a seeker asks for a trunk", "doc": {"id": "req-1", "verb": "connect", "args": {"who": "Andrey", "from": "dante-01", "to": "sip-03", "from_port": 0, "hold_seconds": 120.5, "why": "rehearsal"}}},
+      {"why": "release a connection", "doc": {"id": "rel-1", "verb": "release", "args": {"connection": "conn-00042"}}},
+      {"why": "rename a port with an explicit 6-character cut", "doc": {"id": "ren-1", "verb": "rename", "args": {"frame": "dante-01", "port": 5, "name": "Sam Sound", "l6": "SamSnd"}}},
+      {"why": "book a daily input", "doc": {"id": "bk-1", "verb": "book", "args": {"frame": "hq-01", "port": 3, "kind": "input", "program": "Morning news", "start_hour": 9.5, "minutes": 30, "daily": true}}},
+      {"why": "cancel a booking", "doc": {"id": "bk-2", "verb": "cancel_booking", "args": {"booking": "b-7"}}},
+      {"why": "reset the crosspoint log, no args at all", "doc": {"id": "xr-1", "verb": "crosspoint_reset"}},
+      {"why": "crosspoint settings are a whole document the caster reads", "doc": {"id": "xs-1", "verb": "crosspoint_settings", "args": {"max_events": 5000, "anything": "the caster decides"}}},
+      {"why": "a fader preset", "doc": {"id": "fp-1", "verb": "fader_preset", "args": {"preset": "olympics"}}},
+      {"why": "quick fader: speed only", "doc": {"id": "fq-1", "verb": "fader_quick", "args": {"speed": 60}}},
+      {"why": "quick fader: stop", "doc": {"id": "fq-2", "verb": "fader_quick", "args": {"running": false}}},
+      {"why": "set the clock", "doc": {"id": "ck-1", "verb": "clock", "args": {"hour": 23.99}}},
+      {"why": "gain at one crosspoint", "doc": {"id": "g-1", "verb": "gain", "args": {"frame": "dante-01", "input": "U00", "output": "C0", "db": -6}}},
+      {"why": "gain at a caster", "doc": {"id": "g-2", "verb": "gain", "args": {"trunk": "trunk-00001", "end": "b", "db": 0}}},
+      {"why": "gain on one hop of one call", "doc": {"id": "g-3", "verb": "gain", "args": {"connection": "conn-00042", "hop": 1, "db": 3.5, "who": "A1"}}},
+      {"why": "taps back to unity for one frame", "doc": {"id": "tu-1", "verb": "taps_unity", "args": {"frame": "dante-01"}}},
+      {"why": "bind a relay port", "doc": {"id": "rb-1", "verb": "relay_bind", "args": {"matrix": "local", "port": 2, "device_id": "default", "device_label": "USB Headset", "kind": "audioinput"}}},
+      {"why": "unbind it", "doc": {"id": "ru-1", "verb": "relay_unbind", "args": {"matrix": "local", "port": 2}}},
+      {"why": "a relay event", "doc": {"id": "re-1", "verb": "relay_event", "args": {"kind": "vox", "device_label": "USB Headset", "peak_dbfs": -12.5, "threshold_dbfs": -40}}},
+      {"why": "GPIO pin 1 blinks the panel", "doc": {"id": "gp-1", "verb": "gpio", "args": {"connection": "conn-00042", "pin": 1, "state": true, "function": "blink-panel"}}},
+      {"why": "a panel seek", "doc": {"id": "ps-1", "verb": "panel_seek", "args": {"who": "Kim", "from": "rvon-02", "panel_frame": "dante-01", "panel_port": 5}}},
+      {"why": "start a capture with a note", "doc": {"id": "cs-1", "verb": "capture_start", "args": {"note": "before the change"}}},
+      {"why": "stop it", "doc": {"id": "cs-2", "verb": "capture_stop", "args": {}}},
+      {"why": "the full fader is a document", "doc": {"id": "fd-1", "verb": "fader", "args": {"speed": 1, "running": true}}},
+      {"why": "globe config is a document", "doc": {"id": "gc-1", "verb": "globe_config", "args": {"spin": false}, "issued_at_ms": 1793000000000}},
+      {"why": "an integer written 2.0 is still an integer", "doc": {"id": "ren-2", "verb": "rename", "args": {"frame": "f", "port": 2.0, "name": "X"}}}
+    ],
+    "invalid": [
+      {"why": "not an object", "refused_id": null, "body": "[1,2]"},
+      {"why": "no id", "refused_id": null, "doc": {"verb": "release", "args": {"connection": "c"}}},
+      {"why": "an id with a slash", "refused_id": null, "doc": {"id": "a/b", "verb": "release", "args": {"connection": "c"}}},
+      {"why": "an unknown top-level key is never half-read", "refused_id": "x-1", "doc": {"id": "x-1", "verb": "release", "args": {"connection": "c"}, "url": "/api/release"}},
+      {"why": "an unknown verb", "refused_id": "x-2", "doc": {"id": "x-2", "verb": "format"}},
+      {"why": "args not an object", "refused_id": "x-3", "doc": {"id": "x-3", "verb": "release", "args": "c"}},
+      {"why": "a missing required argument", "refused_id": "x-4", "doc": {"id": "x-4", "verb": "connect", "args": {"who": "A", "from": "f"}}},
+      {"why": "an argument the verb does not take", "refused_id": "x-5", "doc": {"id": "x-5", "verb": "release", "args": {"connection": "c", "force": true}}},
+      {"why": "a port that is not an integer", "refused_id": "x-6", "doc": {"id": "x-6", "verb": "rename", "args": {"frame": "f", "port": 2.5, "name": "X"}}},
+      {"why": "a negative port", "refused_id": "x-7", "doc": {"id": "x-7", "verb": "rename", "args": {"frame": "f", "port": -1, "name": "X"}}},
+      {"why": "a port spelled as a string", "refused_id": "x-8", "doc": {"id": "x-8", "verb": "rename", "args": {"frame": "f", "port": "2", "name": "X"}}},
+      {"why": "an empty name", "refused_id": "x-9", "doc": {"id": "x-9", "verb": "rename", "args": {"frame": "f", "port": 2, "name": "  "}}},
+      {"why": "a booking starting at 24:00", "refused_id": "x-10", "doc": {"id": "x-10", "verb": "book", "args": {"frame": "f", "port": 1, "program": "p", "start_hour": 24, "minutes": 10}}},
+      {"why": "a booking of no minutes", "refused_id": "x-11", "doc": {"id": "x-11", "verb": "book", "args": {"frame": "f", "port": 1, "program": "p", "start_hour": 9, "minutes": 0}}},
+      {"why": "a booking of an unknown port kind", "refused_id": "x-12", "doc": {"id": "x-12", "verb": "book", "args": {"frame": "f", "port": 1, "program": "p", "start_hour": 9, "minutes": 5, "kind": "speaker"}}},
+      {"why": "quick fader with nothing to change", "refused_id": "x-13", "doc": {"id": "x-13", "verb": "fader_quick", "args": {}}},
+      {"why": "quick fader running backwards", "refused_id": "x-14", "doc": {"id": "x-14", "verb": "fader_quick", "args": {"speed": -1}}},
+      {"why": "a clock hour of 25", "refused_id": "x-15", "doc": {"id": "x-15", "verb": "clock", "args": {"hour": 25}}},
+      {"why": "gain with no point", "refused_id": "x-16", "doc": {"id": "x-16", "verb": "gain", "args": {"db": 1}}},
+      {"why": "gain naming two points", "refused_id": "x-17", "doc": {"id": "x-17", "verb": "gain", "args": {"trunk": "t", "end": "a", "connection": "c", "hop": 0, "db": 1}}},
+      {"why": "gain with half a point left over", "refused_id": "x-18", "doc": {"id": "x-18", "verb": "gain", "args": {"trunk": "t", "end": "a", "frame": "f", "db": 1}}},
+      {"why": "gain at caster end c", "refused_id": "x-19", "doc": {"id": "x-19", "verb": "gain", "args": {"trunk": "t", "end": "c", "db": 1}}},
+      {"why": "GPIO pin 9", "refused_id": "x-20", "doc": {"id": "x-20", "verb": "gpio", "args": {"pin": 9, "state": true}}},
+      {"why": "GPIO with an unknown function", "refused_id": "x-21", "doc": {"id": "x-21", "verb": "gpio", "args": {"pin": 1, "state": true, "function": "explode"}}},
+      {"why": "a state spelled as a string", "refused_id": "x-22", "doc": {"id": "x-22", "verb": "gpio", "args": {"pin": 1, "state": "on"}}},
+      {"why": "an issue time that is not unix ms", "refused_id": "x-23", "doc": {"id": "x-23", "verb": "crosspoint_reset", "issued_at_ms": "now"}},
+      {"why": "crosspoint reset takes no arguments", "refused_id": "x-24", "doc": {"id": "x-24", "verb": "crosspoint_reset", "args": {"all": true}}},
+      {"why": "a free document must still be an object", "refused_id": "x-25", "doc": {"id": "x-25", "verb": "fader", "args": [1]}}
+    ]
+  },
+  "results": [
+    {"args": ["req-1", "connect", "done", "granted", {"status": "granted"}], "want": {"id": "req-1", "verb": "connect", "status": "done", "ok": true, "detail": "granted", "result": {"status": "granted"}}},
+    {"args": [null, null, "refused", "not JSON", null], "want": {"id": null, "verb": null, "status": "refused", "ok": false, "detail": "not JSON"}}
+  ],
+  "topics": [
+    {"builder": "frame_doc_topic", "args": ["dante-01"], "topic": "APK.audio/System/Protocols/trunk/Frame/dante-01", "retain": true},
+    {"builder": "frame_topic", "args": ["dante-01"], "topic": "APK.audio/System/Protocols/trunk/Device/Frame/dante-01", "retain": true},
+    {"builder": "trunk_topic", "args": ["trunk-00001"], "topic": "APK.audio/System/Protocols/trunk/Trunk/trunk-00001", "retain": true},
+    {"builder": "connection_topic", "args": ["conn-00042"], "topic": "APK.audio/System/Protocols/trunk/Connection/conn-00042", "retain": true},
+    {"builder": "crosspoints_topic", "args": ["dante-01"], "topic": "APK.audio/System/Protocols/trunk/Crosspoint/dante-01", "retain": true},
+    {"builder": "booking_topic", "args": ["b-7"], "topic": "APK.audio/System/Protocols/trunk/Booking/b-7", "retain": true},
+    {"builder": "site_topic", "args": ["new-york"], "topic": "APK.audio/System/Protocols/trunk/Site/new-york", "retain": true},
+    {"builder": "relay_binding_topic", "args": ["local", 2], "topic": "APK.audio/System/Protocols/trunk/Relay/local/2", "retain": true},
+    {"builder": "event_topic", "args": ["Crosspoint"], "topic": "APK.audio/System/Protocols/trunk/Event/Crosspoint", "retain": false},
+    {"builder": "event_topic", "args": ["Gpio"], "topic": "APK.audio/System/Protocols/trunk/Event/Gpio", "retain": false},
+    {"builder": "command_topic", "args": [], "topic": "APK.audio/System/Protocols/trunk/outgoing/command", "retain": false},
+    {"builder": "result_topic", "args": [], "topic": "APK.audio/System/Protocols/trunk/incoming/result", "retain": false},
+    {"builder": "sim_frame_topic", "args": ["dante", "dante-01"], "topic": "APK.audio/System/Protocols/trunk_sim/dante/Frame/dante-01/state", "retain": true},
+    {"builder": "line_topic", "args": ["2-wire", "2-wire-03"], "topic": "APK.audio/System/Protocols/trunk_sim/2-wire/Frame/2-wire-03/line", "retain": false},
+    {"builder": "ack_topic", "args": ["dante", "dante-01"], "topic": "APK.audio/System/Protocols/trunk_sim/dante/Frame/dante-01/ack", "retain": false},
+    {"builder": "reject_topic", "args": ["dante", "dante-01"], "topic": "APK.audio/System/Protocols/trunk_sim/dante/Frame/dante-01/reject", "retain": false},
+    {"builder": "voice_topic", "args": ["dante", "dante-01", 1], "topic": "APK.audio/System/Protocols/trunk_sim/dante/Frame/dante-01/voice1", "retain": false},
+    {"builder": "voice_topic", "args": ["dante", "dante-01", 5], "topic": "APK.audio/System/Protocols/trunk_sim/dante/Frame/dante-01/voice5", "retain": false},
+    {"builder": "protocol_line_topic", "args": ["dante"], "topic": "APK.audio/System/Protocols/trunk_sim/dante/Frames/line", "retain": false},
+    {"builder": "protocol_ack_topic", "args": ["dante"], "topic": "APK.audio/System/Protocols/trunk_sim/dante/Frames/ack", "retain": false},
+    {"builder": "protocol_state_topic", "args": ["smpte-2110"], "topic": "APK.audio/System/Protocols/trunk_sim/smpte-2110/Frames/state", "retain": true},
+    {"builder": "view_topic", "args": ["Report"], "topic": "APK.audio/System/Protocols/trunk/View/Report", "retain": true},
+    {"builder": "view_topic", "args": ["PhoneBook"], "topic": "APK.audio/System/Protocols/trunk/View/PhoneBook", "retain": true},
+    {"builder": "view_item_topic", "args": ["Taps", "berlin-01"], "topic": "APK.audio/System/Protocols/trunk/View/Taps/berlin-01", "retain": true},
+    {"builder": "view_item_topic", "args": ["Capture", "cap-1793469126"], "topic": "APK.audio/System/Protocols/trunk/View/Capture/cap-1793469126", "retain": true}
+  ],
+  "topic_refusals": [
+    {"builder": "frame_topic", "args": ["a/b"], "why": "a frame id is one segment"},
+    {"builder": "frame_doc_topic", "args": ["a/b"], "why": "a folded frame's id is one segment too"},
+    {"builder": "frame_topic", "args": ["+"], "why": "never a wildcard"},
+    {"builder": "event_topic", "args": ["Weather"], "why": "an event kind outside the closed set"},
+    {"builder": "voice_topic", "args": ["dante", "dante-01", 2], "why": "the cuts are 1 and 5 seconds"},
+    {"builder": "line_topic", "args": ["SMPTE 2110", "f"], "why": "a protocol id with a space"},
+    {"builder": "view_topic", "args": ["Weather"], "why": "a view outside the closed set"},
+    {"builder": "view_topic", "args": ["Taps"], "why": "a keyed view needs its key (view_item_topic)"},
+    {"builder": "view_item_topic", "args": ["Report", "x"], "why": "Report is a whole view, not keyed"},
+    {"builder": "view_item_topic", "args": ["Taps", "a/b"], "why": "a key is one segment"},
+    {"builder": "protocol_ack_topic", "args": ["a/b"], "why": "a protocol id is one segment"}
+  ],
+  "wildcards": {"caster": "APK.audio/System/Protocols/trunk/#", "sim": "APK.audio/System/Protocols/trunk_sim/#", "sim_dante": "APK.audio/System/Protocols/trunk_sim/dante/#"},
+  "sim_topics": [
+    {"topic": "APK.audio/System/Protocols/trunk_sim/dante/Frame/dante-01/ack", "parts": ["dante", "dante-01", "ack"]},
+    {"topic": "APK.audio/System/Protocols/trunk_sim/dante/incoming/state", "parts": null},
+    {"topic": "APK.audio/System/Protocols/trunk/Device/Frame/dante-01", "parts": null},
+    {"topic": "APK.audio/System/Protocols/trunk_sim/dante/Frames/ack", "parts": null}
+  ],
+  "sim_protocol_topics": [
+    {"topic": "APK.audio/System/Protocols/trunk_sim/dante/Frames/ack", "parts": ["dante", "ack"]},
+    {"topic": "APK.audio/System/Protocols/trunk_sim/2-wire/Frames/line", "parts": ["2-wire", "line"]},
+    {"topic": "APK.audio/System/Protocols/trunk_sim/dante/Frames/state", "parts": ["dante", "state"]},
+    {"topic": "APK.audio/System/Protocols/trunk_sim/incoming/state", "parts": null},
+    {"topic": "APK.audio/System/Protocols/trunk_sim/dante/Frames/voice1", "parts": null},
+    {"topic": "APK.audio/System/Protocols/trunk_sim/dante/Frame/dante-01/ack", "parts": null},
+    {"topic": "APK.audio/System/Protocols/trunk/Frames/ack", "parts": null}
+  ],
+  "frame_docs": {
+    "$comment": "0.8.0 (ROAD-3467): trunk/Frame/{frame}, RETAINED, the frame's device (Frame), the trunks whose a_frame it is, the connections whose from_frame it is and its crosspoints, folded. Twins compare the parse (frame, device|null, trunks, connections, crosspoints|null), and parse(render(parse(payload))) to it.",
+    "valid": [
+      {"why": "a frame with its device, a trunk it anchors, a connection it starts and its closed crosspoints", "payload": "{\"wire_version\":1,\"frame\":\"dante-01\",\"device\":{\"wire_version\":1,\"id\":\"dante-01\",\"protocol\":\"dante\",\"protocol_name\":\"Dante\",\"family\":\"audio-over-ip\",\"site\":\"HQ\",\"user_ports\":56,\"casters\":8,\"channels_per_trunk\":8,\"caster_status\":[{\"index\":0,\"state\":\"trunked\",\"trunk\":\"trunk-00001\",\"peer_frame\":\"sip-02\"}],\"free_casters\":7,\"port_names\":{\"U00\":\"Ana\"},\"port_labels\":{},\"live_ports\":{\"U00\":\"Ana\"},\"advertised_at\":\"2026-10-31T18:00:00Z\"},\"trunks\":{\"trunk-00001\":{\"id\":\"trunk-00001\",\"a_frame\":\"dante-01\",\"a_caster\":0,\"b_frame\":\"sip-02\",\"b_caster\":3,\"capacity\":8,\"connections\":[\"conn-00042\"],\"created_at\":\"2026-10-31T17:59:00Z\",\"gain_a_db\":0.0,\"gain_b_db\":0.0}},\"connections\":{\"conn-00042\":{\"id\":\"conn-00042\",\"who\":\"Ana\",\"from_frame\":\"dante-01\",\"from_port\":\"U00\",\"to_frame\":\"sip-02\",\"to_port\":\"U04\",\"kind\":\"via\",\"hops\":[{\"trunk\":\"trunk-00001\",\"from\":\"dante-01\",\"to\":\"sip-02\"}],\"granted_at\":\"2026-10-31T18:00:00Z\",\"origin\":\"simulator\",\"muted\":false,\"latched\":false,\"listen\":false}},\"crosspoints\":{\"frame\":\"dante-01\",\"seq\":17,\"at\":\"2026-10-31T18:00:00Z\",\"closed\":[{\"input\":\"U00\",\"output\":\"C0\",\"connection\":\"conn-00042\"}]}}", "want": {"frame": "dante-01", "device": {"wire_version": 1, "id": "dante-01", "protocol": "dante", "protocol_name": "Dante", "family": "audio-over-ip", "site": "HQ", "user_ports": 56, "casters": 8, "channels_per_trunk": 8, "caster_status": [{"index": 0, "state": "trunked", "trunk": "trunk-00001", "peer_frame": "sip-02"}], "free_casters": 7, "port_names": {"U00": "Ana"}, "port_labels": {}, "live_ports": {"U00": "Ana"}, "advertised_at": "2026-10-31T18:00:00Z"}, "trunks": {"trunk-00001": {"id": "trunk-00001", "a_frame": "dante-01", "a_caster": 0, "b_frame": "sip-02", "b_caster": 3, "capacity": 8, "connections": ["conn-00042"], "created_at": "2026-10-31T17:59:00Z", "gain_a_db": 0.0, "gain_b_db": 0.0}}, "connections": {"conn-00042": {"id": "conn-00042", "who": "Ana", "from_frame": "dante-01", "from_port": "U00", "to_frame": "sip-02", "to_port": "U04", "kind": "via", "hops": [{"trunk": "trunk-00001", "from": "dante-01", "to": "sip-02"}], "granted_at": "2026-10-31T18:00:00Z", "origin": "simulator", "muted": false, "latched": false, "listen": false}}, "crosspoints": {"frame": "dante-01", "seq": 17, "at": "2026-10-31T18:00:00Z", "closed": [{"input": "U00", "output": "C0", "connection": "conn-00042"}]}}},
+      {"why": "an idle frame: only its device, the maps empty", "payload": "{\"wire_version\":1,\"frame\":\"dante-01\",\"device\":{\"wire_version\":1,\"id\":\"dante-01\",\"protocol\":\"dante\",\"protocol_name\":\"Dante\",\"family\":\"audio-over-ip\",\"site\":\"HQ\",\"user_ports\":56,\"casters\":8,\"channels_per_trunk\":8,\"caster_status\":[{\"index\":0,\"state\":\"trunked\",\"trunk\":\"trunk-00001\",\"peer_frame\":\"sip-02\"}],\"free_casters\":7,\"port_names\":{\"U00\":\"Ana\"},\"port_labels\":{},\"live_ports\":{\"U00\":\"Ana\"},\"advertised_at\":\"2026-10-31T18:00:00Z\"},\"trunks\":{},\"connections\":{}}", "want": {"frame": "dante-01", "device": {"wire_version": 1, "id": "dante-01", "protocol": "dante", "protocol_name": "Dante", "family": "audio-over-ip", "site": "HQ", "user_ports": 56, "casters": 8, "channels_per_trunk": 8, "caster_status": [{"index": 0, "state": "trunked", "trunk": "trunk-00001", "peer_frame": "sip-02"}], "free_casters": 7, "port_names": {"U00": "Ana"}, "port_labels": {}, "live_ports": {"U00": "Ana"}, "advertised_at": "2026-10-31T18:00:00Z"}, "trunks": {}, "connections": {}, "crosspoints": null}},
+      {"why": "a far frame the caster has no advertisement for, anchoring a trunk; the maps may be left out", "payload": "{\"wire_version\":1,\"frame\":\"dante-01\",\"trunks\":{\"trunk-00001\":{\"id\":\"trunk-00001\",\"a_frame\":\"dante-01\",\"a_caster\":0,\"b_frame\":\"sip-02\",\"b_caster\":3,\"capacity\":8,\"connections\":[\"conn-00042\"],\"created_at\":\"2026-10-31T17:59:00Z\",\"gain_a_db\":0.0,\"gain_b_db\":0.0}}}", "want": {"frame": "dante-01", "device": null, "trunks": {"trunk-00001": {"id": "trunk-00001", "a_frame": "dante-01", "a_caster": 0, "b_frame": "sip-02", "b_caster": 3, "capacity": 8, "connections": ["conn-00042"], "created_at": "2026-10-31T17:59:00Z", "gain_a_db": 0.0, "gain_b_db": 0.0}}, "connections": {}, "crosspoints": null}},
+      {"why": "null device and crosspoints read as none; another top-level key is ignored", "payload": "{\"wire_version\":1,\"frame\":\"dante-01\",\"device\":null,\"connections\":{\"conn-00042\":{\"id\":\"conn-00042\",\"who\":\"Ana\",\"from_frame\":\"dante-01\",\"from_port\":\"U00\",\"to_frame\":\"sip-02\",\"to_port\":\"U04\",\"kind\":\"via\",\"hops\":[{\"trunk\":\"trunk-00001\",\"from\":\"dante-01\",\"to\":\"sip-02\"}],\"granted_at\":\"2026-10-31T18:00:00Z\",\"origin\":\"simulator\",\"muted\":false,\"latched\":false,\"listen\":false}},\"crosspoints\":null,\"note\":\"x\"}", "want": {"frame": "dante-01", "device": null, "trunks": {}, "connections": {"conn-00042": {"id": "conn-00042", "who": "Ana", "from_frame": "dante-01", "from_port": "U00", "to_frame": "sip-02", "to_port": "U04", "kind": "via", "hops": [{"trunk": "trunk-00001", "from": "dante-01", "to": "sip-02"}], "granted_at": "2026-10-31T18:00:00Z", "origin": "simulator", "muted": false, "latched": false, "listen": false}}, "crosspoints": null}}
+    ],
+    "invalid": [
+      {"why": "an empty payload is the erase, not a document", "payload": ""},
+      {"why": "not an object", "payload": "[1,2]"},
+      {"why": "no frame", "payload": "{\"wire_version\":1,\"device\":{\"wire_version\":1,\"id\":\"dante-01\",\"protocol\":\"dante\",\"protocol_name\":\"Dante\",\"family\":\"audio-over-ip\",\"site\":\"HQ\",\"user_ports\":56,\"casters\":8,\"channels_per_trunk\":8,\"caster_status\":[{\"index\":0,\"state\":\"trunked\",\"trunk\":\"trunk-00001\",\"peer_frame\":\"sip-02\"}],\"free_casters\":7,\"port_names\":{\"U00\":\"Ana\"},\"port_labels\":{},\"live_ports\":{\"U00\":\"Ana\"},\"advertised_at\":\"2026-10-31T18:00:00Z\"}}"},
+      {"why": "a frame that is not one segment", "payload": "{\"frame\":\"dante/01\",\"device\":{\"wire_version\":1,\"id\":\"dante/01\",\"protocol\":\"dante\",\"protocol_name\":\"Dante\",\"family\":\"audio-over-ip\",\"site\":\"HQ\",\"user_ports\":56,\"casters\":8,\"channels_per_trunk\":8,\"caster_status\":[{\"index\":0,\"state\":\"trunked\",\"trunk\":\"trunk-00001\",\"peer_frame\":\"sip-02\"}],\"free_casters\":7,\"port_names\":{\"U00\":\"Ana\"},\"port_labels\":{},\"live_ports\":{\"U00\":\"Ana\"},\"advertised_at\":\"2026-10-31T18:00:00Z\"}}"},
+      {"why": "a frame with nothing to say is erased, not stated", "payload": "{\"wire_version\":1,\"frame\":\"dante-01\",\"trunks\":{},\"connections\":{}}"},
+      {"why": "a device that is not an object", "payload": "{\"wire_version\":1,\"frame\":\"dante-01\",\"device\":\"dante-01\"}"},
+      {"why": "a device naming another frame", "payload": "{\"wire_version\":1,\"frame\":\"dante-01\",\"device\":{\"wire_version\":1,\"id\":\"dante-02\",\"protocol\":\"dante\",\"protocol_name\":\"Dante\",\"family\":\"audio-over-ip\",\"site\":\"HQ\",\"user_ports\":56,\"casters\":8,\"channels_per_trunk\":8,\"caster_status\":[{\"index\":0,\"state\":\"trunked\",\"trunk\":\"trunk-00001\",\"peer_frame\":\"sip-02\"}],\"free_casters\":7,\"port_names\":{\"U00\":\"Ana\"},\"port_labels\":{},\"live_ports\":{\"U00\":\"Ana\"},\"advertised_at\":\"2026-10-31T18:00:00Z\"}}"},
+      {"why": "trunks that are a list", "payload": "{\"wire_version\":1,\"frame\":\"dante-01\",\"trunks\":[{\"id\":\"trunk-00001\",\"a_frame\":\"dante-01\",\"a_caster\":0,\"b_frame\":\"sip-02\",\"b_caster\":3,\"capacity\":8,\"connections\":[\"conn-00042\"],\"created_at\":\"2026-10-31T17:59:00Z\",\"gain_a_db\":0.0,\"gain_b_db\":0.0}]}"},
+      {"why": "a trunk filed under another id", "payload": "{\"wire_version\":1,\"frame\":\"dante-01\",\"trunks\":{\"trunk-00002\":{\"id\":\"trunk-00001\",\"a_frame\":\"dante-01\",\"a_caster\":0,\"b_frame\":\"sip-02\",\"b_caster\":3,\"capacity\":8,\"connections\":[\"conn-00042\"],\"created_at\":\"2026-10-31T17:59:00Z\",\"gain_a_db\":0.0,\"gain_b_db\":0.0}}}"},
+      {"why": "a trunk that belongs in its a_frame's document", "payload": "{\"wire_version\":1,\"frame\":\"dante-01\",\"trunks\":{\"trunk-00001\":{\"id\":\"trunk-00001\",\"a_frame\":\"sip-02\",\"a_caster\":0,\"b_frame\":\"sip-02\",\"b_caster\":3,\"capacity\":8,\"connections\":[\"conn-00042\"],\"created_at\":\"2026-10-31T17:59:00Z\",\"gain_a_db\":0.0,\"gain_b_db\":0.0}}}"},
+      {"why": "a connection that belongs in its from_frame's document", "payload": "{\"wire_version\":1,\"frame\":\"dante-01\",\"connections\":{\"conn-00042\":{\"id\":\"conn-00042\",\"who\":\"Ana\",\"from_frame\":\"sip-02\",\"from_port\":\"U00\",\"to_frame\":\"sip-02\",\"to_port\":\"U04\",\"kind\":\"via\",\"hops\":[{\"trunk\":\"trunk-00001\",\"from\":\"dante-01\",\"to\":\"sip-02\"}],\"granted_at\":\"2026-10-31T18:00:00Z\",\"origin\":\"simulator\",\"muted\":false,\"latched\":false,\"listen\":false}}}"},
+      {"why": "a connection entry that is not an object", "payload": "{\"wire_version\":1,\"frame\":\"dante-01\",\"connections\":{\"conn-00042\":3}}"},
+      {"why": "a connection key that is not a segment", "payload": "{\"wire_version\":1,\"frame\":\"dante-01\",\"connections\":{\"conn 42\":{\"id\":\"conn 42\",\"who\":\"Ana\",\"from_frame\":\"dante-01\",\"from_port\":\"U00\",\"to_frame\":\"sip-02\",\"to_port\":\"U04\",\"kind\":\"via\",\"hops\":[{\"trunk\":\"trunk-00001\",\"from\":\"dante-01\",\"to\":\"sip-02\"}],\"granted_at\":\"2026-10-31T18:00:00Z\",\"origin\":\"simulator\",\"muted\":false,\"latched\":false,\"listen\":false}}}"},
+      {"why": "crosspoints naming another frame", "payload": "{\"wire_version\":1,\"frame\":\"dante-01\",\"crosspoints\":{\"frame\":\"dante-02\",\"seq\":17,\"at\":\"2026-10-31T18:00:00Z\",\"closed\":[{\"input\":\"U00\",\"output\":\"C0\",\"connection\":\"conn-00042\"}]}}"},
+      {"why": "crosspoints whose closed is not a list", "payload": "{\"wire_version\":1,\"frame\":\"dante-01\",\"crosspoints\":{\"frame\":\"dante-01\",\"seq\":17,\"at\":\"2026-10-31T18:00:00Z\",\"closed\":{}}}"}
+    ]
+  },
+  "frame_doc_topics": [
+    {"topic": "APK.audio/System/Protocols/trunk/Frame/dante-01", "frame": "dante-01"},
+    {"topic": "APK.audio/System/Protocols/trunk/Frame/2-wire-01", "frame": "2-wire-01"},
+    {"topic": "APK.audio/System/Protocols/trunk/Device/Frame/dante-01", "frame": null},
+    {"topic": "APK.audio/System/Protocols/trunk/Frame/dante-01/x", "frame": null},
+    {"topic": "APK.audio/System/Protocols/trunk/Frame/", "frame": null},
+    {"topic": "APK.audio/System/Protocols/trunk_sim/dante/Frame/dante-01", "frame": null}
+  ]
+}

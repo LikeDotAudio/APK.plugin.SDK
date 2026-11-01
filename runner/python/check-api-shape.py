@@ -62,6 +62,71 @@ def python_build_keys() -> list:
     return list(apk_plugin_api.PluginApi("probe").document()["build"])
 
 
+# contracts/DISCOVERY-LIFECYCLE.md, stage 2: every document says how its plugin
+# is raised and which protocols it serves. Required by name in both sources.
+LIFECYCLE_KEYS = ("raise", "serves")
+
+# In the monorepo the plugins sit beside this engine; a clone of the SDK alone
+# has none, and the config check is skipped there rather than passing vacuously.
+PLUGINS = os.path.normpath(os.path.join(HERE, "..", "..", "..", "..", "PLUGINS"))
+
+
+def plugin_config(src: str):
+    """The plugin's config.ini: SRC/config.ini, else the first one in a crate
+    folder under SRC (Discovery.AppleTV/, apkaudio-netbox/), never under target/."""
+    direct = os.path.join(src, "config.ini")
+    if os.path.isfile(direct):
+        return direct
+    for root, dirs, files in os.walk(src):
+        dirs[:] = sorted(d for d in dirs if d not in ("target", "node_modules", "tests", ".git"))
+        if "config.ini" in files:
+            return os.path.join(root, "config.ini")
+    return None
+
+
+TOKEN_RE = re.compile(r'main!\(\s*token\s*=\s*"([^"]+)"')
+
+
+def plugin_token(src: str):
+    """The token the binary runs under, off its `main!(token = "…")` — not the
+    folder name: PLUGIN.MILAN runs as `avb`, PLUGIN.NMOS_CONTROL as `nmos-control`."""
+    for root, dirs, files in os.walk(src):
+        dirs[:] = sorted(d for d in dirs if d not in ("target", "node_modules", ".git"))
+        for name in sorted(files):
+            if name.endswith(".rs"):
+                with open(os.path.join(root, name), encoding="utf-8", errors="replace") as handle:
+                    match = TOKEN_RE.search(handle.read())
+                if match:
+                    return match.group(1).lower()
+    return None
+
+
+def undeclared_raises() -> list:
+    """Every PLUGIN.*/SRC/config.ini whose own [token] section lacks a valid raise."""
+    sys.path.insert(0, HERE)
+    import configparser
+    import apk_plugin_api
+    bad = []
+    for folder in sorted(os.listdir(PLUGINS)):
+        if not folder.startswith("PLUGIN."):
+            continue
+        ini = plugin_config(os.path.join(PLUGINS, folder, "SRC"))
+        if ini is None:
+            continue
+        token = plugin_token(os.path.join(PLUGINS, folder, "SRC")) or folder[len("PLUGIN."):].lower()
+        parser = configparser.ConfigParser(interpolation=None, strict=False)
+        try:
+            parser.read(ini, encoding="utf-8")
+        except configparser.Error as error:
+            bad.append("%s (unreadable: %s)" % (ini, error))
+            continue
+        config = {name: dict(parser[name]) for name in parser.sections()}
+        if apk_plugin_api.module_raise(config, token) is None:
+            bad.append("%s: [%s] raise = %s" % (os.path.relpath(ini, PLUGINS), token,
+                                                 " | ".join(apk_plugin_api.RAISE_MODES)))
+    return bad
+
+
 def main() -> int:
     for side, keys in (("api.rs", rust_build_keys()), ("apk_plugin_api.py", python_build_keys())):
         missing = [k for k in BUILD_KEYS if k not in keys]
@@ -70,6 +135,12 @@ def main() -> int:
                   "this plugin is compatible" % (side, ", build.".join(missing)))
             return 1
     rust, python = rust_keys(), python_keys()
+    for side, keys in (("api.rs", rust), ("apk_plugin_api.py", python)):
+        missing = [k for k in LIFECYCLE_KEYS if k not in keys]
+        if missing:
+            print("🛑 %s publishes no %s — the engine cannot tell how this plugin "
+                  "is raised (contracts/DISCOVERY-LIFECYCLE.md)" % (side, ", ".join(missing)))
+            return 1
     if not rust:
         print("🛑 read no keys out of api.rs — the json! block moved, and this "
               "check would pass forever on an empty set")
@@ -86,6 +157,17 @@ def main() -> int:
         return 1
     print("✓ both languages publish the same %d keys: %s" % (len(rust), ", ".join(rust)))
     print("✓ both publish build.%s" % ", build.".join(BUILD_KEYS))
+    print("✓ both publish %s" % ", ".join(LIFECYCLE_KEYS))
+    if os.path.isdir(PLUGINS):
+        bad = undeclared_raises()
+        if bad:
+            print("🛑 %d plugin config(s) do not declare how they are raised:" % len(bad))
+            for line in bad:
+                print("   " + line)
+            return 1
+        print("✓ every PLUGIN.*/SRC/config.ini declares raise")
+    else:
+        print("· no PLUGINS/ beside this engine (SDK clone): config declarations not checked")
     return 0
 
 

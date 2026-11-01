@@ -326,3 +326,142 @@ class ServeForwardsKind(unittest.TestCase):
                 self.assertEqual(seen["kind"], kind)
         finally:
             runner.apk_plugin_api.PluginApi = real
+
+
+class LoopbackTelemetry(unittest.TestCase):
+    """The Python runner serves what loopback.rs serves (ROAD-3478): the same
+    routes, the same refusals, the same documents, contracts' rule."""
+
+    MANIFEST = ('[agent]\nname = "probe"   # the token\nkind = "protocol"\ntitle = "Probe"\n'
+                'status = "discovery-only"\nsummary = "A test agent."\n[telemetry]\nport = 0\n'
+                '[config]\nreads = [\n  "raise",\n]\n')
+
+    def get(self, port, path, method="GET"):
+        import http.client
+        connection = http.client.HTTPConnection("127.0.0.1", port, timeout=3)
+        connection.request(method, path)
+        answer = connection.getresponse()
+        body = answer.read()
+        connection.close()
+        return answer.status, json.loads(body)
+
+    def test_the_manifest_parses_as_contracts_does_and_refuses_by_key(self):
+        manifest = runner.Manifest.parse(self.MANIFEST)
+        self.assertEqual((manifest.name, manifest.telemetry_port, manifest.config_reads), ("probe", 0, ["raise"]))
+        self.assertEqual(manifest.unread_config_keys(["RAISE", "multicast"]), 1)
+        for broken, key in ((self.MANIFEST.replace('kind = "protocol"', 'kind = "daemon"'), "kind"),
+                            (self.MANIFEST.replace('status = "discovery-only"', 'status = "maybe"'), "status"),
+                            (self.MANIFEST.replace('title = "Probe"\n', ''), "title"),
+                            (self.MANIFEST.replace("port = 0", "port = 70000"), "port")):
+            with self.assertRaisesRegex(ValueError, key):
+                runner.Manifest.parse(broken)
+
+    @unittest.skipIf(CONTRACTS is None, "no contracts/rust beside this tree")
+    def test_the_vocabularies_and_document_keys_are_contracts(self):
+        source = read(os.path.join(CONTRACTS, "baremetal_telemetry.rs"))
+        self.assertEqual(rust_const(source, "AGENT_KINDS"), runner.AGENT_KINDS)
+        self.assertEqual(rust_const(source, "IMPLEMENTATION_STATUSES"), runner.IMPLEMENTATION_STATUSES)
+        body = source.split("pub fn telemetry_document(", 1)[1].split("json!({", 1)[1].split("})", 1)[0]
+        rust_keys = re.findall(r'^\s{8}"([A-Za-z_]+)":', body, re.M)
+        rust_counters = re.findall(r'^\s{12}"([a-z_]+)":', body, re.M)
+        runner._LOOPBACK.update(manifest=runner.Manifest.parse(self.MANIFEST), started=0.0)
+        try:
+            document = runner.telemetry_document()
+        finally:
+            runner._LOOPBACK.update(manifest=None, started=None)
+        self.assertEqual(list(document), rust_keys)
+        self.assertEqual(list(document["counters"]), rust_counters)
+        tick = read(RUNNER_LIB).split("pub fn tick_sample(", 1)[1].split("\n}\n", 1)[0]
+        self.assertEqual(list(runner.tick_sample(1)), re.findall(r'^\s{8}"([a-z_]+)":', tick, re.M))
+
+    def test_running_until_a_packet_then_serving_over_the_loopback(self):
+        if runner.telemetry_rule() is None:
+            self.skipTest("apkaudio_contracts not importable here")
+        saved = dict(runner._LOOPBACK)
+        try:
+            runner._LOOPBACK.update(manifest=None, fatal=None, port=None)
+            self.assertIsNone(runner.start_loopback("probe", {}), "no manifest serves nothing")
+            runner.declare(runner.Manifest.parse(self.MANIFEST), "9.9.9")
+            self.assertIsNone(runner.start_loopback("probe", {"probe": {"raise": "x", "multicast": "y"}}),
+                              "port 0 binds nothing")
+            self.assertIsNone(runner.loopback_api_section())
+            server = runner.make_loopback_server(0)
+            port = server.server_address[1]
+            threading_ = __import__("threading")
+            threading_.Thread(target=server.serve_forever, daemon=True).start()
+
+            code, doc = self.get(port, "/telemetry")
+            self.assertEqual((code, doc["state"], doc["agent"], doc["version"]), (200, "running", "probe", "9.9.9"))
+            self.assertEqual(doc["counters"]["unread_config_keys"], 1, "`multicast` is read by nothing declared")
+
+            before = runner.counters()
+            self.assertFalse(runner.published(False))
+            self.assertTrue(runner.published(True))
+            code, doc = self.get(port, "/telemetry")
+            self.assertEqual(doc["state"], "running", "publishing is not traffic")
+            self.assertGreater(doc["counters"]["publish_failures"], before["publish_failures"])
+
+            runner.packet_received()
+            code, status = self.get(port, "/status?x=1")
+            self.assertEqual((code, status["state"]), (200, "serving"))
+            self.assertEqual(runner.telemetry_rule().observed_state(self.get(port, "/telemetry")[1]), "serving")
+            self.assertEqual(runner.telemetry_rule().observed_state(runner.tick_sample(0)), "serving",
+                             "the tick carries the counters the rule reads")
+
+            self.assertEqual(self.get(port, "/nope")[0], 404)
+            self.assertEqual(self.get(port, "/status", "POST")[0], 405)
+
+            runner.fatal("socket closed")
+            runner.fatal("a second reason is not kept")
+            code, doc = self.get(port, "/telemetry")
+            self.assertEqual((doc["state"], doc["reason"]), ("failed", "socket closed"))
+            server.shutdown()
+            server.server_close()
+        finally:
+            runner._LOOPBACK.clear()
+            runner._LOOPBACK.update(saved)
+
+    def test_enabled_false_reads_stub_disabled_in_config(self):
+        """lib.rs parity (ROAD-3478): the runner honours `enabled = false`."""
+        for no in ("false", "FALSE", " off ", "no", "0"):
+            self.assertFalse(runner.module_enabled({"probe": {"enabled": no}}, "probe"), no)
+        for yes in ("true", "1", "flase", ""):
+            self.assertTrue(runner.module_enabled({"probe": {"enabled": yes}}, "probe"), yes)
+        self.assertTrue(runner.module_enabled({"probe": {}}, "probe"), "absent is on")
+        self.assertFalse(runner.module_enabled({"PROBE": {"enabled": "false"}}, "probe"))
+        saved = dict(runner._LOOPBACK)
+        try:
+            runner._LOOPBACK.update(manifest=runner.Manifest.parse(self.MANIFEST), started=0.0,
+                                    disabled=runner.DISABLED_REASON)
+            if runner.telemetry_rule() is not None:
+                document = runner.telemetry_document()
+                self.assertEqual((document["state"], document["reason"]), ("stub", "disabled in config"))
+                self.assertEqual(runner.telemetry_rule().observed_state(document), "stub")
+            tick = runner.tick_sample(1)
+            self.assertEqual((tick["state"], tick["reason"]), ("stub", "disabled in config"))
+            runner._LOOPBACK["disabled"] = None
+            self.assertNotIn("state", runner.tick_sample(1), "switched on, the tick is lib.rs's shape")
+        finally:
+            runner._LOOPBACK.clear()
+            runner._LOOPBACK.update(saved)
+
+    def test_the_environment_moves_or_disables_the_port(self):
+        self.assertEqual(runner.chosen_port(8190, None), 8190)
+        self.assertEqual(runner.chosen_port(8190, " 8191 "), 8191)
+        self.assertEqual(runner.chosen_port(8190, "0"), 0)
+        self.assertEqual(runner.chosen_port(8190, "nope"), 8190)
+
+    def test_a_refused_publish_is_counted(self):
+        class Info:
+            def __init__(self, rc):
+                self.rc = rc
+
+        class Client(FakeClient):
+            def publish(self, topic, payload, qos=0, retain=False):
+                return Info(4)                      # MQTT_ERR_NO_CONN
+
+        session = runner.Session.__new__(runner.Session)
+        session.token, session.client = "probe", Client()
+        before = runner.counters()["publish_failures"]
+        session.publish("t", "p", False)
+        self.assertEqual(runner.counters()["publish_failures"], before + 1)

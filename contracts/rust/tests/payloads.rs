@@ -9,6 +9,7 @@ use apkaudio_contracts::control_value::ControlValue;
 use apkaudio_contracts::gen::bare_metal_telemetry::BareMetalTelemetry;
 use apkaudio_contracts::device_record::{map_v40_visa_record, DeviceRecord, LegacyVisaRecordV0};
 use apkaudio_contracts::discovery_presence::DiscoveryPresence;
+use apkaudio_contracts::discovery_verified::{self, DiscoveryVerified};
 use apkaudio_contracts::heartbeat::{AgentHeartbeat, LegacyFailoverHeartbeatV0};
 use apkaudio_contracts::scan_log_line::ScanLogLine;
 use apkaudio_contracts::{identity, time};
@@ -91,6 +92,24 @@ fn discovery_presence_invalid() {
             apkaudio_contracts::discovery_presence::parse(json.as_bytes()).is_none(),
             "{name} should fail"
         );
+    }
+}
+
+#[test]
+fn discovery_verified_valid() {
+    for (name, json) in docs_in("DiscoveryVerified/valid") {
+        serde_json::from_str::<DiscoveryVerified>(&json).unwrap_or_else(|e| panic!("{name}: {e}"));
+        let doc = discovery_verified::parse(json.as_bytes()).unwrap_or_else(|| panic!("{name}"));
+        assert!(discovery_verified::verified_ms(&doc).is_some(), "{name}");
+    }
+}
+
+/// Refused by [`discovery_verified::parse`], the strict reader, so an extra
+/// key is caught too (serde alone is a tolerant reader by policy).
+#[test]
+fn discovery_verified_invalid() {
+    for (name, json) in docs_in("DiscoveryVerified/invalid") {
+        assert!(discovery_verified::parse(json.as_bytes()).is_none(), "{name} should fail");
     }
 }
 
@@ -401,6 +420,7 @@ const RUST_READS: &[&str] = &[
     "ControlValue",
     "DeviceRecord",
     "DiscoveryPresence",
+    "DiscoveryVerified",
     "ScanLogLine",
 ];
 

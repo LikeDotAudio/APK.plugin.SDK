@@ -153,3 +153,106 @@ fn presence_a_retired_id_is_retracted_not_said_offline() {
     assert!(t.retire(&by_name.device_id()).is_none(), "once");
     assert_eq!(t.counts(), (1, 0));
 }
+
+/// ROAD-3437: the proof ticks on its own leaf while the status stays silent.
+#[test]
+fn verified_is_restated_once_per_period_beside_a_silent_status() {
+    let mut t = live();
+    let id = cast().device_id();
+    t.seen(&cast(), T0).unwrap();
+    let first = t.verify(&id, "chromecast", T0).expect("the first proof is said");
+    assert_eq!(first.topic, "APK.audio/Discovery/chromecast/chromecast:10.0.0.77/verified");
+    let proof = apkaudio_contracts::discovery_verified::parse(first.payload.as_bytes()).expect("a legal DiscoveryVerified");
+    assert_eq!(proof.by.to_string(), "chromecast");
+    let every = t.verify_every_ms();
+    assert!((5_000..=100_000).contains(&every));
+    // Inside the period: nothing. Past it: one restatement. Status: silent throughout.
+    assert!(t.verify(&id, "chromecast", T0 + every - 1).is_none());
+    assert!(t.seen(&cast(), T0 + every).unwrap().is_none());
+    assert!(t.verify(&id, "chromecast", T0 + every).is_some());
+}
+
+#[test]
+fn verified_is_cleared_when_the_thing_goes() {
+    let mut t = live();
+    let id = cast().device_id();
+    t.seen(&cast(), T0).unwrap();
+    t.verify(&id, "chromecast", T0).unwrap();
+    let cleared: Vec<_> = t.expire(T0 + 10_000_000).into_iter().filter(|p| p.topic.ends_with("/verified")).collect();
+    assert_eq!(cleared.len(), 1, "expiry clears the proof with the status");
+    assert!(cleared[0].is_retraction());
+    // Offline: no proof is restated, and a second clear says nothing.
+    assert!(t.verify(&id, "chromecast", T0 + 10_000_001).is_none());
+    assert!(t.unverify(&id).is_empty());
+}
+
+#[test]
+fn no_proof_is_said_for_an_unknown_or_offline_device() {
+    let mut t = live();
+    assert!(t.verify("chromecast:nobody", "chromecast", T0).is_none());
+}
+
+// ── The `…/record` identity leaf (contracts 0.5.0, ROAD-3437 step 3) ──
+
+#[test]
+fn the_record_is_written_once_and_a_stable_device_is_silent() {
+    let mut t = live();
+    t.seen(&cast(), T0).unwrap();
+    let p = t.record(&cast(), T0).unwrap().expect("the first sighting says the record");
+    assert_eq!(p.topic, "APK.audio/Discovery/chromecast/chromecast:10.0.0.77/record");
+    let d = doc(&p);
+    assert_eq!((d["make"].as_str(), d["model"].as_str()), (Some("Google"), Some("Nest Audio")));
+    assert_eq!(d["firstSeen"], iso(T0));
+    // Seen again and again: only lastSeen would move, so nothing is said.
+    for n in 1..5 {
+        assert!(t.record(&cast(), T0 + n * 30_000).unwrap().is_none());
+    }
+}
+
+#[test]
+fn a_changed_record_is_republished_with_its_spell_kept() {
+    let mut t = live();
+    t.seen(&cast(), T0).unwrap();
+    t.record(&cast(), T0).unwrap();
+    let moved = cast().notes("living room");
+    let p = t.record(&moved, T0 + 5_000).unwrap().expect("notes changed: a new shape");
+    assert_eq!(doc(&p)["firstSeen"], iso(T0), "the spell did not restart");
+    assert_eq!(doc(&p)["notes"], "living room");
+}
+
+#[test]
+fn the_record_is_cleared_on_offline_and_said_again_on_return() {
+    let mut t = live();
+    t.seen(&cast(), T0).unwrap();
+    t.record(&cast(), T0).unwrap();
+    let out = t.expire(T0 + 10_000_000);
+    let cleared: Vec<_> = out.iter().filter(|p| p.topic.ends_with("/record")).collect();
+    assert_eq!(cleared.len(), 1, "offline clears the record with the proof");
+    assert!(cleared[0].is_retraction());
+    assert!(t.record(&cast(), T0 + 10_000_001).unwrap().is_none(), "never written for an offline device");
+    let back = T0 + 20_000_000;
+    t.seen(&cast(), back).unwrap();
+    let p = t.record(&cast(), back).unwrap().expect("back: identity said again");
+    assert_eq!(doc(&p)["firstSeen"], iso(back), "a return is a new spell");
+}
+
+#[test]
+fn a_departure_and_a_retirement_clear_the_record() {
+    let mut t = live();
+    let id = cast().device_id();
+    t.seen(&cast(), T0).unwrap();
+    t.record(&cast(), T0).unwrap();
+    t.gone(&id, T0 + 1);
+    let out = t.unverify(&id);
+    assert!(out.iter().any(|p| p.topic.ends_with("/record") && p.is_retraction()));
+    assert!(t.unverify(&id).is_empty(), "said once");
+}
+
+#[test]
+fn no_record_is_written_while_reading_back() {
+    let mut t = Tracker::booting(Some(std::time::Duration::from_secs(90)));
+    t.seen(&cast(), T0).unwrap();
+    assert!(t.record(&cast(), T0).unwrap().is_none());
+    t.finish_readback(T0 + 3_000);
+    assert!(t.record(&cast(), T0 + 3_000).unwrap().is_some());
+}

@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "protocol": "midi",
+  "deviceId": "midi:Keystation_88_MK3-Keystation_88_MK3_MIDI_1_20-0",
+  "deviceClass": "MIDI Source",
+  "make": "-",
+  "model": "Keystation 88 MK3:Keystation 88 MK3 MIDI 1 20:0",
+  "address": "Keystation 88 MK3:Keystation 88 MK3 MIDI 1 20:0",
+  "status": "discovered",
+  "firstSeen": "2026-10-31T10:00:00.000Z",
+  "lastSeen": "2026-10-31T10:00:00.000Z",
+  "extra": { "midi": { "direction": "input", "portIndex": 1, "ports": [{ "direction": "input", "portIndex": 1 }, { "direction": "output", "portIndex": 1 }] } }
+}

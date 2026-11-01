@@ -15,7 +15,7 @@
 # why the other two were brought down to it.
 [package]
 name = "apk-plugin-runner"
-version = "0.1.0"
+version = "2.0.0"
 edition = "2024"
 [dependencies]
 apkaudio-contracts = { path = "../contracts/rust" }

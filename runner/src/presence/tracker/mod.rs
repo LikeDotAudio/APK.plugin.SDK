@@ -62,6 +62,14 @@ pub struct Tracker {
     /// Topics [`Tracker::retire`]d while a window was open: retracted when it
     /// closes, never adopted off the broker's replay.
     retired: BTreeSet<String>,
+    /// device id → when its `…/verified` proof was last published (ROAD-3437).
+    verified: BTreeMap<String, i64>,
+    /// device id → (fingerprint of the `…/record` last published, start of
+    /// the spell it dates `firstSeen` from). contracts 0.5.0, ROAD-3437 step 3.
+    records: BTreeMap<String, (String, i64)>,
+    /// `…/record` topics the broker replayed inside the open read-back
+    /// window — reconciled when it closes (`readback.rs`).
+    held_records: BTreeSet<String>,
 }
 
 impl Tracker {
@@ -72,6 +80,9 @@ impl Tracker {
             readback: None,
             legacy: BTreeSet::new(),
             retired: BTreeSet::new(),
+            verified: BTreeMap::new(),
+            records: BTreeMap::new(),
+            held_records: BTreeSet::new(),
         }
     }
 
@@ -157,7 +168,86 @@ impl Tracker {
                 (now_ms - e.clock_ms > limit).then(|| (id.clone(), e.clock_ms + limit))
             })
             .collect();
-        due.into_iter().filter_map(|(id, at)| self.deactivate(&id, at)).collect()
+        let mut out = Vec::new();
+        for (id, at) in due {
+            out.extend(self.deactivate(&id, at));
+            out.extend(self.unverify(&id));
+        }
+        out
+    }
+
+    /// How often the proof of an online device is restated: a third of its
+    /// inactive window, so three restatements fit inside it, held to 5..100 s
+    /// so the engine's `reported` TTL (period ×3) never passes the
+    /// lifecycle's 300 s cap. contracts/DISCOVERY-LIFECYCLE.md, stage 4.
+    pub fn verify_every_ms(&self) -> i64 {
+        self.inactive_after_ms.map(|ms| ms / 3).unwrap_or(60_000).clamp(5_000, 100_000)
+    }
+
+    /// The `…/{deviceId}/verified` proof for a device this agent just saw as
+    /// itself, when it is due: online, not while reading back, and not
+    /// restated inside [`verify_every_ms`](Self::verify_every_ms). The presence
+    /// document beside it stays silent; this leaf is the tick.
+    pub fn verify(&mut self, device_id: &str, by: &str, now_ms: i64) -> Option<Publication> {
+        if self.readback.is_some() {
+            return None;
+        }
+        let entry = self.entries.get(device_id).filter(|e| e.online)?;
+        let every = self.verify_every_ms();
+        if self.verified.get(device_id).is_some_and(|last| now_ms - last < every) {
+            return None;
+        }
+        self.verified.insert(device_id.to_string(), now_ms);
+        Some(Publication {
+            topic: format!("{}/verified", entry.topic),
+            payload: apkaudio_contracts::discovery_verified::document(by, now_ms),
+        })
+    }
+
+    /// The `…/{deviceId}/record` identity for a device this agent just saw,
+    /// when it is worth saying: online, not while reading back, and only when
+    /// the record's fingerprint (everything but `lastSeen` —
+    /// `device_publish::fingerprint`) differs from what was last published, so
+    /// a stable device is silent. `firstSeen` is the start of this online
+    /// spell. contracts 0.5.0, ROAD-3437 step 3.
+    pub fn record(&mut self, sighting: &Sighting, now_ms: i64) -> Result<Option<Publication>, String> {
+        if self.readback.is_some() {
+            return Ok(None);
+        }
+        let device_id = sighting.device_id();
+        let Some(entry) = self.entries.get(&device_id).filter(|e| e.online) else {
+            return Ok(None);
+        };
+        let first_ms = self.records.get(&device_id).map(|(_, first)| *first).unwrap_or(now_ms);
+        let record = sighting.record_since(first_ms, now_ms)?;
+        let print = apkaudio_contracts::device_publish::fingerprint(&record);
+        if self.records.get(&device_id).is_some_and(|(prev, _)| *prev == print) {
+            return Ok(None);
+        }
+        let payload = serde_json::to_string(&record).map_err(|e| e.to_string())?;
+        let topic = format!("{}/record", entry.topic);
+        self.records.insert(device_id, (print, first_ms));
+        Ok(Some(Publication { topic, payload }))
+    }
+
+    /// Clear the proof AND the record of a device that went offline, departed
+    /// or was retired: an empty retained payload on each leaf this process
+    /// holds, so no stale proof — and no identity of a thing that is not
+    /// there — outlives it. The status document beside them keeps the history.
+    pub fn unverify(&mut self, device_id: &str) -> Vec<Publication> {
+        let had_proof = self.verified.remove(device_id).is_some();
+        let had_record = self.records.remove(device_id).is_some();
+        let Some(entry) = self.entries.get(device_id) else {
+            return Vec::new();
+        };
+        let mut out = Vec::new();
+        if had_proof {
+            out.push(Publication { topic: format!("{}/verified", entry.topic), payload: String::new() });
+        }
+        if had_record {
+            out.push(Publication { topic: format!("{}/record", entry.topic), payload: String::new() });
+        }
+        out
     }
 
     /// How long something adopted at a boot may go unsighted before it is

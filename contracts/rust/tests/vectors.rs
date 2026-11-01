@@ -84,6 +84,8 @@ fn build(family: &str, args: &Value) -> Result<String, topics::TopicError> {
         "protocolsScanLog" => topics::protocols_scan_log(s(args, "proto")),
         "protocolsWildcard" => Ok(topics::protocols_wildcard()),
         "fileBrowser" => topics::file_browser(s(args, "key")),
+        "discoveryVerified" => topics::discovery_verified(s(args, "protocol"), s(args, "deviceId")),
+        "discoveryRecord" => topics::discovery_record(s(args, "protocol"), s(args, "deviceId")),
         "discoveryEngine" => topics::discovery_engine(s(args, "leaf"), &path_argument(args)),
         "discoveryLifecycle" => Ok(topics::discovery_lifecycle()),
         "discoveryDeath" => Ok(topics::discovery_death()),

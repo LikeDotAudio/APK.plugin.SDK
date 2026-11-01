@@ -152,6 +152,11 @@ pub fn document(token: &str, context: &Context, config: &Value, live: &Liveness)
         // WHAT IT IS.
         "token": token,
         "kind": context.kind,
+        // HOW IT IS RAISED and WHICH PROTOCOLS IT SERVES (contracts/
+        // DISCOVERY-LIFECYCLE.md, stage 2), off its own config section. The
+        // engine builds its launch table from these instead of a list of its own.
+        "raise": crate::module_raise(config, token),
+        "serves": crate::module_serves(config, token),
         "pod": context.pod,
         "siblings": context.siblings,
 
@@ -190,6 +195,12 @@ pub fn document(token: &str, context: &Context, config: &Value, live: &Liveness)
             "stall_detection": live.last_tick_age_s.is_some(),
             "health_file": crate::health_file(),
         },
+
+        // WHERE ITS OWN LOOPBACK TELEMETRY ANSWERS (ROAD-3472): `{bind, port,
+        // routes}`, or null for a binary that declared no manifest. The
+        // address only — the counters are samples and stay off a retained
+        // document; NODE.BareMetal's supervisor asks the port for them.
+        "loopback": crate::loopback::api_section(),
 
         // WHERE IT IS CONNECTED. No credential ever appears here.
         "broker": {

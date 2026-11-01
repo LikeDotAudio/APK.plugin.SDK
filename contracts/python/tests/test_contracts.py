@@ -13,6 +13,9 @@ from apkaudio_contracts import (
     create_heartbeat,
     parse_presence,
     presence_is_active,
+    parse_verified,
+    verified_ms,
+    verified_document,
 )
 from apkaudio_contracts.identity import device_id_for, fnv1a64
 
@@ -71,6 +74,26 @@ class TestContracts(unittest.TestCase):
         self.assertIsNone(presence_is_active(b""))
         self.assertTrue(presence_is_active((root / "valid" / "back-online.json").read_text()))
         self.assertFalse(presence_is_active((root / "valid" / "offline-after-expiry.json").read_text()))
+
+    def test_discovery_verified_vectors(self):
+        import json
+        from pathlib import Path
+        root = Path(__file__).resolve().parents[2] / "vectors" / "payloads" / "DiscoveryVerified"
+        valid = sorted((root / "valid").glob("*.json"))
+        self.assertTrue(valid)
+        for path in valid:
+            doc = json.loads(path.read_text())
+            self.assertIsNotNone(parse_verified(doc), path.name)
+            self.assertIsInstance(verified_ms(doc), int, path.name)
+        invalid = sorted((root / "invalid").glob("*.json"))
+        self.assertTrue(invalid)
+        for path in invalid:
+            self.assertIsNone(parse_verified(path.read_text()), path.name)
+        self.assertIsNone(parse_verified(b""))
+        self.assertEqual(verified_ms((root / "valid" / "snmp-reverified.json").read_text()), 1793441520000)
+        doc = verified_document("SNMP", 1793441520123)
+        self.assertEqual(json.loads(doc), {"verifiedAt": "2026-10-31T10:12:00.123Z", "by": "SNMP"})
+        self.assertEqual(verified_ms(doc), 1793441520123)
 
 
     def test_identity_vectors(self):

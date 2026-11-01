@@ -155,7 +155,7 @@ pub fn is_device_id(s: &str) -> bool {
     match s.split_once(':') {
         Some((proto, key)) => {
             !proto.is_empty()
-                && proto.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit())
+                && proto.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_')
                 && !key.is_empty()
                 && key.chars().all(|c| {
                     c.is_ascii_alphanumeric() || matches!(c, '.' | '_' | ':' | '-')
@@ -362,6 +362,21 @@ pub fn discovery(protocol: &str, device_id: &str) -> Result<String, TopicError> 
         return Err(err("deviceId", device_id));
     }
     Ok(format!("{ROOT}/Discovery/{protocol}/{device_id}"))
+}
+
+/// `APK.audio/Discovery/{protocol}/{deviceId}/verified` — the agent's retained
+/// proof it re-verified the thing (`DiscoveryVerified`), beside the silent
+/// status document. Same validation as [`discovery`]. TS twin:
+/// `Topics.discoveryVerified`. ROAD-3437.
+pub fn discovery_verified(protocol: &str, device_id: &str) -> Result<String, TopicError> {
+    Ok(format!("{}/verified", discovery(protocol, device_id)?))
+}
+
+/// `APK.audio/Discovery/{protocol}/{deviceId}/record` — the thing's retained
+/// identity (`DeviceRecord`), beside the silent status document. Same
+/// validation as [`discovery`]. TS twin: `Topics.discoveryRecord`. ROAD-3437.
+pub fn discovery_record(protocol: &str, device_id: &str) -> Result<String, TopicError> {
+    Ok(format!("{}/record", discovery(protocol, device_id)?))
 }
 
 /// `APK.audio/Discovery/_engine/{leaf}/{...path}` — the discovery engine's own
@@ -1122,6 +1137,18 @@ pub enum ParsedTopic {
         #[serde(rename = "deviceId")]
         device_id: String,
     },
+    #[serde(rename = "discoveryVerified")]
+    DiscoveryVerified {
+        protocol: String,
+        #[serde(rename = "deviceId")]
+        device_id: String,
+    },
+    #[serde(rename = "discoveryRecord")]
+    DiscoveryRecord {
+        protocol: String,
+        #[serde(rename = "deviceId")]
+        device_id: String,
+    },
     #[serde(rename = "discoveryEngine")]
     DiscoveryEngine { leaf: String, path: Vec<String> },
     #[serde(rename = "discoveryLifecycle")]
@@ -1416,6 +1443,12 @@ pub fn parse(raw: &str) -> ParsedTopic {
                 } else {
                     unknown
                 }
+            }
+            (Some(p), Some(id), Some("verified")) if segs.len() == 5 && is_segment(p) && is_device_id(id) => {
+                ParsedTopic::DiscoveryVerified { protocol: p.to_string(), device_id: id.to_string() }
+            }
+            (Some(p), Some(id), Some("record")) if segs.len() == 5 && is_segment(p) && is_device_id(id) => {
+                ParsedTopic::DiscoveryRecord { protocol: p.to_string(), device_id: id.to_string() }
             }
             (Some(p), Some(id), None) if is_segment(p) && is_device_id(id) => ParsedTopic::Discovery {
                 protocol: p.to_string(),

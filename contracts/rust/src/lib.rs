@@ -83,6 +83,13 @@ pub mod komand_clock;
 /// Every bare-metal item's `incoming/` and `outgoing/` landing spots.
 pub mod baremetal_io;
 
+/// What an agent says about itself on its own loopback (`GET /status`,
+/// `GET /telemetry`), the five-state vocabulary — running, serving, failed,
+/// unknown, stub — and the rule that derives the word from the packet counter,
+/// never from the claim; plus `agent.toml` and [`embedded_manifest!`]. The
+/// server is `apk-plugin-runner`'s; this is what it serves. ROAD-3472.
+pub mod baremetal_telemetry;
+
 /// `APK_SERIAL_SETTINGS` — the operator's declared serial line settings, one
 /// grammar for PLUGIN.VISA and PLUGIN.SERIAL_COM, which each held a copy of
 /// the parser (2026-10-30 audit). Vector-held with the Python twin.
@@ -99,6 +106,11 @@ pub mod vendors_ndi;
 /// command, a deploy), who may write it, and the retained answer. PLAN-3394.01.
 pub mod machine_command;
 
+/// Trunk-Caster on the bus: the Ward-Beck line, frame/port/trunk identities,
+/// panel labels, the caster's command envelope and every `trunk` /
+/// `trunk_sim` topic. `contracts/TRUNK.md`; vectors `vectors/trunk.json`. ROAD-3440.
+pub mod trunk;
+
 /// The behavior half of `ControlValue` -- the constructors that make the
 /// envelope buildable from Rust at all, and the rendering rule. `gen/` had the
 /// shape and nothing had the behavior, which is why nothing published one.
@@ -108,6 +120,10 @@ pub mod device_record;
 /// Active since / inactive since — the schemaVersion 2 document on
 /// `Discovery/{protocol}/{deviceId}`, written on a transition only. PLAN-3318.01.
 pub mod discovery_presence;
+/// The proof beside the silent status: `Discovery/{protocol}/{deviceId}/verified`,
+/// `{verifiedAt, by}`, restated by the agent on each successful re-verification
+/// and read by the engine's lifecycle `check`. ROAD-3437.
+pub mod discovery_verified;
 /// A sighting, said as the one document the registry reads — the retained
 /// `Discovery/{protocol}/{deviceId}` write that thirteen hunters each needed
 /// and none had. Here rather than in an agent for the same reason `identity`

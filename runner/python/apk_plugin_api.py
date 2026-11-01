@@ -38,7 +38,7 @@ import json
 import os
 import sys
 import time
-from typing import Any, Dict, Iterable, Optional
+from typing import List, Any, Dict, Iterable, Optional
 
 # ⚠️ THE CONTRACT IS contracts/{rust,python}, AND IT IS SPELLED HERE RATHER THAN
 #    IMPORTED, for the reason agent_supervision.py gives at the same three
@@ -85,6 +85,30 @@ def api_topic(token: str) -> str:
 def api_get_topic(token: str) -> str:
     """`APK.audio/System/Protocols/<token>/outgoing/api_get` — NOT retained."""
     return "%s/%s/outgoing/%s" % (MODULE_ROOT, token, LEAF_API_GET)
+
+
+RAISE_MODES = ("on-sighting", "always-on", "compose")
+
+
+def _module_key(config: Dict[str, Any], token: str, key: str) -> Optional[str]:
+    """The token's own section, matched without case (api.rs's module_key)."""
+    for name, section in (config or {}).items():
+        if name.lower() == token.lower() and isinstance(section, dict):
+            value = section.get(key)
+            return value if isinstance(value, str) else None
+    return None
+
+
+def module_raise(config: Dict[str, Any], token: str) -> Optional[str]:
+    """`raise` from the token's section, or None when missing or not a mode."""
+    declared = (_module_key(config, token, "raise") or "").strip().lower()
+    return declared if declared in RAISE_MODES else None
+
+
+def module_serves(config: Dict[str, Any], token: str) -> List[str]:
+    """`serves = a, b` from the token's section, else the token itself."""
+    listed = [p.strip().lower() for p in (_module_key(config, token, "serves") or "").split(",") if p.strip()]
+    return listed or [token.lower()]
 
 
 class PluginApi:
@@ -134,6 +158,8 @@ class PluginApi:
         self.authenticated = authenticated
         self.started = time.monotonic()
         self._client = None
+        # The runner's `loopback_api_section()` once the server is bound.
+        self.loopback: Optional[Dict[str, Any]] = None
 
     # ---------------------------------------------------------------- the doc
 
@@ -150,6 +176,10 @@ class PluginApi:
         document = {
             "token": self.token,
             "kind": self.kind,
+            # How it is raised and which protocols it serves (contracts/
+            # DISCOVERY-LIFECYCLE.md, stage 2) -- api.rs's module_raise/serves.
+            "raise": module_raise(self.config, self.token),
+            "serves": module_serves(self.config, self.token),
             "pod": self.pod,
             # Python plugins are one module per process; the grouped case is the
             # Rust runner's and this stays empty rather than absent, so the
@@ -182,6 +212,11 @@ class PluginApi:
                 "stall_detection": last_tick_age_s is not None,
                 "health_file": self.health_file,
             },
+            # Where the plugin's own loopback telemetry answers (ROAD-3472):
+            # `{bind, port, routes}` when apk_plugin_runner served one (it sets
+            # `self.loopback`, ROAD-3478), else null — a bare probe or a plugin
+            # with no agent.toml, which the supervisor reads as `unknown`.
+            "loopback": self.loopback,
             "broker": {
                 "host": self.broker_host,
                 "port": self.broker_port,

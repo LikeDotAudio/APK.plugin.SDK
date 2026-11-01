@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "protocol": "ravenna",
+  "deviceId": "ravenna:WBS-32ME-RIGHT.local",
+  "deviceClass": "Audio Interface",
+  "make": "-",
+  "model": "WBS-32ME-RIGHT.local",
+  "address": "WBS-32ME-RIGHT.local",
+  "status": "identified",
+  "firstSeen": "2026-10-31T10:00:00.000Z",
+  "lastSeen": "2026-10-31T10:00:00.000Z",
+  "notes": "1 session(s) at 44.44.44.176",
+  "extra": {
+    "ravenna": {
+      "streams": [
+        {
+          "session": "32ME-STREAM-1",
+          "format": "L24/48000/8",
+          "sampleRate": 48000,
+          "channels": 8,
+          "destination": "239.1.44.176",
+          "rtpPort": 5004,
+          "ptimeMs": "1",
+          "clockDomain": "PTPv2 domain 0",
+          "refclk": "ptp=IEEE1588-2008:00-07-F5-FF-FE-42-06-A2:0",
+          "direction": "sendonly"
+        }
+      ]
+    }
+  }
+}

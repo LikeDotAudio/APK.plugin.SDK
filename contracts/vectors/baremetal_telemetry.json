@@ -1,0 +1,24 @@
+{
+  "$comment": "Golden vectors for the loopback agent telemetry rule (ROAD-3472): contracts/rust/src/baremetal_telemetry.rs observed_state / derive_state, src/baremetal-telemetry.ts observedServingState / deriveServingState, python/apkaudio_contracts/baremetal_telemetry.py observed_state / derive_state. `observed`: what a supervisor reads a GET /telemetry answer as (document null = nothing answered). `derived`: the agent's own rule. THE RULE IS THE COUNTER, NOT THE CLAIM: zero packets is `running` whatever `state` says; only `failed` and `stub` are taken from the document.",
+  "states": ["running", "serving", "failed", "unknown", "stub"],
+  "observed": [
+    {"why": "nothing answered: an alive PID with no telemetry is not serving", "document": null, "state": "unknown"},
+    {"why": "not an object", "document": "serving", "state": "unknown"},
+    {"why": "no counters is no evidence either way", "document": {"state": "serving"}, "state": "unknown"},
+    {"why": "a non-numeric counter is no evidence", "document": {"state": "running", "counters": {"packets_received": "7"}}, "state": "unknown"},
+    {"why": "zero packets is running", "document": {"state": "running", "counters": {"packets_received": 0, "messages_published": 0}}, "state": "running"},
+    {"why": "a claim of serving with zero packets reads running", "document": {"state": "serving", "counters": {"packets_received": 0}}, "state": "running"},
+    {"why": "published but never received is still idle on the wire", "document": {"state": "running", "counters": {"packets_received": 0, "messages_published": 40}}, "state": "running"},
+    {"why": "one packet is serving", "document": {"state": "serving", "counters": {"packets_received": 1}}, "state": "serving"},
+    {"why": "a claim of running with packets reads serving", "document": {"state": "running", "counters": {"packets_received": 12}}, "state": "serving"},
+    {"why": "failed is taken from the document", "document": {"state": "failed", "reason": "socket closed", "counters": {"packets_received": 12}}, "state": "failed"},
+    {"why": "stub is taken from the document, counters or not", "document": {"state": "stub"}, "state": "stub"}
+  ],
+  "derived": [
+    {"stub": false, "fatal": false, "packets_received": 0, "state": "running"},
+    {"stub": false, "fatal": false, "packets_received": 1, "state": "serving"},
+    {"stub": false, "fatal": true, "packets_received": 0, "state": "failed"},
+    {"stub": false, "fatal": true, "packets_received": 5, "state": "failed"},
+    {"stub": true, "fatal": true, "packets_received": 5, "state": "stub"}
+  ]
+}

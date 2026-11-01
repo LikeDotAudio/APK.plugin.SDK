@@ -63,6 +63,19 @@
 //! [`crate::serve`] — starts it with the same one call, and a retained replay
 //! of a few hundred documents never sits in front of a `selftest_run`.
 //!
+//! THE RECORD AND THE PROOF, ONE LEVEL DOWN (ROAD-3437). Beside each status
+//! document the tracker keeps two retained leaves: `…/{deviceId}/verified`
+//! (`DiscoveryVerified`), restated at most every `verify_every_ms` on a
+//! sighting of an online device, and `…/{deviceId}/record` (the sighting's
+//! `DeviceRecord`, contracts 0.5.0), written when the device is online and
+//! the record's fingerprint — everything but `lastSeen` — changes, so a
+//! stable device writes it once per spell. Both are cleared (empty retained
+//! payload) when the device goes offline, departs or is retired: the record is
+//! the identity of a thing that is there, and the status document keeps the
+//! history. The discovery engine builds every `reported` table from these
+//! three documents alone. A read-back window also collects this plugin's
+//! retained records, keeps those whose device is online, and retracts the rest.
+//!
 //! THE JOIN FOR THE DISCOVERED MIRROR, AND THE IDENTITY BESIDE IT. A presence
 //! document has no identity, so nothing in it says which table row it is
 //! about. A hunter that still writes a `System/Protocols/{proto}/Device/…`

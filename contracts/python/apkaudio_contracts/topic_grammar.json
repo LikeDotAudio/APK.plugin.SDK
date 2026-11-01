@@ -3,7 +3,7 @@
   "root": "APK.audio",
   "charsets": {
     "segment": "^[A-Za-z0-9_-]+$",
-    "deviceId": "^[a-z0-9]+:[A-Za-z0-9._:-]+$",
+    "deviceId": "^[a-z0-9_]+:[A-Za-z0-9._:-]+$",
     "address": "^[A-Za-z0-9._:-]+$",
     "capability": "^[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*$"
   },
@@ -209,6 +209,24 @@
         "discovered-tab",
         "Server:Discovery:NMOS/bridge",
         "apkaudio-netbox sync"
+      ]
+    },
+    "discoveryRecord": {
+      "pattern": "APK.audio/Discovery/{protocol}/{deviceId}/record",
+      "retain": "retained-state",
+      "payload": "DeviceRecord",
+      "producer": "PODS/POD.THICK/DISCOVERY.Engine/SRC/RUNNER/src/presence",
+      "consumers": [
+        "DISCOVERY.Engine reported kinds (ENGINE/src/discovery_bus.rs)"
+      ]
+    },
+    "discoveryVerified": {
+      "pattern": "APK.audio/Discovery/{protocol}/{deviceId}/verified",
+      "retain": "retained-state",
+      "payload": "DiscoveryVerified",
+      "producer": "PODS/POD.THICK/DISCOVERY.Engine/SRC/RUNNER/src/presence",
+      "consumers": [
+        "DISCOVERY.Engine lifecycle check (ROAD-3436)"
       ]
     },
     "gui": {
@@ -1065,6 +1083,44 @@
         {
           "rule": "deviceId",
           "name": "deviceId"
+        }
+      ]
+    },
+    {
+      "kind": "discoveryVerified",
+      "segs": [
+        {
+          "lit": "Discovery"
+        },
+        {
+          "rule": "segment",
+          "name": "protocol"
+        },
+        {
+          "rule": "deviceId",
+          "name": "deviceId"
+        },
+        {
+          "lit": "verified"
+        }
+      ]
+    },
+    {
+      "kind": "discoveryRecord",
+      "segs": [
+        {
+          "lit": "Discovery"
+        },
+        {
+          "rule": "segment",
+          "name": "protocol"
+        },
+        {
+          "rule": "deviceId",
+          "name": "deviceId"
+        },
+        {
+          "lit": "record"
         }
       ]
     },

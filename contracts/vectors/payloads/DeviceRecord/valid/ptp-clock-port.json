@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "protocol": "ptp",
+  "deviceId": "ptp:00_0A_92_FF_FE_01_56_A3-1-d0",
+  "deviceClass": "Clock",
+  "make": "-",
+  "model": "PTP Grandmaster",
+  "serial": "00_0A_92_FF_FE_01_56_A3-1-d0",
+  "rawIdn": "00:0A:92:FF:FE:01:56:A3",
+  "address": "00_0A_92_FF_FE_01_56_A3-1-d0",
+  "status": "identified",
+  "firstSeen": "2026-10-31T10:00:00.000Z",
+  "lastSeen": "2026-10-31T10:00:00.000Z",
+  "extra": { "ptp": { "clockIdentity": "00:0A:92:FF:FE:01:56:A3", "domain": 0, "port": 1, "messageTypes": ["Announce", "Follow_Up", "Sync"] } }
+}

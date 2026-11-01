@@ -58,10 +58,7 @@ pub fn start(token: &str, host: &str, port: u16, protocols: Vec<String>, inactiv
 /// plugin's own retained documents; feed the retained replay to the tracker.
 fn run_session(client: Client, mut connection: Connection, protocols: Vec<String>) {
     let mut backoff = apkaudio_contracts::broker_backoff::Backoff::new();
-    let filters: Vec<String> = protocols
-        .iter()
-        .filter_map(|p| apkaudio_contracts::topics::discovery_wildcard(Some(p)).ok())
-        .collect();
+    let filters: Vec<String> = protocols.iter().flat_map(|p| readback_filters(p)).collect();
     for event in connection.iter() {
         let Some(event) = apkaudio_contracts::broker_backoff::step(
             "presence",
@@ -83,6 +80,8 @@ fn run_session(client: Client, mut connection: Connection, protocols: Vec<String
             Event::Incoming(Packet::Publish(p)) if p.retain => {
                 if sweep::link_prefix(&p.topic).is_some() {
                     with(|s| sweep::found(s, &p.topic, &p.payload));
+                } else if p.topic.ends_with("/record") {
+                    with(|s| s.tracker.restore_record(&p.topic, &p.payload));
                 } else {
                     with(|s| s.tracker.restore(&p.topic, &p.payload));
                 }
@@ -115,7 +114,7 @@ pub(super) fn ticked(s: &mut Shared, now: i64) -> Vec<Publication> {
         out.extend(sweep::swept(s, now));
         if let Some(client) = &s.client {
             for p in &s.protocols {
-                if let Ok(f) = apkaudio_contracts::topics::discovery_wildcard(Some(p)) {
+                for f in readback_filters(p) {
                     let _ = client.try_unsubscribe(f);
                 }
             }
@@ -139,4 +138,15 @@ pub(super) fn ticked(s: &mut Shared, now: i64) -> Vec<Publication> {
     out.extend(expired);
     out.extend(sweep::unvouched(s, now));
     out
+}
+
+/// What a connect reads back for one protocol: its status documents
+/// (`Discovery/{p}/+`) and the identity records beside them
+/// (`Discovery/{p}/+/record`, contracts 0.5.0), so a record an earlier process
+/// left for a thing nobody now vouches for is retracted.
+fn readback_filters(protocol: &str) -> Vec<String> {
+    match apkaudio_contracts::topics::discovery_wildcard(Some(protocol)) {
+        Ok(status) => vec![format!("{status}/record"), status],
+        Err(_) => Vec::new(),
+    }
 }

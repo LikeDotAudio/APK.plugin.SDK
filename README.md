@@ -10,12 +10,23 @@ The two crates every APK.audio plugin links, so a plugin repository builds on it
 
 **Wiki:** [Documentation/README.md](Documentation/README.md) — principles, architecture, delivery.
 
+## Trunk-Caster
+
+The wiki also documents **Trunk-Caster**, the intercom trunk broker that is to be rewritten onto this SDK:
+
+* [how it works and the plan for bringing it onto the runner, contracts and panels](Documentation/%F0%9F%A7%A9Manual%20and%20Artifacts/TRUNK-CASTER.md);
+* [its interfaces today](Documentation/%F0%9F%A7%A9Manual%20and%20Artifacts/TRUNK-CASTER-INTERFACES.md);
+* [its principles](Documentation/%F0%9F%8F%9BPhilosophy/TRUNK-CASTER-PRINCIPLES.md);
+* [its own "Next" lists](Documentation/%F0%9F%92%A1Notes%20and%20Ideas/TRUNK-CASTER-NEXT.md).
+
+None of its code ships in this repository. The SDK is still the runner and the contracts.
+
 ## Use it
 
 ```toml
 [dependencies]
-apk-plugin-runner  = { git = "https://github.com/LikeDotAudio/APK.plugin.SDK", tag = "sdk-v0.7" }
-apkaudio-contracts = { git = "https://github.com/LikeDotAudio/APK.plugin.SDK", tag = "sdk-v0.7" }
+apk-plugin-runner  = { git = "https://github.com/LikeDotAudio/APK.plugin.SDK", tag = "sdk-v0.9" }
+apkaudio-contracts = { git = "https://github.com/LikeDotAudio/APK.plugin.SDK", tag = "sdk-v0.9" }
 ```
 
 Pin a **tag**. Tags are never moved; a change is a new `sdk-vX.Y`.

@@ -191,7 +191,7 @@ where
         let lane = JobLane::start(module, self.tool, self.handle, move |answer| {
             println!("🧰 [{module}] job {} → {}", answer["job_id"], describe(&answer));
             // Blocking is fine here: the session thread drains the queue.
-            let _ = answers.publish(result_leaf.clone(), QoS::AtLeastOnce, retain, answer.to_string());
+            crate::loopback::published(answers.publish(result_leaf.clone(), QoS::AtLeastOnce, retain, answer.to_string()).is_ok());
         });
 
         println!("🧰 [{module}] worker listening on {job_topic}, answering on {result_topic}");
@@ -204,7 +204,7 @@ where
                 Event::Incoming(Packet::Publish(p)) if p.topic == job_topic => match lane.offer(p.payload.to_vec()) {
                     Ok(()) => {}
                     Err(Refused::Busy(answer)) => {
-                        let _ = client.try_publish(result_topic.clone(), QoS::AtLeastOnce, retain, answer.to_string());
+                        crate::loopback::published(client.try_publish(result_topic.clone(), QoS::AtLeastOnce, retain, answer.to_string()).is_ok());
                     }
                     Err(Refused::Gone) => {
                         eprintln!("⚠️ [{module}] the job thread is gone; exiting");

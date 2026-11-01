@@ -5,10 +5,10 @@ The documentation for `SDK`, in the same lanes as the APK.audio monorepo's root 
 <!-- wiki:lanes -->
 | Lane | Pages | What |
 |---|---:|---|
-| [🏛Philosophy](%F0%9F%8F%9BPhilosophy/INDEX.md) | 1 | The principles this code keeps, each pointed at the code that keeps it. |
-| [🧩Manual and Artifacts](%F0%9F%A7%A9Manual%20and%20Artifacts/INDEX.md) | 1 | How to use it and how it is built. |
+| [🏛Philosophy](%F0%9F%8F%9BPhilosophy/INDEX.md) | 2 | The principles this code keeps, each pointed at the code that keeps it. |
+| [🧩Manual and Artifacts](%F0%9F%A7%A9Manual%20and%20Artifacts/INDEX.md) | 3 | How to use it and how it is built. |
 | [🌍Publishing](%F0%9F%8C%8DPublishing/INDEX.md) | 1 | How it is built, shipped, and where it lands — its delivery. |
 | [🔍Audits](%F0%9F%94%8DAudits/INDEX.md) | 0 | Findings against the built thing; known issues, measured. |
-| [🛣Roadmap](%F0%9F%9B%A3Roadmap/INDEX.md) | 0 | Plans are not kept here: every plan is a card in the APK.audio monorepo's `Documentation/🛣Roadmap/roadmap.htm`. |
-| [💡Notes and Ideas](%F0%9F%92%A1Notes%20and%20Ideas/INDEX.md) | 0 | Loose notes and ideas not yet filed. |
+| [🛣Roadmap](%F0%9F%9B%A3Roadmap/INDEX.md) | 0 | Nothing to do is kept here: every roadmap item lives in the APK.audio monorepo's `Documentation/🛣Roadmap/roadmap.htm`. |
+| [💡Notes and Ideas](%F0%9F%92%A1Notes%20and%20Ideas/INDEX.md) | 1 | Loose notes and ideas not yet filed. |
 <!-- /wiki:lanes -->

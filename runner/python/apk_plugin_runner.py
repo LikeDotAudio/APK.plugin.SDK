@@ -28,12 +28,18 @@ module, so the bus cannot tell which language a plugin was written in:
                `tick()` and stops calling it for `APK_PLUGIN_STALL_SECS`
                (120) exits 75, the session thread dying exits 69, and
                SIGTERM/SIGINT exit 143 within a second.
+  6. Loopback  `main(..., manifest="agent.toml")` serves `GET /status` and
+               `GET /telemetry` on 127.0.0.1 at the declared port, the same
+               documents as RUNNER/src/loopback.rs, the state from contracts'
+               rule; `packet_received()` is what moves `running` to `serving`,
+               and every runner publish is counted (ROAD-3478).
 
 The exit codes, the topics, the vocabularies and the report's JSON are the
 Rust crate's and contracts/rust/src/self_test.rs's, SPELLED HERE rather than
-imported, for the reason apk_plugin_api.py gives: the APK.plugin.SDK carries
-runner/ and not contracts/python, so a plugin that builds from its own
-repository must not need the monorepo to start. `test_apk_plugin_runner.py`
+imported, for the reason apk_plugin_api.py gives: a plugin that builds from
+its own repository must not need the monorepo to start, and only SDK tags from
+sdk-v0.9 on carry contracts/python beside runner/ (a plugin pinned to an older
+tag gets the runner alone). `test_apk_plugin_runner.py`
 reads the Rust sources and fails when the two disagree.
 
     import apk_plugin_runner as runner
@@ -413,6 +419,324 @@ def start_agent_client(client) -> None:
     client.loop_start()
 
 
+# ------------------------------------------------- loopback telemetry (ROAD-3478)
+#
+# THE TWIN OF RUNNER/src/loopback.rs: `GET /status` and `GET /telemetry` on
+# 127.0.0.1, at the port the plugin's `agent.toml` declares, with the same
+# documents (contracts 0.9.0) and THE SAME RULE — taken from contracts' Python
+# half (`apkaudio_contracts.baremetal_telemetry.derive_state`), never spelled
+# here, because the word is the one thing the two runners must not disagree on.
+#
+# OPT-IN, as in Rust: `main(..., manifest="agent.toml")`. Without one nothing
+# is served and the supervisor reads `unknown`, which is the truth. The
+# COUNTERS run regardless (every runner publish is counted, and the
+# `incoming/telemetry` tick carries them); only the HTTP surface is declared.
+# A tree without contracts/python (an SDK tag before sdk-v0.9) serves nothing
+# and says so: a loopback that cannot apply the rule must not invent one.
+#
+# NOT A SECOND BUS: nothing here is published; `incoming/api` names the port
+# (`loopback`), never the counters. Stdlib only, one thread, GET only.
+
+TELEMETRY_PORT_ENV = "APK_TELEMETRY_PORT"
+# contracts/rust/src/baremetal_telemetry.rs (test_apk_plugin_runner reads them)
+AGENT_KINDS = ("protocol", "vendor", "service", "worker")
+IMPLEMENTATION_STATUSES = ("live", "discovery-only", "stub")
+
+
+def telemetry_rule():
+    """`apkaudio_contracts.baremetal_telemetry`, or None where it is not importable.
+
+    The installed package first (the image stages it beside the runner since
+    sdk-v0.9), then the monorepo's own copy, as `apk_plugin_api.contract_version`
+    finds it.
+    """
+    try:
+        from apkaudio_contracts import baremetal_telemetry
+        return baremetal_telemetry
+    except Exception:                                   # noqa: BLE001
+        pass
+    candidate = os.path.normpath(os.path.join(HERE, *[".."] * 6, "contracts", "python"))
+    if os.path.isdir(candidate) and candidate not in sys.path:
+        sys.path.append(candidate)
+        try:
+            from apkaudio_contracts import baremetal_telemetry
+            return baremetal_telemetry
+        except Exception:                               # noqa: BLE001
+            return None
+    return None
+
+
+def _toml_subset(text: str) -> Dict[Tuple[str, str], Any]:
+    """{(section, key): value} for the subset contracts' Manifest::parse reads:
+    sections, "strings", integers, booleans and arrays of strings (one line or
+    several). Python 3.11's tomllib is used when present; this is the fallback."""
+    try:
+        import tomllib                                  # Python 3.11+
+        table = tomllib.loads(text)
+        return {(section, key): value for section, body in table.items() if isinstance(body, dict)
+                for key, value in body.items()}
+    except ImportError:
+        pass
+    out: Dict[Tuple[str, str], Any] = {}
+    section, pending = "", None
+    for raw in text.splitlines():
+        line = re.sub(r'\s*#[^"]*$', "", raw).strip()   # a comment, not a # inside a string
+        if pending is not None:
+            pending[1] += " " + line
+            if "]" in line:
+                out[(section, pending[0])] = re.findall(r'"([^"]*)"', pending[1])
+                pending = None
+            continue
+        if not line or line.startswith("#"):
+            continue
+        head = re.fullmatch(r"\[([A-Za-z0-9_.-]+)\]", line)
+        if head:
+            section = head.group(1)
+            continue
+        pair = re.fullmatch(r"([A-Za-z0-9_]+)\s*=\s*(.*)", line)
+        if not pair:
+            raise ValueError("not a key = value line: %r" % raw)
+        key, value = pair.group(1), pair.group(2).strip()
+        if value.startswith("["):
+            if "]" in value:
+                out[(section, key)] = re.findall(r'"([^"]*)"', value)
+            else:
+                pending = [key, value]
+        elif value.startswith('"'):
+            out[(section, key)] = value[1:value.index('"', 1)]
+        elif value in ("true", "false"):
+            out[(section, key)] = value == "true"
+        else:
+            out[(section, key)] = int(value)
+    return out
+
+
+class Manifest:
+    """An agent's `agent.toml`, parsed and validated as contracts'
+    `Manifest::parse` does it — every refusal names the key."""
+
+    def __init__(self, name, kind, title, status, summary, telemetry_port, config_reads):
+        self.name, self.kind, self.title = name, kind, title
+        self.status, self.summary = status, summary
+        self.telemetry_port, self.config_reads = telemetry_port, config_reads
+
+    @staticmethod
+    def parse(text: str) -> "Manifest":
+        table = _toml_subset(text)
+
+        def text_of(section, key):
+            if (section, key) not in table:
+                raise ValueError("[%s] %s is required" % (section, key))
+            value = table[(section, key)]
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError("[%s] %s must be a non-empty string" % (section, key))
+            return value
+
+        name, kind = text_of("agent", "name"), text_of("agent", "kind")
+        if kind not in AGENT_KINDS:
+            raise ValueError("[agent] kind %r is not one of %s" % (kind, AGENT_KINDS))
+        status = text_of("agent", "status")
+        if status not in IMPLEMENTATION_STATUSES:
+            raise ValueError("[agent] status %r is not one of %s" % (status, IMPLEMENTATION_STATUSES))
+        title, summary = text_of("agent", "title"), text_of("agent", "summary")
+        port = table.get(("telemetry", "port"), 0)
+        if isinstance(port, bool) or not isinstance(port, int) or not 0 <= port <= 65535:
+            raise ValueError("[telemetry] port must be an integer 0-65535")
+        reads = table.get(("config", "reads"))
+        if reads is not None and (not isinstance(reads, list) or not all(isinstance(r, str) for r in reads)):
+            raise ValueError("[config] reads must be an array of strings")
+        return Manifest(name, kind, title, status, summary, port, reads)
+
+    def is_stub(self) -> bool:
+        return self.status == "stub"
+
+    def unread_config_keys(self, present: Iterable[str]) -> Optional[int]:
+        """How many of `present` the manifest does not list as read; None when
+        it lists nothing. Case-insensitive, as the ini reader is."""
+        if self.config_reads is None:
+            return None
+        reads = [r.lower() for r in self.config_reads]
+        return sum(1 for key in present if key.lower() not in reads)
+
+
+_LOOPBACK: Dict[str, Any] = {"manifest": None, "version": "unknown", "started": None,
+                             "port": None, "unread": None, "fatal": None, "rule": None,
+                             "disabled": None}
+_COUNTERS = {"packets_received": 0, "messages_published": 0, "publish_failures": 0}
+_COUNTERS_LOCK = threading.Lock()
+
+
+def declare(manifest: Manifest, version: Optional[str]) -> None:
+    """Record which agent this process is. The first declaration wins."""
+    if _LOOPBACK["manifest"] is None:
+        _LOOPBACK.update(manifest=manifest, version=version or "unknown", started=time.monotonic())
+
+
+def packet_received() -> None:
+    """One packet taken off the protocol's own wire — the one fact that moves
+    an agent from `running` to `serving`. Never a publish, never a timer."""
+    with _COUNTERS_LOCK:
+        _COUNTERS["packets_received"] += 1
+
+
+def published(accepted: bool) -> bool:
+    """One publish attempted: `True` when the client accepted it. Every refusal
+    is COUNTED — the replacement for an ignored publish result."""
+    with _COUNTERS_LOCK:
+        _COUNTERS["messages_published" if accepted else "publish_failures"] += 1
+    return accepted
+
+
+def fatal(reason: str) -> None:
+    """A fault the agent cannot serve past. The first reason is kept and the
+    state reads `failed` from here on."""
+    if _LOOPBACK["fatal"] is None:
+        _LOOPBACK["fatal"] = str(reason)
+
+
+def counters() -> Dict[str, Any]:
+    with _COUNTERS_LOCK:
+        snapshot = dict(_COUNTERS)
+    snapshot["unread_config_keys"] = _LOOPBACK["unread"]
+    return snapshot
+
+
+DISABLED_REASON = "disabled in config"
+
+
+def module_enabled(config: Dict[str, Dict[str, str]], token: str) -> bool:
+    """lib.rs `module_enabled`: only an explicit no (`false`/`no`/`off`/`0`, any
+    case) in the token's own section switches the plugin off; absent is on."""
+    section = next((v for k, v in config.items() if k.lower() == token.lower()), None) or {}
+    value = section.get("enabled")
+    return value is None or str(value).strip().lower() not in ("false", "no", "off", "0")
+
+
+def _with_disabled(document: Dict[str, Any]) -> Dict[str, Any]:
+    """lib.rs/loopback.rs `with_disabled`: switched off in config reads `stub`
+    with the reason, whatever the counters say."""
+    if _LOOPBACK["disabled"]:
+        document["state"], document["reason"] = "stub", _LOOPBACK["disabled"]
+    return document
+
+
+def _state(rule, manifest: Manifest, counted: Dict[str, Any]) -> str:
+    return rule.derive_state(manifest.is_stub(), _LOOPBACK["fatal"] is not None, counted["packets_received"])
+
+
+def telemetry_document() -> Optional[Dict[str, Any]]:
+    """`GET /telemetry` — contracts' `telemetry_document`, key for key; None
+    without a manifest or without the rule."""
+    manifest, rule = _LOOPBACK["manifest"], _LOOPBACK["rule"] or telemetry_rule()
+    if manifest is None or rule is None:
+        return None
+    counted = counters()
+    started = _LOOPBACK["started"]
+    return _with_disabled({
+        "schemaVersion": rule.SCHEMA_VERSION, "agent": manifest.name, "kind": manifest.kind,
+        "status": manifest.status, "title": manifest.title, "version": _LOOPBACK["version"],
+        "state": _state(rule, manifest, counted), "reason": _LOOPBACK["fatal"],
+        "uptime_s": int(time.monotonic() - started) if started is not None else 0,
+        "counters": counted})
+
+
+def status_document() -> Optional[Dict[str, Any]]:
+    """`GET /status`: the word and who says it."""
+    manifest, rule = _LOOPBACK["manifest"], _LOOPBACK["rule"] or telemetry_rule()
+    if manifest is None or rule is None:
+        return None
+    return _with_disabled({"schemaVersion": rule.SCHEMA_VERSION, "agent": manifest.name,
+                           "state": _state(rule, manifest, counters()), "reason": _LOOPBACK["fatal"]})
+
+
+def loopback_api_section() -> Optional[Dict[str, Any]]:
+    """What `incoming/api` says about this surface (`loopback`): where to ask, or None."""
+    port = _LOOPBACK["port"]
+    if port is None:
+        return None
+    rule = _LOOPBACK["rule"]
+    return {"bind": rule.LOOPBACK_BIND, "port": port, "routes": [rule.ROUTE_STATUS, rule.ROUTE_TELEMETRY]}
+
+
+def chosen_port(declared: int, env: Optional[str]) -> int:
+    """`APK_TELEMETRY_PORT` when it parses, else the manifest's; 0 is off."""
+    try:
+        value = int((env or "").strip())
+        return value if 0 <= value <= 65535 else declared
+    except ValueError:
+        return declared
+
+
+def loopback_route(method: str, path: str) -> Tuple[int, Dict[str, Any]]:
+    """The request to `(status, body)` — loopback.rs's `route`, answer for answer."""
+    routes = ["/status", "/telemetry"]
+    if method != "GET":
+        return 405, {"error": "GET only", "routes": routes}
+    path = path.split("?", 1)[0]
+    if path == "/status":
+        document = status_document()
+    elif path == "/telemetry":
+        document = telemetry_document()
+    else:
+        return 404, {"error": "no such route", "routes": routes}
+    if document is None:
+        return 503, {"error": "no manifest declared"}
+    return 200, document
+
+
+def make_loopback_server(port: int):
+    """An HTTP server on 127.0.0.1:`port` answering `loopback_route`. Not started."""
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+
+    class Handler(BaseHTTPRequestHandler):
+        def _answer(self):
+            code, body = loopback_route(self.command, self.path)
+            data = json.dumps(body).encode("utf-8")
+            self.send_response(code)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(data)))
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Connection", "close")
+            self.end_headers()
+            self.wfile.write(data)
+
+        do_GET = do_POST = do_PUT = do_DELETE = do_PATCH = do_HEAD = _answer
+
+        def log_message(self, *args):                 # one supervisor asks every few seconds
+            pass
+
+    return HTTPServer(("127.0.0.1", port), Handler)
+
+
+def start_loopback(token: str, config: Dict[str, Dict[str, str]]) -> Optional[int]:
+    """Count the config keys nothing declares reading, then bind and serve on a
+    daemon thread. The bound port, or None (no manifest, port 0, no rule, or a
+    failed bind — said on stderr; a taken port must not stop the agent)."""
+    manifest = _LOOPBACK["manifest"]
+    if manifest is None:
+        return None
+    present = next((list(keys) for name, keys in config.items() if name.lower() == token.lower()), [])
+    _LOOPBACK["unread"] = manifest.unread_config_keys(present)
+    rule = telemetry_rule()
+    if rule is None:
+        print("⚠️  [%s] loopback telemetry NOT served — apkaudio_contracts is not importable "
+              "(an SDK tag before sdk-v0.9?)" % token, file=sys.stderr)
+        return None
+    _LOOPBACK["rule"] = rule
+    port = chosen_port(manifest.telemetry_port, os.environ.get(TELEMETRY_PORT_ENV))
+    if port == 0:
+        return None
+    try:
+        server = make_loopback_server(port)
+    except OSError as error:
+        print("⚠️  [%s] loopback telemetry NOT served — 127.0.0.1:%d: %s" % (token, port, error), file=sys.stderr)
+        return None
+    _LOOPBACK["port"] = port
+    print("📈 [%s] loopback telemetry on http://127.0.0.1:%d/telemetry" % (token, port))
+    threading.Thread(target=server.serve_forever, name="%s:loopback" % token, daemon=True).start()
+    return port
+
+
 # --------------------------------------------------------------- ticking
 
 _LAST_TICK = [0]                     # a tick from a thread no agent owns
@@ -477,6 +801,20 @@ def answer_arguments(args: List[str], token: str, agents: List[str],
 
 # ---------------------------------------------------------------- serving
 
+def tick_sample(uptime_s: int) -> Dict[str, Any]:
+    """The `incoming/telemetry` tick: RUNNER/src/lib.rs's `tick_sample`, key
+    for key — `counters` is the loopback's block (ROAD-3478), so a bus reader
+    applies contracts' rule to the tick as the supervisor does to the loopback."""
+    stale = stalest_tick()
+    sample = {"uptime_s": uptime_s, "pid": os.getpid(),
+              "last_tick_age_s": stale[1] if stale else None,
+              "image_rev": os.environ.get("APK_IMAGE_REV"),
+              "counters": counters()}
+    if _LOOPBACK["disabled"]:
+        sample["state"], sample["reason"] = "stub", _LOOPBACK["disabled"]
+    return sample
+
+
 class Session:
     """The runner's one broker session: config, api, will, self test, telemetry."""
 
@@ -514,9 +852,14 @@ class Session:
     # -- the publishes
 
     def publish(self, topic: str, payload, retain: bool, qos: int = 1) -> None:
+        # COUNTED (ROAD-3478): paho answers a refused publish (no session, a
+        # full queue) with a non-zero `rc`, not an exception, and both are a
+        # `publish_failures` in the loopback telemetry and the tick.
         try:
-            self.client.publish(topic, payload, qos=qos, retain=retain)
+            info = self.client.publish(topic, payload, qos=qos, retain=retain)
+            published(getattr(info, "rc", 0) == 0)
         except Exception as error:                      # noqa: BLE001
+            published(False)
             print("⚠️  [%s] publish %s failed: %s" % (self.token, topic, error), file=sys.stderr)
 
     def publish_config(self) -> None:
@@ -650,9 +993,7 @@ class Session:
                     expired = self.book.expire(time.monotonic())
                 self.publish_panels(expired)
             stale = stalest_tick()
-            sample = {"uptime_s": int(time.monotonic() - self.started), "pid": os.getpid(),
-                      "last_tick_age_s": stale[1] if stale else None,
-                      "image_rev": os.environ.get("APK_IMAGE_REV")}
+            sample = tick_sample(int(time.monotonic() - self.started))
             self.publish(module_incoming(self.token, "telemetry"), json.dumps(sample), False, qos=0)
             write_health_file()
             time.sleep(TICK_S)
@@ -721,8 +1062,14 @@ def serve(token: str, config_text: str, config_source: str, self_test: Callable[
           plugin_version: Optional[str] = None, pod: Optional[str] = "POD.THICK",
           config_overlay: Optional[Callable[[Dict[str, Dict[str, str]]], Dict[str, Dict[str, str]]]] = None,
           panels: Optional[List[str]] = None, gui_dir: Optional[str] = None,
-          kind: str = "plugin") -> None:
+          kind: str = "plugin", manifest: Optional[str] = None) -> None:
     """Run the plugin until something says it must not keep running. Never returns.
+
+    `manifest="<path>/agent.toml"` is `main!(…, manifest = "agent.toml")`
+    (ROAD-3478): the agent declares itself and the loopback telemetry is
+    served at its `[telemetry] port` before the session publishes
+    `incoming/api`, so the first document names the port. A manifest that does
+    not parse is a defect said at startup, and nothing is served.
 
     `kind="worker"` is `main!(kind = "worker", …)`: incoming/api says what this
     process is (a POD.workers job answerer), not the default `plugin`.
@@ -747,6 +1094,12 @@ def serve(token: str, config_text: str, config_source: str, self_test: Callable[
         apk_plugin_panels.register_from_dir(gui_dir or os.path.join(os.getcwd(), "gui"), family)
     host, port = broker_address()
     stall = stall_after_s()
+    # `enabled = false` (ROAD-3478), as lib.rs serve_group: connect, describe,
+    # tick — but start no agent, and say stub / "disabled in config".
+    if not module_enabled(loaded, token):
+        _LOOPBACK["disabled"] = DISABLED_REASON
+        run = []
+        print("💤 [%s] enabled = false in config.ini — idling, no agent started" % token)
     names = [fn.__name__ for fn in run]
     print("🚀 [%s] plugin runner (python) — broker %s:%d %s" % (
         token, host, port, "as %s" % credentials()[0] if credentials() else "anonymously"))
@@ -756,6 +1109,14 @@ def serve(token: str, config_text: str, config_source: str, self_test: Callable[
         plugin_crate=plugin_crate, plugin_version=plugin_version,
         broker_is_ours=broker_is_local(host), stall_after_s=stall, tick_s=TICK_S,
         health_file=health_file(), pod=resolve_pod(pod), kind=kind)
+    if manifest:
+        try:
+            with open(manifest, encoding="utf-8") as handle:
+                declare(Manifest.parse(handle.read()), plugin_version)
+        except (OSError, ValueError) as error:
+            print("🛑 [%s] %s does not parse: %s — no loopback telemetry" % (token, manifest, error), file=sys.stderr)
+    start_loopback(token, loaded)
+    api.loopback = loopback_api_section()
     session = Session(token, loaded, config_source, self_test, api, names)
 
     failures: List[Tuple[str, int]] = []
@@ -831,11 +1192,12 @@ def main(token: str, config_ini: str, self_test: Callable[[str], str],
          run: List[Callable[[str, int], None]], plugin_crate: Optional[str] = None,
          plugin_version: Optional[str] = None, pod: Optional[str] = "POD.THICK",
          config_overlay=None, panels: Optional[List[str]] = None, gui_dir: Optional[str] = None,
-         kind: str = "plugin") -> None:
+         kind: str = "plugin", manifest: Optional[str] = None) -> None:
     """A Python plugin's whole `__main__`: the twin of `apk_plugin_runner::main!`.
 
     `panels=[...]` reads the templates from `gui_dir`, by default the `gui/`
-    folder beside `config_ini` — where every plugin keeps it."""
+    folder beside `config_ini` — where every plugin keeps it. `manifest=
+    "agent.toml"` is read beside `config_ini` too (an absolute path is kept)."""
     version = "%s %s" % (plugin_crate, plugin_version) if plugin_crate else None
     code = answer_arguments(sys.argv[1:], token, [fn.__name__ for fn in run], version)
     if code is not None:
@@ -843,5 +1205,7 @@ def main(token: str, config_ini: str, self_test: Callable[[str], str],
     text, source = load_config(config_ini)
     if panels and gui_dir is None:
         gui_dir = os.path.join(os.path.dirname(os.path.abspath(config_ini)), "gui")
+    if manifest and not os.path.isabs(manifest):
+        manifest = os.path.join(os.path.dirname(os.path.abspath(config_ini)), manifest)
     serve(token, text, source, self_test, run, plugin_crate, plugin_version, pod, config_overlay,
-          panels=panels, gui_dir=gui_dir, kind=kind)
+          panels=panels, gui_dir=gui_dir, kind=kind, manifest=manifest)

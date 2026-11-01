@@ -123,6 +123,9 @@ impl PublishTally {
 /// `outage_tests::a_dead_broker_never_parks_the_pump` holds it.
 pub fn republish(client: &rumqttc::Client, tally: &mut PublishTally, topic: &str, payload: &str) -> bool {
     let sent = client.try_publish(topic, rumqttc::QoS::AtLeastOnce, false, payload.as_bytes());
+    // The loopback telemetry counts it too (ROAD-3478): the tally says WHICH
+    // topic dropped, the counters say how many publishes the process lost.
+    crate::loopback::published(sent.is_ok());
     tally.record(topic, sent)
 }
 

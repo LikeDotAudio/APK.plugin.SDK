@@ -114,7 +114,7 @@ fn speaker() -> &'static Sender<(Client, Vec<Publication>)> {
             .spawn(move || {
                 for (client, publications) in rx {
                     for p in publications {
-                        let _ = client.publish(p.topic, QoS::AtLeastOnce, true, p.payload);
+                        crate::loopback::published(client.publish(p.topic, QoS::AtLeastOnce, true, p.payload).is_ok());
                     }
                 }
             })
@@ -150,25 +150,52 @@ pub(super) fn identity_of(sighting: &Sighting, detail: &str) -> BTreeMap<&'stati
 /// once the read-back is over: a changed or new leaf is written, a leaf no
 /// longer wanted is retracted. Nothing while a window is open — and nothing
 /// is marked said then either, so the close of the window says it all.
+///
+/// The WHOLE book, so only where the whole book may be unsaid: the close of a
+/// read-back window. A change to known rows goes through [`unsaid_rows`].
 pub(super) fn unsaid(s: &mut Shared) -> Vec<Publication> {
     if s.tracker.reading_back() {
         return Vec::new();
     }
     let mut out = Vec::new();
     for (detail, row) in s.rows.iter_mut() {
-        let gone: Vec<&'static str> = row.said.keys().filter(|k| !row.want.contains_key(*k)).copied().collect();
-        for leaf in gone {
-            row.said.remove(leaf);
-            out.push(Publication { topic: format!("{detail}/{leaf}"), payload: String::new() });
-        }
-        for (leaf, value) in &row.want {
-            if row.said.get(leaf) != Some(value) {
-                row.said.insert(leaf, value.clone());
-                out.push(Publication { topic: format!("{detail}/{leaf}"), payload: value.clone() });
-            }
+        say_row(detail, row, &mut out);
+    }
+    out
+}
+
+/// [`unsaid`] for the named rows alone. ROAD-3471: every sighting that
+/// changed one row walked the whole book, and PLUGIN.NMOS_CONTROL keeps a row
+/// per registry Device — ~11.8k on 2026-10-31 — so refilling it after a
+/// restart was quadratic. Outside a read-back window every other row is
+/// already said: rows change only in `sighted` and `retired`, which call
+/// this for the rows they touched, and the window's close says them all.
+pub(super) fn unsaid_rows<'a>(s: &mut Shared, details: impl IntoIterator<Item = &'a str>) -> Vec<Publication> {
+    if s.tracker.reading_back() {
+        return Vec::new();
+    }
+    let mut out = Vec::new();
+    for detail in details {
+        if let Some(row) = s.rows.get_mut(detail) {
+            say_row(detail, row, &mut out);
         }
     }
     out
+}
+
+/// One row's difference between want and said, marked said as it is written.
+fn say_row(detail: &str, row: &mut Row, out: &mut Vec<Publication>) {
+    let gone: Vec<&'static str> = row.said.keys().filter(|k| !row.want.contains_key(*k)).copied().collect();
+    for leaf in gone {
+        row.said.remove(leaf);
+        out.push(Publication { topic: format!("{detail}/{leaf}"), payload: String::new() });
+    }
+    for (leaf, value) in &row.want {
+        if row.said.get(leaf) != Some(value) {
+            row.said.insert(leaf, value.clone());
+            out.push(Publication { topic: format!("{detail}/{leaf}"), payload: value.clone() });
+        }
+    }
 }
 
 /// A connect opened a read-back window. What this process said on the last

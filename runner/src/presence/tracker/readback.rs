@@ -17,6 +17,24 @@ impl Tracker {
     pub fn begin_readback(&mut self) {
         self.readback = Some(BTreeMap::new());
         self.legacy.clear();
+        self.held_records.clear();
+    }
+
+    /// One retained `…/{deviceId}/record` off the broker, inside a window.
+    /// An earlier process wrote it; whether it still stands is decided when
+    /// the window closes, against what is online then.
+    pub fn restore_record(&mut self, topic: &str, payload: &[u8]) {
+        if self.readback.is_none() {
+            return;
+        }
+        if !topic.ends_with("/record") {
+            return;
+        }
+        if payload.is_empty() {
+            self.held_records.remove(topic);
+        } else {
+            self.held_records.insert(topic.to_string());
+        }
     }
 
     /// One retained document off the broker. Ignored outside a window and for
@@ -107,6 +125,22 @@ impl Tracker {
                 device_id,
                 Entry { topic, online, doc, last_seen_ms: None, clock_ms: now_ms, settled: true },
             );
+        }
+
+        // Records an earlier process left. One whose device is online here
+        // (sighted, or adopted) stands until that device goes offline — the
+        // empty fingerprint makes its next sighting restate it in full. Any
+        // other is the identity of a thing nobody vouches for: retracted.
+        for topic in std::mem::take(&mut self.held_records) {
+            let Some(device_id) = topic.strip_suffix("/record").and_then(|t| t.rsplit('/').next()) else {
+                continue;
+            };
+            match self.entries.get(device_id) {
+                Some(e) if e.online => {
+                    self.records.entry(device_id.to_string()).or_insert_with(|| (String::new(), now_ms));
+                }
+                _ => out.push(Publication { topic, payload: String::new() }),
+            }
         }
         out
     }

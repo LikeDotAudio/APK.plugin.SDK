@@ -34,14 +34,18 @@ use apkaudio_contracts::topics::TopicError;
 use rumqttc::{Client, QoS};
 
 /// Say one thing: at most once, never retained, never stored.
+///
+/// A refusal is COUNTED, not discarded (ROAD-3472): `publish_failures` in the
+/// loopback telemetry, beside `messages_published`. The signature stays `()`
+/// because an unkept statement is said again on the next restate anyway.
 pub fn say(client: &Client, topic: impl Into<String>, payload: impl Into<Vec<u8>>) {
-    let _ = client.publish(topic.into(), QoS::AtMostOnce, false, payload.into());
+    crate::loopback::published(client.publish(topic.into(), QoS::AtMostOnce, false, payload.into()).is_ok());
 }
 
 /// [`say`] without waiting: `false` when the queue was full or closed (the
 /// statement is dropped; the next restate says it again).
 pub fn try_say(client: &Client, topic: impl Into<String>, payload: impl Into<Vec<u8>>) -> bool {
-    client.try_publish(topic.into(), QoS::AtMostOnce, false, payload.into()).is_ok()
+    crate::loopback::published(client.try_publish(topic.into(), QoS::AtMostOnce, false, payload.into()).is_ok())
 }
 
 /// Delete whatever an older agent KEPT on `topic`: a zero-length retained
@@ -49,7 +53,7 @@ pub fn try_say(client: &Client, topic: impl Into<String>, payload: impl Into<Vec
 /// retained one, so without this an old build's kept leaf answers every fresh
 /// subscriber beside this agent's unkept restates.
 pub fn forget(client: &Client, topic: impl Into<String>) {
-    let _ = client.publish(topic.into(), QoS::AtMostOnce, true, Vec::<u8>::new());
+    crate::loopback::published(client.publish(topic.into(), QoS::AtMostOnce, true, Vec::<u8>::new()).is_ok());
 }
 
 /// Anything [`restate`] can say again: `{topic: payload}` maps and
