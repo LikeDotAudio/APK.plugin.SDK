@@ -57,6 +57,11 @@ pub const WEBRTC_SIGNAL_ROLES: [&str; 2] = ["offerer", "answerer"];
 /// PLAN-3315.01.
 pub const AUDIO_ENGINE_LEAVES: [&str; 2] = ["state", "restarts"];
 
+/// What is filed under `System/Captures/{kind}/{capture}` — a CLOSED set; each
+/// kind is a slot whose payload `capture-rule.ts` holds (`CAPTURE_SLOTS`, also in
+/// `topic_grammar.json`). TS twin: `topics/grammar.ts` CAPTURE_KINDS.
+pub const CAPTURE_KINDS: [&str; 7] = ["Rig", "Attention", "RedFlag", "Landing", "CatchUp", "Setup", "Qualified"];
+
 /// YoControl's two speech leaves — a CLOSED set. TS twin: `topics/grammar.ts`
 /// YO_SPEECH_LEAVES, read off `SPEECH_SAY_TOPIC` and `SPEECH_AUDIO_TOPIC`.
 pub const YO_SPEECH_LEAVES: [&str; 2] = ["say", "audio"];
@@ -290,6 +295,13 @@ pub fn midi_wildcard(device: Option<&str>) -> Result<String, TopicError> {
 /// (`APK:audio:komand`), and both name this string.
 pub fn time_mark() -> String {
     format!("{ROOT}/Time/Mark")
+}
+
+/// THE HOUR — the one retained document saying where the bench is in its
+/// hourly boom / reconnect / self-test (`TimeHour`, `src/time-hour.ts`).
+/// Published by `AUDIO.komand` (`the_hour.rs`); obeyed by every recorder.
+pub fn time_hour() -> String {
+    format!("{ROOT}/Time/Hour")
 }
 
 /// A sound asked for by name — played by the APK:OS sound host. PLAN-3315.01.
@@ -601,6 +613,9 @@ pub fn capture_points_wildcard() -> String {
 /// A taken capture, filed by kind: `System/Captures/{kind}/{capture}`.
 pub fn capture(kind: &str, capture: &str) -> Result<String, TopicError> {
     require_segment("kind", kind)?;
+    if !CAPTURE_KINDS.contains(&kind) {
+        return Err(err("capture kind", kind));
+    }
     require_segment("capture", capture)?;
     Ok(format!("{ROOT}/System/Captures/{kind}/{capture}"))
 }
@@ -1131,6 +1146,8 @@ pub enum ParsedTopic {
     Midi { device: String, channel: String, control: String },
     #[serde(rename = "timeMark")]
     TimeMark,
+    #[serde(rename = "timeHour")]
+    TimeHour,
     #[serde(rename = "discovery")]
     Discovery {
         protocol: String,
@@ -1431,6 +1448,7 @@ pub fn parse(raw: &str) -> ParsedTopic {
         },
         Some("Time") => match (s2, s3) {
             (Some("Mark"), None) => ParsedTopic::TimeMark,
+            (Some("Hour"), None) => ParsedTopic::TimeHour,
             _ => unknown,
         },
         Some("Discovery") => match (s2, s3, s4) {
@@ -1637,7 +1655,7 @@ pub fn parse(raw: &str) -> ParsedTopic {
                 }
             }
             (Some("Captures"), Some(kind), Some(capture), None)
-                if is_segment(kind) && is_segment(capture) =>
+                if CAPTURE_KINDS.contains(&kind) && is_segment(capture) =>
             {
                 ParsedTopic::Capture {
                     capture_kind: kind.to_string(),

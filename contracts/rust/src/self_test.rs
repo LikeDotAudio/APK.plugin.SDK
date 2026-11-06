@@ -224,6 +224,10 @@ pub struct Check {
     /// One line for a human. On a failure this is the whole reason somebody
     /// does not have to open a log.
     pub detail: String,
+    /// The problems-catalogue code for a failure (`device_unreachable`,
+    /// `timeout`, …), so the report carries the way back and not only the
+    /// diagnosis. `None` for a pass, a skip, or a failure nobody has named.
+    pub problem: Option<String>,
 }
 
 impl Check {
@@ -233,6 +237,14 @@ impl Check {
 
     pub fn fail(name: &str, depth: Depth, detail: &str) -> Check {
         Check::new(name, depth, Outcome::Fail, detail)
+    }
+
+    /// A failure with a name from `contracts/problems/problems.json`: the
+    /// report then says what to do about it (`fix`), looked up by that code.
+    pub fn fail_as(name: &str, depth: Depth, code: &str, detail: &str) -> Check {
+        let mut c = Check::new(name, depth, Outcome::Fail, detail);
+        c.problem = Some(code.to_string());
+        c
     }
 
     pub fn skipped(name: &str, depth: Depth, detail: &str) -> Check {
@@ -260,6 +272,7 @@ impl Check {
             depth,
             outcome,
             detail: detail.to_string(),
+            problem: None,
         }
     }
 }
@@ -374,12 +387,17 @@ impl Report {
             .checks
             .iter()
             .map(|c| {
-                serde_json::json!({
+                let mut row = serde_json::json!({
                     "name": c.name,
                     "depth": c.depth.as_str(),
                     "outcome": c.outcome.as_str(),
                     "detail": c.detail,
-                })
+                });
+                if let Some(code) = &c.problem {
+                    row["problem"] = serde_json::Value::String(code.clone());
+                    row["fix"] = serde_json::json!(crate::problems::fix_for(code));
+                }
+                row
             })
             .collect();
         let mut out = serde_json::json!({
@@ -451,6 +469,7 @@ impl Report {
                 depth: check_depth,
                 outcome,
                 detail: detail.to_string(),
+                problem: check["problem"].as_str().map(str::to_string),
             });
         }
         Ok(report)
@@ -712,6 +731,21 @@ impl Withdrawal {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn a_named_failure_carries_its_fix() {
+        let r = super::Report::new("ptp", super::Depth::Device).with(super::Check::fail_as(
+            "grandmaster_reply",
+            super::Depth::Device,
+            "device_unreachable",
+            "no Announce from 10.0.0.9 in 6 s",
+        ));
+        let j = r.to_json();
+        assert_eq!(j["checks"][0]["problem"], "device_unreachable");
+        assert!(j["checks"][0]["fix"].as_array().is_some_and(|a| !a.is_empty()));
+        let back = super::Report::from_json(&j.to_string()).unwrap();
+        assert_eq!(back.checks()[0].problem.as_deref(), Some("device_unreachable"));
+    }
+
     use super::*;
 
     // ---------------------------------------------------------- the shape

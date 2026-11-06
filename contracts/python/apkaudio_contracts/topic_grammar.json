@@ -79,6 +79,15 @@
     "yoSpeechLeaf": [
       "say",
       "audio"
+    ],
+    "captureKind": [
+      "Rig",
+      "Attention",
+      "RedFlag",
+      "Landing",
+      "CatchUp",
+      "Setup",
+      "Qualified"
     ]
   },
   "families": {
@@ -350,6 +359,16 @@
         "PODS/POD.THICK/AUDIO.komand/src/time_of_day.rs"
       ]
     },
+    "timeHour": {
+      "pattern": "APK.audio/Time/Hour",
+      "retain": "retained-state",
+      "payload": "TimeHour",
+      "producer": "PODS/POD.THICK/AUDIO.komand/src/the_hour.rs (the schedule; mqtt.rs publishes)",
+      "consumers": [
+        "PODS/POD.THICK/AUDIO.komand/src/mqtt.rs (pauses its refresh and clock sends)",
+        "PODS/POD.THICK/PLUGINS/PLUGIN.VISA/SRC/src/bin/apk-visa/visa/write_daemon/the_hour.rs (holds writes, closes and re-opens every session)"
+      ]
+    },
     "containerManagerEvent": {
       "pattern": "APK.audio/System/ContainerManager",
       "retain": "live-event",
@@ -596,10 +615,12 @@
     "capture": {
       "pattern": "APK.audio/System/Captures/{kind}/{capture}",
       "retain": "retained-state",
-      "payload": "-",
-      "producer": "build_captures.py",
+      "payload": "CaptureSlot",
+      "producer": "PODS/POD.THIN/WEB.OsApi/SRC (capture_recorder, red_flags, tone_stepper, routes_capture_setups)",
       "consumers": [
-        "7_Captures panels"
+        "OS Recording",
+        "NMOS.Server bridge",
+        "DataBus/ledger"
       ]
     },
     "protocols": {
@@ -726,6 +747,108 @@
       "consumers": [
         "vendor discovery and control panels"
       ]
+    }
+  },
+  "captureSlots": {
+    "Rig": {
+      "about": "the whole device at one moment: every setting (Nab/…), reading (Reading/…) and trace (Trace/…) it reported",
+      "producer": "PODS/POD.THIN/WEB.OsApi/SRC/capture_recorder.py",
+      "fields": {
+        "device": "string",
+        "ts": "number",
+        "rig": "object"
+      },
+      "optional": {}
+    },
+    "Attention": {
+      "about": "a device whose state word turned dead",
+      "producer": "PODS/POD.THIN/WEB.OsApi/SRC/capture_recorder.py",
+      "fields": {
+        "device": "string",
+        "leaf": "string",
+        "word": "string",
+        "ts": "number"
+      },
+      "optional": {
+        "was": "string|null"
+      }
+    },
+    "RedFlag": {
+      "about": "a VISA exchange ticket: slow, refused or timed out",
+      "producer": "PODS/POD.THIN/WEB.OsApi/SRC/red_flags.py",
+      "fields": {
+        "device": "string",
+        "id": "number",
+        "kind": "string",
+        "status": "string",
+        "opened": "number",
+        "last": "number"
+      },
+      "optional": {
+        "command": "string|null",
+        "why": "string|null",
+        "code": "string|null",
+        "count": "number|null"
+      }
+    },
+    "Landing": {
+      "about": "a generator landed on a tone",
+      "producer": "PODS/POD.THIN/WEB.OsApi/SRC/tone_stepper.py",
+      "fields": {
+        "device": "string",
+        "freq_hz": "number",
+        "at": "number"
+      },
+      "optional": {
+        "step": "number|null",
+        "by": "string|null"
+      }
+    },
+    "CatchUp": {
+      "about": "one device on one rung after a landing: what it said, or why it said nothing",
+      "producer": "PODS/POD.THIN/WEB.OsApi/SRC/tone_stepper.py",
+      "fields": {
+        "device": "string",
+        "generator": "string",
+        "landing": "number",
+        "rung_s": "number",
+        "command": "string",
+        "asked": "number",
+        "answered": "number|null",
+        "value": "string|null",
+        "error": "string|null"
+      },
+      "optional": {
+        "freq_hz": "number|null"
+      }
+    },
+    "Setup": {
+      "about": "what a person called a device, why they record it, and the units they corrected",
+      "producer": "PODS/POD.THIN/WEB.OsApi/SRC/osapi/routes_capture_setups.py",
+      "fields": {
+        "device": "string",
+        "ts": "number"
+      },
+      "optional": {
+        "name": "string",
+        "purpose": "string",
+        "test": "string|null",
+        "settings": "object",
+        "units": "object",
+        "aliases": "object",
+        "by": "string"
+      }
+    },
+    "Qualified": {
+      "about": "the queries a device answered alone (winners) and refused (losers, never asked again)",
+      "producer": "PODS/POD.THIN/WEB.OsApi/SRC/capture_recorder.py",
+      "fields": {
+        "device": "string",
+        "ts": "number",
+        "winners": "array",
+        "losers": "array"
+      },
+      "optional": {}
     }
   },
   "rules": [
@@ -1332,6 +1455,17 @@
       ]
     },
     {
+      "kind": "timeHour",
+      "segs": [
+        {
+          "lit": "Time"
+        },
+        {
+          "lit": "Hour"
+        }
+      ]
+    },
+    {
       "kind": "gamesBingoDrawn",
       "segs": [
         {
@@ -1839,7 +1973,7 @@
           "lit": "Captures"
         },
         {
-          "rule": "segment",
+          "oneOf": "captureKind",
           "name": "captureKind"
         },
         {

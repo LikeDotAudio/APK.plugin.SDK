@@ -15,7 +15,7 @@ and expire it on the telemetry tick. The plugin publishes its device leaves
 (`model`, `name`, `serial`, `last_online`, …) and nothing else.
 
 ONE IMPLEMENTATION PER LANGUAGE, ONE BEHAVIOUR. Same manifest keys
-(`tree`, `device_depth`, `device_path`, `device_document`), same binding
+(`tree`, `device_depth`, `device_path`, `device_document`, `key_by`), same binding
 (`${model}` `${family}` `${slug}` `${resource}` `${name}`, `device_state`,
 `device_control`, `device_doc`), same document shape, same rules for when a
 panel leaves (offline at once; silent after `panels_expire_after_s`; an
@@ -75,6 +75,8 @@ DEVICE_CONTROL_LEAF = "Control"
 # presence::ADOPT_GRACE in RUNNER/src/presence/mod.rs (the tests read it there).
 ADOPT_GRACE_S = 120
 ANY = "+"
+# The device leaves the book reads, and so the ones a panel may be keyed by.
+KEY_LEAVES = ("model", "name", "serial")
 
 Publication = Tuple[str, str]
 
@@ -103,8 +105,10 @@ def placement_of(tree: str) -> str:
 class Template:
     """One family's template, parsed once."""
 
-    def __init__(self, family: str, at: str, path: List[str], document: bool, body: Any):
+    def __init__(self, family: str, at: str, path: List[str], document: bool, body: Any,
+                 key_by: Optional[str] = None):
         self.family, self.at, self.path, self.document, self.body = family, at, path, document, body
+        self.key_by = key_by
 
 
 def parse_template(family: str, manifest: str, template: str) -> Template:
@@ -137,11 +141,15 @@ def parse_template(family: str, manifest: str, template: str) -> Template:
     if not isinstance(document, bool):
         raise ValueError("gui/manifest.json `%s.device_document` is %s; it is true or false"
                          % (family, json.dumps(document)))
+    key_by = entry.get("key_by")
+    if key_by is not None and key_by not in KEY_LEAVES:
+        raise ValueError("gui/manifest.json `%s.key_by` is %s; it is one of %s"
+                         % (family, json.dumps(key_by), list(KEY_LEAVES)))
     try:
         body = json.loads(template)
     except ValueError as e:
         raise ValueError("gui/%s/%s.json: %s" % (family, family, e))
-    return Template(family, at, path, document, body)
+    return Template(family, at, path, document, body, key_by)
 
 
 _TEMPLATES: List[Template] = []
@@ -213,6 +221,9 @@ class _Shape:
             return segments[-1] if segments else ""
         return "_".join(s for s, p in zip(segments, self.path) if p == ANY)
 
+    def key_by(self) -> Optional[str]:
+        return next((t.key_by for t in self.templates if t.key_by), None)
+
 
 class _Device:
     def __init__(self, shape: int, segments: List[str], name: str, now: float):
@@ -220,6 +231,7 @@ class _Device:
         self.fields: Dict[str, str] = {}
         self.online: Optional[bool] = None
         self.seen = now
+        self.presented: Optional[str] = None
 
 
 def _text(v: Any) -> str:
@@ -325,14 +337,14 @@ class Book:
                 if isinstance(doc, dict):
                     if "last_online" in doc:
                         device.online = is_online_now(_text(doc["last_online"]))
-                    for leaf in ("model", "name", "serial"):
+                    for leaf in KEY_LEAVES:
                         if leaf in doc:
                             device.fields[leaf] = _text(doc[leaf]).strip()
                 elif payload.strip() == "":
                     device.online = False
             elif field == "last_online":
                 device.online = is_online_now(payload)
-            elif field in ("model", "name", "serial"):
+            elif field in KEY_LEAVES:
                 device.fields[field] = payload.strip()
             out.extend(self._reconcile(base))
         return out
@@ -359,14 +371,23 @@ class Book:
             return out
         for base in sorted(b for b, d in self.devices.items() if now - d.seen > self.expire_after_s):
             device = self.devices.pop(base)
-            out.extend(self._clear(self._key_of(device)))
+            key = device.presented or self._key_of(device)
+            if key is not None and not self._held_elsewhere(key, base):
+                out.extend(self._clear(key))
         return out
 
     def restate(self) -> List[Publication]:
         return [(panel_topic(k), t) for k, t in sorted(self.ledger.items())]
 
-    def _key_of(self, device: _Device) -> str:
-        return sanitize_segment("%s-%s" % (self.token, "-".join(device.segments)))
+    def _key_of(self, device: _Device) -> Optional[str]:
+        leaf = self.shapes[device.shape].key_by()
+        if leaf is None:
+            return sanitize_segment("%s-%s" % (self.token, "-".join(device.segments)))
+        value = (device.fields.get(leaf) or "").strip()
+        return sanitize_segment("%s-%s" % (self.token, value)) if value else None
+
+    def _held_elsewhere(self, key: str, base: str) -> bool:
+        return any(b != base and d.presented == key for b, d in self.devices.items())
 
     def _clear(self, key: str) -> List[Publication]:
         ours = self.ledger.pop(key, None) is not None
@@ -378,14 +399,27 @@ class Book:
         if device is None:
             return []
         key = self._key_of(device)
+        out: List[Publication] = []
+        prev = device.presented
+        if prev is not None and prev != key:
+            device.presented = None
+            if not self._held_elsewhere(prev, base):
+                out.extend(self._clear(prev))
+        if key is None:
+            return out
         if device.online is False:
-            return self._clear(key)
+            device.presented = None
+            if not self._held_elsewhere(key, base):
+                out.extend(self._clear(key))
+            return out
         text = fingerprint(self.document(base, device, key))
+        device.presented = key
         if self.ledger.get(key) == text:
-            return []
+            return out
         self.inherited.pop(key, None)
         self.ledger[key] = text
-        return [(panel_topic(key), text)]
+        out.append((panel_topic(key), text))
+        return out
 
     def document(self, base: str, device: _Device, key: str) -> Dict[str, Any]:
         """The `present.rs` shape: `{key, folder, device, source, placements}`."""
@@ -407,6 +441,7 @@ class Book:
                 "resource": base,
                 "write_topic": "%s/%s" % (base, DEVICE_CONTROL_LEAF),
                 "serial": device.fields.get("serial"),
+                "name": name,
             },
             "source": "plugin:%s" % self.token,
             "placements": placements,

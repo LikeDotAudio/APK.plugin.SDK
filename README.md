@@ -21,6 +21,15 @@ The wiki also documents **Trunk-Caster**, the intercom trunk broker that is to b
 
 None of its code ships in this repository. The SDK is still the runner and the contracts.
 
+## Errors and the way back
+
+`contracts/problems/problems.json` names every error code the bench uses and, for each, what
+happened, why, and the steps to fix it. A plugin sends only the **code**
+(`ControlError.code`, or `Check::fail_as(name, depth, "device_unreachable", detail)` in a
+self test, whose report then carries `fix`); every reader — Rust
+`apkaudio_contracts::problems`, Python `apkaudio_contracts.problems`, and every softapp via
+`APKSoftapp.showProblem` — looks up the same fix. See `contracts/problems/README.md`.
+
 ## Use it
 
 ```toml

@@ -43,6 +43,7 @@ services:
     #    their capabilities from FILE caps at exec, which that flag forbids.
     cap_drop: [ALL]
     read_only: true
+    mem_reservation: 6m
     # The runner's health file, on the only writable path of a read-only root.
     tmpfs:
       - /tmp
@@ -99,6 +100,7 @@ services:
     init: true   # see plugin-host
     cap_drop: [ALL]
     read_only: true
+    mem_reservation: 6m
     tmpfs:
       - /tmp
     extra_hosts:

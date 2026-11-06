@@ -31,6 +31,14 @@
 //! A family with its own shape is its own panel; families of one shape share
 //! one panel, a placement each.
 //!
+//! `"key_by": "serial"` keys the panel by the unit, not by where it sits in
+//! the tree: `<token>-<serial>` (one of the leaves read: `model`, `name`,
+//! `serial`). A device named by its friendly name (Cast: `<category>/<name>`)
+//! is renamed or recategorised by a person; keyed by its serial it keeps one
+//! panel. Such a device has no panel until that leaf is heard, and two tree
+//! entries with one serial (the old name, the new) share the one panel — the
+//! one that falls silent does not empty it (ROAD-3523).
+//!
 //! `"device_document": true` says the device is the topic AT that path and its
 //! payload is one JSON object (SAP's `…/Device/<origin>`): its top-level
 //! `last_online`, `model`, `name` and `serial` are read as the leaves would be,
@@ -105,11 +113,16 @@ pub struct Template {
     pub path: Vec<String>,
     /// The device is the topic at `path` and its payload one JSON object.
     pub document: bool,
+    /// The leaf that keys the panel (`"key_by"`), else the tree path does.
+    pub key_by: Option<String>,
     pub body: Value,
 }
 
 /// Any one segment, in a [`Template::path`].
 const ANY: &str = "+";
+
+/// The device leaves the book reads, and so the ones a panel may be keyed by.
+const KEY_LEAVES: [&str; 3] = ["model", "name", "serial"];
 
 static TEMPLATES: Mutex<Vec<Template>> = Mutex::new(Vec::new());
 
@@ -165,8 +178,15 @@ pub fn parse_template(family: &str, manifest: &str, template: &str) -> Result<Te
         None => false,
         Some(v) => v.as_bool().ok_or_else(|| format!("gui/manifest.json `{family}.device_document` is {v}; it is true or false"))?,
     };
+    let key_by = match entry.get("key_by") {
+        None => None,
+        Some(v) => match v.as_str() {
+            Some(leaf) if KEY_LEAVES.contains(&leaf) => Some(leaf.to_string()),
+            _ => return Err(format!("gui/manifest.json `{family}.key_by` is {v}; it is one of {KEY_LEAVES:?}")),
+        },
+    };
     let body: Value = serde_json::from_str(template).map_err(|e| format!("gui/{family}/{family}.json: {e}"))?;
-    Ok(Template { family: family.to_string(), at, path, document, body })
+    Ok(Template { family: family.to_string(), at, path, document, key_by, body })
 }
 
 /// `7_Device_Consoles` → `Device_Consoles`: the numeric prefix orders folders
@@ -189,6 +209,8 @@ struct Device {
     fields: BTreeMap<String, String>,
     online: Option<bool>,
     seen: Instant,
+    /// The key this device's panel is on the broker under, if it has one.
+    presented: Option<String>,
 }
 
 /// The families that read one device shape, presented as one panel.
@@ -196,6 +218,13 @@ struct Shape {
     path: Vec<String>,
     document: bool,
     templates: Vec<Template>,
+}
+
+impl Shape {
+    /// The leaf that keys this shape's panel: the first family that names one.
+    fn key_by(&self) -> Option<&str> {
+        self.templates.iter().find_map(|t| t.key_by.as_deref())
+    }
 }
 
 impl Shape {
@@ -308,6 +337,7 @@ impl Book {
                 fields: BTreeMap::new(),
                 online: None,
                 seen: now,
+                presented: None,
             });
             device.seen = now;
             if document {
@@ -319,7 +349,7 @@ impl Book {
                         if let Some(v) = doc.get("last_online") {
                             device.online = Some(apkaudio_contracts::presence::is_online_now(&text(v)));
                         }
-                        for leaf in ["model", "name", "serial"] {
+                        for leaf in KEY_LEAVES {
                             if let Some(v) = doc.get(leaf) {
                                 device.fields.insert(leaf.to_string(), text(v).trim().to_string());
                             }
@@ -330,7 +360,7 @@ impl Book {
                 }
             } else if field == "last_online" {
                 device.online = Some(apkaudio_contracts::presence::is_online_now(payload));
-            } else if matches!(field.as_str(), "model" | "name" | "serial") {
+            } else if KEY_LEAVES.contains(&field.as_str()) {
                 device.fields.insert(field, payload.trim().to_string());
             }
             out.extend(self.reconcile(&base));
@@ -379,7 +409,11 @@ impl Book {
             .collect();
         for base in gone {
             let device = self.devices.remove(&base).expect("listed above");
-            out.extend(self.clear(&self.key_of(&device)));
+            let Some(key) = device.presented.clone().or_else(|| self.key_of(&device)) else { continue };
+            // The same unit under another name still holds this panel.
+            if !self.held_elsewhere(&key, &base) {
+                out.extend(self.clear(&key));
+            }
         }
         out
     }
@@ -394,9 +428,23 @@ impl Book {
     }
 
     /// `<token>-<segment>-…`: `cast-Speaker-Garage`, `playstation-B41F…`,
-    /// `dante-<device>-Channel-3`.
-    fn key_of(&self, device: &Device) -> String {
-        sanitize_segment(&format!("{}-{}", self.token, device.segments.join("-")))
+    /// `dante-<device>-Channel-3`; `<token>-<serial>` for a shape keyed by its
+    /// serial, and `None` until that leaf has been heard.
+    fn key_of(&self, device: &Device) -> Option<String> {
+        match self.shapes[device.shape].key_by() {
+            Some(leaf) => device
+                .fields
+                .get(leaf)
+                .map(|v| v.trim())
+                .filter(|v| !v.is_empty())
+                .map(|v| sanitize_segment(&format!("{}-{v}", self.token))),
+            None => Some(sanitize_segment(&format!("{}-{}", self.token, device.segments.join("-")))),
+        }
+    }
+
+    /// Does a device other than `base` have its panel under `key`?
+    fn held_elsewhere(&self, key: &str, base: &str) -> bool {
+        self.devices.iter().any(|(b, d)| b != base && d.presented.as_deref() == Some(key))
     }
 
     fn clear(&mut self, key: &str) -> Vec<Publication> {
@@ -412,17 +460,41 @@ impl Book {
     fn reconcile(&mut self, base: &str) -> Vec<Publication> {
         let Some(device) = self.devices.get(base) else { return Vec::new() };
         let key = self.key_of(device);
-        if device.online == Some(false) {
-            return self.clear(&key);
+        let offline = device.online == Some(false);
+        let mut out = Vec::new();
+        // The key moved (its serial was heard, or changed): the old panel goes.
+        if let Some(prev) = device.presented.clone().filter(|p| Some(p) != key.as_ref()) {
+            self.set_presented(base, None);
+            if !self.held_elsewhere(&prev, base) {
+                out.extend(self.clear(&prev));
+            }
         }
+        let Some(key) = key else { return out };
+        if offline {
+            self.set_presented(base, None);
+            // A stale copy of a unit that is live under another name says nothing about it.
+            if !self.held_elsewhere(&key, base) {
+                out.extend(self.clear(&key));
+            }
+            return out;
+        }
+        let device = self.devices.get(base).expect("looked up above");
         let document = self.document(base, device, &key);
-        let Ok(text) = serde_json::to_string(&document) else { return Vec::new() };
+        let Ok(text) = serde_json::to_string(&document) else { return out };
+        self.set_presented(base, Some(key.clone()));
         if self.ledger.get(&key) == Some(&text) {
-            return Vec::new();
+            return out;
         }
         self.inherited.remove(&key);
         self.ledger.insert(key.clone(), text.clone());
-        vec![(panel_topic(&key), text)]
+        out.push((panel_topic(&key), text));
+        out
+    }
+
+    fn set_presented(&mut self, base: &str, key: Option<String>) {
+        if let Some(d) = self.devices.get_mut(base) {
+            d.presented = key;
+        }
     }
 
     /// The `present.rs` shape: `{key, folder, device, placements:[{at, frames}]}`,
@@ -459,6 +531,8 @@ impl Book {
                 "resource": base,
                 "write_topic": format!("{base}/{DEVICE_CONTROL_LEAF}"),
                 "serial": device.fields.get("serial"),
+                // What a person calls it: the tile under Touch Points.
+                "name": name,
             },
             "source": format!("plugin:{}", self.token),
             "placements": placements,
@@ -711,6 +785,38 @@ mod tests {
         let out = b.observe(dev, r#"{"last_online": 1761830000}"#, now);
         assert_eq!(out, vec![("APK.audio/System/Gui/Panels/sap-44_44_44_158".to_string(), String::new())]);
         assert!(parse_template("sap", r#"{"sap": {"device_document": "yes"}}"#, tpl).is_err());
+    }
+
+    #[test]
+    fn a_panel_keyed_by_serial_waits_for_it_and_survives_a_rename() {
+        let manifest = r#"{"cast": {"tree": "Instruments/Cast", "key_by": "serial"}}"#;
+        let t = parse_template("cast", manifest, TEMPLATE).unwrap();
+        assert_eq!(t.at, "Instruments/Cast");
+        assert_eq!(t.key_by.as_deref(), Some("serial"));
+        let mut b = Book::new("cast", vec![t], Some(Duration::from_secs(120)));
+        let now = Instant::now();
+        // No serial yet: no panel, never one keyed by the tree.
+        assert!(b.observe(&format!("{BASE}/model"), "Google Nest Mini", now).is_empty());
+        let out = b.observe(&format!("{BASE}/serial"), "0bb426e5", now);
+        assert_eq!(out.len(), 1);
+        assert_eq!(out[0].0, "APK.audio/System/Gui/Panels/cast-0bb426e5");
+        let doc: Value = serde_json::from_str(&out[0].1).unwrap();
+        assert_eq!(doc["device"]["serial"], "0bb426e5");
+        assert_eq!(doc["device"]["name"], "Garage");
+        // Renamed by a person: the same unit, the same panel, now at the new name.
+        let renamed = "APK.audio/System/Protocols/cast/Device/Speaker/Shop";
+        let later = now + Duration::from_secs(100);
+        b.observe(&format!("{renamed}/model"), "Google Nest Mini", later);
+        let out = b.observe(&format!("{renamed}/serial"), "0bb426e5", later);
+        assert_eq!(out.len(), 1);
+        assert_eq!(out[0].0, "APK.audio/System/Gui/Panels/cast-0bb426e5");
+        // The old name falls silent; the panel stays, held by the new one.
+        assert!(b.expire(now + Duration::from_secs(130)).is_empty());
+        assert_eq!(b.restate().len(), 1);
+        // The unit itself going empties it.
+        let out = b.expire(later + Duration::from_secs(130));
+        assert_eq!(out, vec![("APK.audio/System/Gui/Panels/cast-0bb426e5".to_string(), String::new())]);
+        assert!(parse_template("cast", r#"{"cast": {"key_by": "ip"}}"#, TEMPLATE).is_err());
     }
 
     /// RUNNER/vectors/panels.json — the cases the Python twin

@@ -50,6 +50,12 @@ pub mod broker_auth;
 /// lives.md` for the decision and the category error it tolerates.
 pub mod tokens;
 
+/// Every error this bench can name and the way back from it, read from
+/// `contracts/problems/problems.json`: a plugin sends `ControlError.code`, and
+/// any reader — this, the Python package, every softapp — looks up the same
+/// title, cause and fix steps.
+pub mod problems;
+
 pub mod broker_backoff;
 
 pub mod spog_envelope;
@@ -67,6 +73,10 @@ pub mod agent_counters;
 /// as a `&str` and two front-end files tone on it, and until PLAN-1040.01 the
 /// only declaration of the set anywhere was a comment on the line that wrote it.
 pub mod scan_log_line;
+
+/// One complete spectrum-analyzer sweep, retained at `…/Reading/Sweep`
+/// (AUDIO.komand's sweep recorder); the zod refinements as `check`.
+pub mod spectrum_sweep;
 
 /// The `Agent/state` topic every protocol hunter reports itself on. Here for
 /// the same reason `broker_auth` is: it was a convention held privately by two

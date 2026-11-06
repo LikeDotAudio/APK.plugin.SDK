@@ -1,0 +1,1 @@
+{"schemaVersion": 1, "device": "APK.audio/System/Protocols/visa/Device/Spectrum/N9340B/DevCN03480580", "startHz": 88000000.0, "stopHz": 108000000.0, "centerHz": 98000000.0, "spanHz": 20000000.0, "points": 3, "unit": "dBm", "trace": [-80.1, -79.5, -81.0], "sweep": 7, "ts": "2026-11-05T14:12:03.412Z", "sweepMs": 412.0}

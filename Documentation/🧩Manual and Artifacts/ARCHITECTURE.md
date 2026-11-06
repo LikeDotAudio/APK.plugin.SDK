@@ -11,6 +11,7 @@
 | `contracts/rust/` (`apkaudio-contracts`) | `contracts/rust` (its own `Cargo.lock` dropped) | The bus contract. |
 | `contracts/tokens/` | `contracts/tokens` | `src/tokens.rs` compiles `../../tokens/brand.json` in. |
 | `contracts/vectors/` | `contracts/vectors` | `tests/vectors.rs` and `tests/payloads.rs` read them. |
+| `contracts/problems/` | `contracts/problems` | `src/problems.rs` compiles `../../problems/problems.json` in: every error code with its title, cause and fix steps (`problems::problem(code)`, `fix_for`), and `self_test::Check::fail_as` puts `problem` + `fix` in a self-test report. |
 | `docker/plugin-base.yml` | `PODS/POD.THICK/DISCOVERY.Engine/Docker/plugin-base.yml` | What every plugin compose `extends:`; the CI places it at `DISCOVERY.Engine/Docker/` so `docker compose config` resolves. |
 | `PUBLISHED_FROM` | written by `publish_sdk.py` | The monorepo and engine commits of this publish. |
 

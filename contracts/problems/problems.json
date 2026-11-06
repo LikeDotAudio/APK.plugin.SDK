@@ -1,0 +1,533 @@
+{
+  "$comment": [
+    "EVERY ERROR THIS BENCH CAN NAME, AND THE WAY BACK FROM IT.",
+    "See problems/README.md. A code is the key: a ControlError, a softapp, a plugin",
+    "or a script says `code` and every reader looks up the same title, cause and",
+    "fix here. A fix is a step a person can take now, said plainly, most likely",
+    "first. Never a stack trace, never 'contact support'.",
+    "",
+    "area is one of: input (what an app reads: a file, a device, a topic),",
+    "output (what it writes, saves, publishes or sends), control (a value set or",
+    "a command given), bus, device, config, browser. Inputs, outputs and control",
+    "are everything; bus, device, config and browser are what they travel on."
+  ],
+  "schemaVersion": 1,
+  "problems": {
+    "sdk_missing": {
+      "area": "config",
+      "title": "This app's shared code did not load",
+      "cause": "vendor/apk-contracts/apk-contracts.global.js (or vendor/apk-softapp/apk-softapp.js) is missing or was served as an error page.",
+      "fix": [
+        "Reload the page once (Ctrl+Shift+R) in case it was a half-finished load.",
+        "Re-vendor it: python3 .apk.scripts/vendor_contract_web.py <app>/vendor/apk-contracts and python3 .apk.scripts/vendor_shared_web.py <app>/vendor/apk-softapp.",
+        "If the app is served by the bench, rebuild the image that carries it: PODS/POD.manager/MANAGER.Docktor/K8/up-stack.sh WEB.Frontend-Assets."
+      ],
+      "retry": true
+    },
+    "bus_missing": {
+      "area": "bus",
+      "title": "No message bus on this page",
+      "cause": "apk-bus.js is not loaded here, so the app cannot see devices, panels or other apps. This is normal for a page opened as a file or from a public site.",
+      "fix": [
+        "Open the app from the APK.audio OS (http://localhost:8080) instead of a file or a public site.",
+        "Everything that does not need the network still works: open, edit and save files as usual."
+      ],
+      "retry": false
+    },
+    "broker_unreachable": {
+      "area": "bus",
+      "title": "Can't reach the message broker",
+      "cause": "The page found no broker to connect to, or the broker refused the connection. Live devices, panels and controls stay frozen until it is back.",
+      "fix": [
+        "Open DockTor (http://localhost:8765) and check DATABUS.Broker.MQTT is running; start it if not.",
+        "From a shell: PODS/POD.manager/MANAGER.Docktor/K8/up-stack.sh DATABUS.Broker.MQTT.",
+        "If you saved a broker in this browser, clear it: localStorage key oa_bus_url.",
+        "Over https, a ws:// broker is blocked by the browser; open the page over http on the bench or use the gateway's /mqtt."
+      ],
+      "retry": true
+    },
+    "bus_disconnected": {
+      "area": "bus",
+      "title": "Lost the message broker",
+      "cause": "The connection dropped after it was working. Values on screen are the last ones received and are no longer live.",
+      "fix": [
+        "Wait a few seconds: the bus reconnects by itself and restates every subscription.",
+        "If it does not come back, check DATABUS.Broker.MQTT in DockTor (http://localhost:8765).",
+        "Anything you changed while disconnected is queued and is sent on reconnect (last value per control)."
+      ],
+      "retry": true
+    },
+    "not_in_cad": {
+      "area": "output",
+      "title": "Not opened inside the CAD",
+      "cause": "This editor saves blocks into a CAD drawing, but it was opened on its own.",
+      "fix": [
+        "Save still works: it downloads a .json file you can import into the CAD later.",
+        "To save straight into a drawing, open the CAD and edit the block from there."
+      ],
+      "retry": false
+    },
+    "fetch_failed": {
+      "area": "input",
+      "title": "Couldn't reach the server",
+      "cause": "The request never got an answer: the service is down, the address is wrong, or the network is blocked.",
+      "fix": [
+        "Check the service is running in DockTor (http://localhost:8765).",
+        "Check the address the app is using (shown in the details) is the bench you mean.",
+        "If this page is https and the server is http, the browser blocks it; open both over the same scheme."
+      ],
+      "retry": true
+    },
+    "timeout": {
+      "area": "input",
+      "title": "No answer in time",
+      "cause": "The request or device was asked and did not answer before the time limit. It may be busy, asleep, or gone.",
+      "fix": [
+        "Retry once: a busy device often answers the second time.",
+        "Check the device is powered and on the network (Discovery shows when it was last verified).",
+        "If it is always slow, raise the timeout in the app's config.ini rather than retrying forever."
+      ],
+      "retry": true
+    },
+    "http_not_found": {
+      "area": "input",
+      "title": "Not found on the server (404)",
+      "cause": "The server answered, but nothing is at that path: the file was moved or renamed, or the image is older than the source.",
+      "fix": [
+        "Check the path in the details for a typo or an old name.",
+        "If you just edited the source, rebuild the image that serves it (up-stack.sh <stack>): the bench serves the image's copy, not your working tree."
+      ],
+      "retry": false
+    },
+    "http_forbidden": {
+      "area": "input",
+      "title": "The server refused (401/403)",
+      "cause": "The server needs a login or does not allow this page to read that path.",
+      "fix": [
+        "Sign in, if the service has a login, and retry.",
+        "Check the service's access settings in its config.ini."
+      ],
+      "retry": true
+    },
+    "http_server_error": {
+      "area": "input",
+      "title": "The server failed (5xx)",
+      "cause": "The request reached the service and the service broke while answering it.",
+      "fix": [
+        "Retry once: a restarting service answers 502/503 for a few seconds.",
+        "Read the service's log in DockTor (http://localhost:8765) for the real error.",
+        "Restart it: PODS/POD.manager/MANAGER.Docktor/K8/up-stack.sh <stack>."
+      ],
+      "retry": true
+    },
+    "bad_json": {
+      "area": "input",
+      "title": "The data isn't valid JSON",
+      "cause": "What arrived (a file, a reply or a retained message) could not be parsed. It may be truncated, hand-edited, or an HTML error page.",
+      "fix": [
+        "Open the file or URL in the details and look at where it stops making sense.",
+        "If it came from the server, it is often an error page: fix the server error first.",
+        "If it is your file, restore it from the last good save or export."
+      ],
+      "retry": false
+    },
+    "bad_input": {
+      "area": "input",
+      "title": "This file or value is not what the app expects",
+      "cause": "It parsed, but it is the wrong shape: a missing field, a wrong type, or another app's format.",
+      "fix": [
+        "Check you opened the right kind of file for this app (its Inputs list says which).",
+        "The details name the first field that is wrong; fix that one and try again."
+      ],
+      "retry": false
+    },
+    "file_unreadable": {
+      "area": "input",
+      "title": "Couldn't read the file",
+      "cause": "The browser could not open the file: it was moved, is still being written, or is too large.",
+      "fix": [
+        "Pick the file again; a file that moved since it was chosen cannot be read.",
+        "If it is very large, split it or use the app's import from the server instead."
+      ],
+      "retry": true
+    },
+    "save_failed": {
+      "area": "output",
+      "title": "Couldn't save",
+      "cause": "The save did not land: the server refused it, the bus was down, or the browser blocked the download.",
+      "fix": [
+        "Your work is still on screen: do not close the page.",
+        "Use Export / Download to keep a copy on disk now.",
+        "Then fix the cause in the details (server, bus or browser) and save again."
+      ],
+      "retry": true
+    },
+    "storage_full": {
+      "area": "output",
+      "title": "This browser's storage is full",
+      "cause": "The app keeps drafts in the browser and the browser refused to store more.",
+      "fix": [
+        "Export your work to a file first.",
+        "Clear old drafts or site data for this address in the browser's settings."
+      ],
+      "retry": true
+    },
+    "publish_failed": {
+      "area": "output",
+      "title": "Couldn't send on the bus",
+      "cause": "The message was not accepted: the broker is down, the topic is not one this app may write, or the payload is too large.",
+      "fix": [
+        "Check the bus state on this page; if it is disconnected, the message is queued and goes on reconnect.",
+        "Check the topic in the details against the contracts (contracts/generated/topic-grammar.json)."
+      ],
+      "retry": true
+    },
+    "permission_denied": {
+      "area": "browser",
+      "title": "The browser blocked access",
+      "cause": "Microphone, camera, MIDI, serial, clipboard or file access needs your permission, and it was refused or never asked.",
+      "fix": [
+        "Click the lock or site-settings icon by the address and allow the device for this site, then retry.",
+        "Some devices only work on http://localhost or https; open the app from the bench address.",
+        "Check no other app or tab is holding the device."
+      ],
+      "retry": true
+    },
+    "unsupported_browser": {
+      "area": "browser",
+      "title": "This browser can't do that",
+      "cause": "The feature needs a browser API this browser does not have (Web MIDI, Web Serial, WebGPU, AudioWorklet…).",
+      "fix": [
+        "Use a current Chrome or Edge, which have the most hardware APIs.",
+        "The rest of the app still works without this feature."
+      ],
+      "retry": false
+    },
+    "device_unreachable": {
+      "area": "device",
+      "title": "The device isn't answering",
+      "cause": "It was asked and nothing came back. On this bench unreachable means dead until it is verified again; a stored address is only a hint.",
+      "fix": [
+        "Check power and the network cable or link light.",
+        "Look it up in Discovery: if its address changed, it is found again by MAC or serial, not by the old IP.",
+        "Check the plugin that talks to it is running in DockTor (http://localhost:8765)."
+      ],
+      "retry": true
+    },
+    "device_stale": {
+      "area": "device",
+      "title": "Not verified recently",
+      "cause": "Nothing has confirmed this device for more than 5 minutes, so the reading may be old. It is not known to be dead, only not trusted.",
+      "fix": [
+        "Wait for the next discovery pass, or trigger a scan from Discovery.",
+        "If it stays stale, check the plugin that watches it in DockTor."
+      ],
+      "retry": true
+    },
+    "device_busy": {
+      "area": "device",
+      "title": "The device is busy",
+      "cause": "Another app, panel or session holds it, or it is still finishing the last command.",
+      "fix": [
+        "Close the other app or panel using it, then retry.",
+        "For a serial port: only one program can hold it at a time."
+      ],
+      "retry": true
+    },
+    "self_test_failed": {
+      "area": "device",
+      "title": "The instrument failed its own self-test",
+      "cause": "At the top of the hour the instrument was asked to test itself (*TST?) and answered with a failure code instead of 0. The code is the instrument's own; its manual says what each one means.",
+      "fix": [
+        "Read the instrument's error queue (SYSTem:ERRor?) or its front panel: the failed test usually leaves an entry naming the board or circuit.",
+        "Power-cycle it, let it warm up, and wait for the next hour's self-test (or ask *TST? from its panel).",
+        "If it fails again, take it out of service: stop using its readings, and mark it in the BIM library so nobody builds a test on it."
+      ],
+      "retry": false
+    },
+    "no_lock": {
+      "area": "device",
+      "title": "No lock",
+      "cause": "The instrument has not locked to its reference (clock, carrier, sync). The number shown is what it measures anyway.",
+      "fix": [
+        "Check the reference input is connected and present.",
+        "Check the reference is the rate the instrument expects."
+      ],
+      "retry": false
+    },
+    "over_range": {
+      "area": "control",
+      "title": "Over range",
+      "cause": "The value is past what the device can measure or accept.",
+      "fix": [
+        "Bring the signal down, or switch the instrument to a higher range.",
+        "For a control, set a value inside the limits shown beside it."
+      ],
+      "retry": false
+    },
+    "out_of_range": {
+      "area": "control",
+      "title": "That value is out of range",
+      "cause": "The control only accepts values between its limits; this one was refused rather than clipped silently.",
+      "fix": [
+        "Enter a value between the limits shown on the control.",
+        "Check the unit: 1 MHz and 1 Hz are a million apart."
+      ],
+      "retry": false
+    },
+    "control_rejected": {
+      "area": "control",
+      "title": "The device refused the setting",
+      "cause": "The command reached the device and it said no: wrong mode, locked front panel, or a setting that needs another one first.",
+      "fix": [
+        "Read the device's reply in the details: it usually names the reason.",
+        "Check the device is in the mode this control needs (remote, not local/front-panel)."
+      ],
+      "retry": false
+    },
+    "control_unconfirmed": {
+      "area": "control",
+      "title": "Sent, but not confirmed",
+      "cause": "The value went out but the device has not reported it back. The control shows what you asked for, not what the device did.",
+      "fix": [
+        "Wait a moment: some devices report back slowly.",
+        "If it never confirms, check the device is reachable and the plugin for it is running."
+      ],
+      "retry": true
+    },
+    "config_invalid": {
+      "area": "config",
+      "title": "A setting in its config file is wrong",
+      "cause": "The app or plugin read its config (config.ini, or a config/*.json beside the app) and a value is missing, unreadable or not the right kind.",
+      "fix": [
+        "Open the config file named in the details and fix the line or field it names.",
+        "Delete the line to fall back to the default, then restart the stack (up-stack.sh <stack>)."
+      ],
+      "retry": false
+    },
+    "port_in_use": {
+      "area": "config",
+      "title": "That port is already in use",
+      "cause": "Another program or container is listening on the port this one needs.",
+      "fix": [
+        "PODS/POD.manager/MANAGER.Docktor/K8/free-ports.sh <port> stops the container holding it.",
+        "Or give this one another port in its config.ini."
+      ],
+      "retry": true
+    },
+    "plugin_down": {
+      "area": "device",
+      "title": "The plugin for this is not running",
+      "cause": "Nothing is publishing on its topics: its container is stopped, crashed, or never started.",
+      "fix": [
+        "Start it from DockTor (http://localhost:8765), or PODS/POD.manager/MANAGER.Docktor/K8/up-stack.sh <stack>.",
+        "If it keeps stopping, read its log in DockTor for the first error."
+      ],
+      "retry": true
+    },
+    "script_error": {
+      "area": "config",
+      "title": "Something in this app broke",
+      "cause": "The app hit an error it did not expect. What you see may be incomplete.",
+      "fix": [
+        "Save or export your work now if you can.",
+        "Reload the page.",
+        "If it happens again, copy the details (button below) into the app's roadmap item so it can be fixed."
+      ],
+      "retry": true
+    },
+    "visa_command_failed": {
+      "area": "device",
+      "title": "An instrument command failed",
+      "cause": "A VISA command (SCPI) sent to an instrument did not complete: the link timed out, the instrument refused it, or it could not be reached. The plugin asked the instrument why (its error queue) and the answer is in the red flag.",
+      "fix": [
+        "Read the red flag's reason: an error-queue entry such as -113 (undefined header) or -221 (settings conflict) means the instrument is fine and the command is wrong for its model or mode.",
+        "If the reason is 'the instrument is not answering', check it is powered, on the bench network or cable, and that its gateway (E5810) is up.",
+        "Open the ticket list at /api/os/captures/red-flags: one ticket per device, command and kind, with how many times it happened."
+      ],
+      "retry": true
+    },
+    "visa_command_slow": {
+      "area": "device",
+      "title": "An instrument command was slow",
+      "cause": "A VISA command answered, but took longer than slow_command_ms (or slow_bulk_command_ms for a trace or screen) in PLUGIN.VISA's config.ini. The answer was used; the delay holds up everything else waiting on that link.",
+      "fix": [
+        "Look at what the instrument was doing: a long integration (NPLC 10/100), auto-ranging, or an averaging count makes every reading slow.",
+        "Ask for less: a smaller trace (fewer points, BYTE instead of ASCII) or a screen as PNG instead of BMP.",
+        "If this command is always this slow and that is expected, raise slow_command_ms / slow_bulk_command_ms rather than ignore the flag."
+      ],
+      "retry": false
+    },
+    "gui_certificate_failed": {
+      "area": "device",
+      "title": "An instrument GUI failed its certificate",
+      "cause": "Before an instrument's GUI can be used, every command it drives is tested on that unit (WEB.OsApi gui_certificate.py). One did not pass: the SDK names a command the unit does not have, a setting would not reach its minimum or maximum, a readback disagreed, a reply did not parse as the SDK says, or the error queue would not clear.",
+      "fix": [
+        "Open the certificate (the locked panel's 'View the last certificate'): the failed row says which command and why.",
+        "A command the SDK lists but the unit refuses (-113 Undefined header) is a wrong .komand table for this model: fix it in INSTRUMENTS/INSTRUMENT.<family>/<Model>/<Model>.komand and regenerate the api.json.",
+        "Run the test again once fixed: the panel unlocks on the first certificate that passes."
+      ],
+      "retry": true
+    },
+    "declaration_mismatch": {
+      "area": "device",
+      "title": "The instrument is not what was declared there",
+      "cause": "A person declared which model is at this address (INSTRUMENTS/_komand/declared.json, the Rosetta Stone override), and the instrument there answered *IDN? as another model. The instrument's own answer is believed; the declaration is wrong, stale, or names the wrong address.",
+      "fix": [
+        "Look at the box at that address: if the instrument is right, withdraw or correct the declaration on the Discovery page (DECLARED section) and commit declared.json.",
+        "If the declaration is right, the wrong instrument is cabled to that address (or two GPIB addresses are swapped): fix the address on the instrument or the cable.",
+        "Until one of them changes, the instrument is filed as what it says it is."
+      ],
+      "retry": false
+    },
+    "voice_synth_no_answer": {
+      "area": "bus",
+      "title": "The voice synth did not answer",
+      "cause": "The job went out on voice_synth/outgoing/job and no result with its job_id came back in time. Worker-VOICE_SYNTH is not running, cannot reach the broker, or is still speaking a long text.",
+      "fix": [
+        "Open DockTor (http://localhost:8765) and check Worker-VOICE_SYNTH is running and healthy; start it if not.",
+        "From a shell: docker compose -f PODS/POD.workers/Docker/docker-compose.yml up -d --build voice-synth, then docker logs Worker-VOICE_SYNTH.",
+        "For a very long text, split it into shorter jobs."
+      ],
+      "retry": true
+    },
+    "voice_synth_voice_missing": {
+      "area": "config",
+      "title": "That voice is not on the voice synth",
+      "cause": "The job asked for a Piper voice whose model (.onnx and .onnx.json) is not in the worker's voice folder: it is not named in config.ini [voice_synth] voices, it is still being fetched, or the fetch from Hugging Face failed.",
+      "fix": [
+        "Pick a voice from the list the worker gives (Voices), or wait a minute if it says the voice is still being fetched.",
+        "Add the voice id (e.g. en_GB-cori-high) to voices = in AUDIO.VoiceSynth SRC/worker/config.ini and rebuild the worker; it is fetched at start.",
+        "If the fetch failed, read docker logs Worker-VOICE_SYNTH: the worker needs internet access once, or bind a folder that holds the voice with APK_VOICE_MODELS=<folder>."
+      ],
+      "retry": true
+    },
+    "voice_synth_text_too_long": {
+      "area": "input",
+      "title": "The text is too long for one voice job",
+      "cause": "The text is over the worker's max_text_chars (config.ini [voice_synth]), the job is over max_job_bytes, or the spoken WAV would be over the file store's 128 MiB.",
+      "fix": [
+        "Split the text into shorter pieces and speak each one.",
+        "If long texts are normal here, raise max_text_chars / max_job_bytes in AUDIO.VoiceSynth SRC/worker/config.ini and rebuild the worker."
+      ],
+      "retry": false
+    },
+    "voice_synth_failed": {
+      "area": "output",
+      "title": "The voice synth could not speak the text",
+      "cause": "Piper raised while loading the voice model or synthesising the text, or produced no audio: a damaged or truncated model file, a model this Piper version cannot read, or text with nothing speakable in it.",
+      "fix": [
+        "Try another voice; if only one voice fails, delete its .onnx files from the voice folder (volume apkaudio_voice-models) and restart Worker-VOICE_SYNTH to fetch it again.",
+        "Check the text has words in it, not only symbols or markup.",
+        "Read docker logs Worker-VOICE_SYNTH for Piper's own error."
+      ],
+      "retry": true
+    },
+    "voice_synth_store_refused": {
+      "area": "output",
+      "title": "The spoken WAV could not be stored",
+      "cause": "The worker spoke the text but its PUT to the file store (http://Storage-Portal/api/files/voice_synth/<job_id>.wav) failed: 404 = the store has no voice_synth prefix, 409 = a file with that job_id is already there, 401/403 = the store did not take the worker as in-network, 413 = too large, or Storage-Portal is unreachable.",
+      "fix": [
+        "A 409: send the job again with a new job_id (the page makes a new one on every Speak).",
+        "A 404: add voice_synth to the /api/files/ prefix allow-list in DATABASE.server.SQL SRC/nginx.conf and rebuild Storage-Portal.",
+        "Unreachable: check Storage-Portal is running in DockTor and that Worker-VOICE_SYNTH is on the apk-audio_default network."
+      ],
+      "retry": true
+    },
+    "video_editor_no_answer": {
+      "area": "bus",
+      "title": "The video editor's worker did not answer",
+      "cause": "A job went to APK.audio/System/Protocols/video_editor/outgoing/job and no result with its job_id came back in time: Worker-VIDEO_EDITOR is not running, is restarting, or is not on the broker's network.",
+      "fix": [
+        "Start it: docker compose -f PODS/POD.THIN/Softapps/EDITORS/EDITORS.Video/Docker/docker-compose.yml up -d --build (or PODS/POD.workers' compose).",
+        "Check it is healthy: docker ps --filter name=Worker-VIDEO_EDITOR, and docker logs Worker-VIDEO_EDITOR for why it stopped.",
+        "Ask it what it is: mosquitto_sub -t 'APK.audio/System/Protocols/video_editor/incoming/api' -C 1 — nothing retained there means it never came up."
+      ],
+      "retry": true
+    },
+    "video_editor_project_missing": {
+      "area": "config",
+      "title": "The video editor has no project",
+      "cause": "Worker-VIDEO_EDITOR sees no style.json in its project folder: APK_VIDEO_PROJECT was not set when it was brought up, so it mounted an empty volume, or it names a folder that is not a project.",
+      "fix": [
+        "Set APK_VIDEO_PROJECT to the project's folder (style.json and one folder per episode) and APK_VIDEO_LIBRARY to the picture library, as absolute paths, in the shell or an .env beside EDITORS.Video/Docker/docker-compose.yml.",
+        "Bring the worker up again with them: docker compose -f PODS/POD.THIN/Softapps/EDITORS/EDITORS.Video/Docker/docker-compose.yml up -d."
+      ],
+      "retry": true
+    },
+    "video_editor_not_found": {
+      "area": "input",
+      "title": "No such episode or folder",
+      "cause": "The episode folder or library folder named is not in the project or the library the worker has mounted: it was renamed (a retitle renames its folder on the next build), removed, or the name points outside them.",
+      "fix": [
+        "Reload the page: the episode list comes fresh from the worker.",
+        "Check the folder is in the project (APK_VIDEO_PROJECT) or the library (APK_VIDEO_LIBRARY) the worker was brought up with."
+      ],
+      "retry": true
+    },
+    "video_editor_busy": {
+      "area": "control",
+      "title": "The video editor is busy",
+      "cause": "Worker-VIDEO_EDITOR is already planning an episode, rendering the one asked for, or running as many previews and web proxies as it takes at once (config.ini runs_active), or its job lanes are full.",
+      "fix": [
+        "Wait for what is running to finish (the header shows the plan and the render queue), then ask again.",
+        "A render picks up its plan by itself: there is no need to re-plan an episode while it renders."
+      ],
+      "retry": true
+    },
+    "video_editor_render_failed": {
+      "area": "output",
+      "title": "A plan, render or preview failed",
+      "cause": "The engine (build_series.py / video.py) stopped with an error: a picture the edit names is missing from the library, ffmpeg or ImageMagick refused a file, the voice could not be made (Worker-VOICE_SYNTH down), or the project folder is not writable by the worker.",
+      "fix": [
+        "Read the job log under the timeline (or docker logs Worker-VIDEO_EDITOR): its last lines name the file or the step.",
+        "A missing picture: swap the shot's picture, or put the file back in the library, then Re-plan.",
+        "No voice: check Worker-VOICE_SYNTH is running (its problem code is in the log).",
+        "Not writable: bring the worker up as the project's owner (APK_UID / APK_GID)."
+      ],
+      "retry": true
+    },
+    "video_editor_no_folder_access": {
+      "area": "browser",
+      "title": "This browser cannot open your project folder",
+      "cause": "The video editor reads the project and the media library from this computer with the File System Access API (showDirectoryPicker), and saves the EDL into the project with it. Firefox and Safari do not have it, so folders open read-only and Save downloads the file instead.",
+      "fix": [
+        "Open the editor in a Chromium browser (Chrome, Edge, Brave) to read and save in the project folder.",
+        "Or carry on here: pick the folders when asked (read-only), and after Save move the downloaded .edl into the episode's folder."
+      ],
+      "retry": false
+    },
+    "video_editor_permission_denied": {
+      "area": "browser",
+      "title": "The browser was not allowed into the folder",
+      "cause": "The project or library folder was picked before, but the browser now needs permission to read (and, for the project, write) it again, and that was refused or the prompt was dismissed; or the folder is one the browser never lets a page open (a system folder).",
+      "fix": [
+        "Press 📂 Folders and choose Allow when the browser asks to view and edit the folder.",
+        "If it keeps refusing, open the folder again from 📂 Folders (pick it anew), not a folder inside a system location."
+      ],
+      "retry": true
+    },
+    "video_editor_save_failed": {
+      "area": "output",
+      "title": "The EDL could not be saved",
+      "cause": "Writing the episode's .edl (or titles.json) into the project folder on this computer failed: the folder was opened read-only, write permission was taken back, the disk is full, or another program holds the file.",
+      "fix": [
+        "Press Save again and allow the browser to edit the folder when it asks.",
+        "Check the disk has room and that no other program has the .edl open.",
+        "If the folder opened read-only (no File System Access in this browser), Save downloads the .edl: put it in the episode's folder."
+      ],
+      "retry": true
+    },
+    "video_editor_edl_invalid": {
+      "area": "input",
+      "title": "This EDL cannot be opened as an edit",
+      "cause": "The .edl has no APK-VIDEO-EDIT comment block, or the block is broken: a CMX 3600 list from another program, a file cut short or changed by hand (the block's byte count no longer matches), or one saved by a newer editor.",
+      "fix": [
+        "Open the .edl the editor saved in the episode's folder (<episode>.edl or episode.edl), or an older one from its history/ folder.",
+        "A list from another NLE cannot carry the edit back: reopen the episode and make the change in the editor.",
+        "Saved by a newer editor: update this softapp."
+      ],
+      "retry": false
+    }
+  }
+}

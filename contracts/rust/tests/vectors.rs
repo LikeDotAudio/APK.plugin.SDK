@@ -42,6 +42,7 @@ fn build(family: &str, args: &Value) -> Result<String, topics::TopicError> {
         "midiControl" => topics::midi_control(s(args, "device"), s(args, "channel"), s(args, "control")),
         "midiWildcard" => topics::midi_wildcard(args["device"].as_str()),
         "timeMark" => Ok(topics::time_mark()),
+        "timeHour" => Ok(topics::time_hour()),
         "discovery" => topics::discovery(s(args, "protocol"), s(args, "deviceId")),
         "discoveryWildcard" => topics::discovery_wildcard(args["protocol"].as_str()),
         "guiWildcard" => Ok(topics::gui_wildcard()),

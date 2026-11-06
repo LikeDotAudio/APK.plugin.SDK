@@ -332,6 +332,22 @@ fn scan_log_line_valid() {
 }
 
 #[test]
+fn spectrum_sweep_valid() {
+    for (name, json) in docs_in("SpectrumSweep/valid") {
+        let s = apkaudio_contracts::spectrum_sweep::read(&json).unwrap_or_else(|e| panic!("{name}: {e}"));
+        let last = (s.points - 1) as usize;
+        assert_eq!(apkaudio_contracts::spectrum_sweep::frequency_hz(&s, last), s.stop_hz, "{name}");
+    }
+}
+
+#[test]
+fn spectrum_sweep_invalid() {
+    for (name, json) in docs_in("SpectrumSweep/invalid") {
+        assert!(apkaudio_contracts::spectrum_sweep::read(&json).is_err(), "{name} should fail");
+    }
+}
+
+#[test]
 fn scan_log_line_invalid() {
     for (name, json) in docs_in("ScanLogLine/invalid") {
         assert!(serde_json::from_str::<ScanLogLine>(&json).is_err(), "{name} should fail");
@@ -422,6 +438,7 @@ const RUST_READS: &[&str] = &[
     "DiscoveryPresence",
     "DiscoveryVerified",
     "ScanLogLine",
+    "SpectrumSweep",
 ];
 
 /// Families deliberately NOT given a Rust reader, each with the reason.
@@ -435,6 +452,13 @@ const RUST_READS: &[&str] = &[
 /// exists to punish, so the abstention is the contract — not an omission, and
 /// not a gap waiting to be filled.
 const RUST_ABSTAINS: &[(&str, &str)] = &[
+    (
+        "TimeHour",
+        "2026-11-04 (the hour): the producer, AUDIO.komand's the_hour.rs, is pinned to \
+         the sdk-v2.0 tag that predates this family and builds the document with \
+         serde_json; its readers (komand, PLUGIN.VISA) read phase + until tolerantly, \
+         because the decay rule must hold for a document from a newer writer too",
+    ),
     (
         "TimeMark",
         "PLAN-656.01: the only Rust consumer must stay a tolerant two-field reader \

@@ -9,3 +9,4 @@ pub mod device_record;
 pub mod discovery_presence;
 pub mod discovery_verified;
 pub mod scan_log_line;
+pub mod spectrum_sweep;
