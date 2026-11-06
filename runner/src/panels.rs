@@ -116,6 +116,23 @@ pub struct Template {
     /// The leaf that keys the panel (`"key_by"`), else the tree path does.
     pub key_by: Option<String>,
     pub body: Value,
+    /// The BIM part a presented panel names in its `device` section (ROAD-3565, owner
+    /// ruling 2026-11-05): the manifest entry's generated `bim` key — the protocol's own part
+    /// (`protocol/<family>`), and the model parts that speak it, by folded model.
+    pub bim_part: Option<String>,
+    pub bim_models: BTreeMap<String, String>,
+}
+
+/// A model folded the way the BIM generator keys it: lower case, letters and digits only.
+pub fn fold_model(model: &str) -> String {
+    model.chars().filter(|c| c.is_ascii_alphanumeric()).map(|c| c.to_ascii_lowercase()).collect()
+}
+
+impl Template {
+    /// The part a device of this template is: its model's own part, else the protocol's.
+    pub fn part_for(&self, model: &str) -> Option<String> {
+        self.bim_models.get(&fold_model(model)).cloned().or_else(|| self.bim_part.clone())
+    }
 }
 
 /// Any one segment, in a [`Template::path`].
@@ -186,7 +203,14 @@ pub fn parse_template(family: &str, manifest: &str, template: &str) -> Result<Te
         },
     };
     let body: Value = serde_json::from_str(template).map_err(|e| format!("gui/{family}/{family}.json: {e}"))?;
-    Ok(Template { family: family.to_string(), at, path, document, key_by, body })
+    let bim = entry.get("bim");
+    let bim_part = bim.and_then(|b| b.get("part")).and_then(Value::as_str).map(str::to_string);
+    let bim_models = bim
+        .and_then(|b| b.get("models"))
+        .and_then(Value::as_object)
+        .map(|m| m.iter().filter_map(|(k, v)| Some((k.clone(), v.as_str()?.to_string()))).collect())
+        .unwrap_or_default();
+    Ok(Template { family: family.to_string(), at, path, document, key_by, body, bim_part, bim_models })
 }
 
 /// `7_Device_Consoles` → `Device_Consoles`: the numeric prefix orders folders
@@ -520,20 +544,25 @@ impl Book {
                 })
             })
             .collect();
+        let mut section = json!({
+            "type": templates.first().map(|t| t.family.clone()).unwrap_or_default(),
+            "model": model,
+            "resource": base,
+            "write_topic": format!("{base}/{DEVICE_CONTROL_LEAF}"),
+            "serial": device.fields.get("serial"),
+            // What a person calls it: the tile under Touch Points.
+            "name": name,
+        });
+        // Its BIM part: where a reader fetches its protocols and roles (ROAD-3565).
+        if let Some(part) = templates.first().and_then(|t| t.part_for(&model)) {
+            section["part"] = Value::String(part);
+        }
         json!({
             "key": key,
             // The tab's name. The device's own, with the family after it, so
             // two plugins that each found a "Living_Room" do not share a tab.
             "folder": format!("{}_{}", device.name, self.token),
-            "device": {
-                "type": templates.first().map(|t| t.family.clone()).unwrap_or_default(),
-                "model": model,
-                "resource": base,
-                "write_topic": format!("{base}/{DEVICE_CONTROL_LEAF}"),
-                "serial": device.fields.get("serial"),
-                // What a person calls it: the tile under Touch Points.
-                "name": name,
-            },
+            "device": section,
             "source": format!("plugin:{}", self.token),
             "placements": placements,
         })

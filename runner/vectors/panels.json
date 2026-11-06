@@ -1077,6 +1077,248 @@
      ]
     }
    ]
+  },
+  {
+   "name": "a manifest's bim key names the device's part: its model's own, else the protocol's (ROAD-3565)",
+   "token": "cast",
+   "manifest": {
+    "cast": {
+     "tab": "7_Google_Cast",
+     "tree": "7_Device_Consoles",
+     "bim": {
+      "part": "protocol/cast",
+      "models": {
+       "googlenestmini": "google/google-nest-mini"
+      }
+     }
+    }
+   },
+   "families": {
+    "cast": {
+     "Console": {
+      "description": {
+       "En": "Cast — ${model}"
+      },
+      "blocks": {
+       "I": {
+        "fields": {
+         "model": {
+          "device_state": "model"
+         },
+         "volume": {
+          "device_control": "Volume"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "expire_after_s": null,
+   "steps": [
+    {
+     "at": 0,
+     "observe": [
+      "APK.audio/System/Protocols/cast/Device/Speaker/Garage/model",
+      "Google Nest Mini"
+     ],
+     "expect": [
+      [
+       "APK.audio/System/Gui/Panels/cast-Speaker-Garage",
+       {
+        "device": {
+         "model": "Google Nest Mini",
+         "name": "Garage",
+         "resource": "APK.audio/System/Protocols/cast/Device/Speaker/Garage",
+         "serial": null,
+         "type": "cast",
+         "write_topic": "APK.audio/System/Protocols/cast/Device/Speaker/Garage/Control",
+         "part": "google/google-nest-mini"
+        },
+        "folder": "Garage_cast",
+        "key": "cast-Speaker-Garage",
+        "placements": [
+         {
+          "at": "Device_Consoles",
+          "frames": [
+           {
+            "content": {
+             "Console": {
+              "blocks": {
+               "I": {
+                "fields": {
+                 "model": {
+                  "device_state": "model",
+                  "topic": "APK.audio/System/Protocols/cast/Device/Speaker/Garage/model"
+                 },
+                 "volume": {
+                  "device_control": "Volume",
+                  "topic": "APK.audio/System/Protocols/cast/Device/Speaker/Garage/Control/Volume"
+                 }
+                }
+               }
+              },
+              "description": {
+               "En": "Cast — Google Nest Mini"
+              }
+             }
+            },
+            "path": "cast.json"
+           }
+          ]
+         }
+        ],
+        "source": "plugin:cast"
+       }
+      ]
+     ]
+    },
+    {
+     "at": 0,
+     "observe": [
+      "APK.audio/System/Protocols/cast/Device/Speaker/Garage/model",
+      "Google Nest Mini"
+     ],
+     "expect": []
+    },
+    {
+     "at": 0,
+     "observe": [
+      "APK.audio/System/Protocols/cast/Device/Speaker/Garage/Control/Volume",
+      "0.5"
+     ],
+     "expect": []
+    },
+    {
+     "at": 0,
+     "observe": [
+      "APK.audio/System/Protocols/cast/Device/Speaker/Garage/serial",
+      "SN1"
+     ],
+     "expect": [
+      [
+       "APK.audio/System/Gui/Panels/cast-Speaker-Garage",
+       {
+        "device": {
+         "model": "Google Nest Mini",
+         "name": "Garage",
+         "resource": "APK.audio/System/Protocols/cast/Device/Speaker/Garage",
+         "serial": "SN1",
+         "type": "cast",
+         "write_topic": "APK.audio/System/Protocols/cast/Device/Speaker/Garage/Control",
+         "part": "google/google-nest-mini"
+        },
+        "folder": "Garage_cast",
+        "key": "cast-Speaker-Garage",
+        "placements": [
+         {
+          "at": "Device_Consoles",
+          "frames": [
+           {
+            "content": {
+             "Console": {
+              "blocks": {
+               "I": {
+                "fields": {
+                 "model": {
+                  "device_state": "model",
+                  "topic": "APK.audio/System/Protocols/cast/Device/Speaker/Garage/model"
+                 },
+                 "volume": {
+                  "device_control": "Volume",
+                  "topic": "APK.audio/System/Protocols/cast/Device/Speaker/Garage/Control/Volume"
+                 }
+                }
+               }
+              },
+              "description": {
+               "En": "Cast — Google Nest Mini"
+              }
+             }
+            },
+            "path": "cast.json"
+           }
+          ]
+         }
+        ],
+        "source": "plugin:cast"
+       }
+      ]
+     ]
+    },
+    {
+     "at": 0,
+     "restate": true,
+     "expect": [
+      [
+       "APK.audio/System/Gui/Panels/cast-Speaker-Garage",
+       {
+        "device": {
+         "model": "Google Nest Mini",
+         "name": "Garage",
+         "resource": "APK.audio/System/Protocols/cast/Device/Speaker/Garage",
+         "serial": "SN1",
+         "type": "cast",
+         "write_topic": "APK.audio/System/Protocols/cast/Device/Speaker/Garage/Control",
+         "part": "google/google-nest-mini"
+        },
+        "folder": "Garage_cast",
+        "key": "cast-Speaker-Garage",
+        "placements": [
+         {
+          "at": "Device_Consoles",
+          "frames": [
+           {
+            "content": {
+             "Console": {
+              "blocks": {
+               "I": {
+                "fields": {
+                 "model": {
+                  "device_state": "model",
+                  "topic": "APK.audio/System/Protocols/cast/Device/Speaker/Garage/model"
+                 },
+                 "volume": {
+                  "device_control": "Volume",
+                  "topic": "APK.audio/System/Protocols/cast/Device/Speaker/Garage/Control/Volume"
+                 }
+                }
+               }
+              },
+              "description": {
+               "En": "Cast — Google Nest Mini"
+              }
+             }
+            },
+            "path": "cast.json"
+           }
+          ]
+         }
+        ],
+        "source": "plugin:cast"
+       }
+      ]
+     ]
+    },
+    {
+     "at": 0,
+     "observe": [
+      "APK.audio/System/Protocols/cast/Device/Speaker/Garage/last_online",
+      "1761830000"
+     ],
+     "expect": [
+      [
+       "APK.audio/System/Gui/Panels/cast-Speaker-Garage",
+       ""
+      ]
+     ]
+    },
+    {
+     "at": 0,
+     "restate": true,
+     "expect": []
+    }
+   ]
   }
  ],
  "rejected_manifests": [

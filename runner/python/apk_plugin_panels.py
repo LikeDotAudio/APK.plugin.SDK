@@ -106,9 +106,24 @@ class Template:
     """One family's template, parsed once."""
 
     def __init__(self, family: str, at: str, path: List[str], document: bool, body: Any,
-                 key_by: Optional[str] = None):
+                 key_by: Optional[str] = None, bim: Optional[Dict[str, Any]] = None):
         self.family, self.at, self.path, self.document, self.body = family, at, path, document, body
         self.key_by = key_by
+        # The BIM part a presented panel names (ROAD-3565): the manifest entry's generated
+        # `bim` key — the protocol's part, and the model parts that speak it, by folded model.
+        bim = bim if isinstance(bim, dict) else {}
+        self.bim_part = bim.get("part") if isinstance(bim.get("part"), str) else None
+        models = bim.get("models") if isinstance(bim.get("models"), dict) else {}
+        self.bim_models = {k: v for k, v in models.items() if isinstance(v, str)}
+
+    def part_for(self, model: str) -> Optional[str]:
+        """The part a device of this template is: its model's own part, else the protocol's."""
+        return self.bim_models.get(fold_model(model)) or self.bim_part
+
+
+def fold_model(model: str) -> str:
+    """A model folded the way the BIM generator keys it: lower case, letters and digits only."""
+    return "".join(c.lower() for c in str(model or "") if c.isascii() and c.isalnum())
 
 
 def parse_template(family: str, manifest: str, template: str) -> Template:
@@ -149,7 +164,7 @@ def parse_template(family: str, manifest: str, template: str) -> Template:
         body = json.loads(template)
     except ValueError as e:
         raise ValueError("gui/%s/%s.json: %s" % (family, family, e))
-    return Template(family, at, path, document, body, key_by)
+    return Template(family, at, path, document, body, key_by, entry.get("bim"))
 
 
 _TEMPLATES: List[Template] = []
@@ -432,17 +447,21 @@ class Book:
             content = _substitute(t.body, marks)
             _bind(content, base)
             placements.append({"at": t.at, "frames": [{"path": "%s.json" % t.family, "content": content}]})
+        section = {
+            "type": templates_[0].family if templates_ else "",
+            "model": model,
+            "resource": base,
+            "write_topic": "%s/%s" % (base, DEVICE_CONTROL_LEAF),
+            "serial": device.fields.get("serial"),
+            "name": name,
+        }
+        part = templates_[0].part_for(model) if templates_ else None
+        if part:
+            section["part"] = part   # where a reader fetches its protocols and roles (ROAD-3565)
         return {
             "key": key,
             "folder": "%s_%s" % (device.name, self.token),
-            "device": {
-                "type": templates_[0].family if templates_ else "",
-                "model": model,
-                "resource": base,
-                "write_topic": "%s/%s" % (base, DEVICE_CONTROL_LEAF),
-                "serial": device.fields.get("serial"),
-                "name": name,
-            },
+            "device": section,
             "source": "plugin:%s" % self.token,
             "placements": placements,
         }

@@ -7,7 +7,7 @@
 # Deliberately in neither BackEnd workspace — both reference it by path.
 [package]
 name = "apkaudio-contracts"
-version = "2.2.0"
+version = "2.3.0"
 edition = "2021"
 description = "Cross-boundary contracts for APK.audio: topic grammar + generated payload types"
 

@@ -10,7 +10,7 @@ Provides topic building, mailbox validation, retain-flag rules, and LWT heartbea
 # (PLAN-3407.01). The Rust mirror reads it off Cargo.toml as
 # `apkaudio_contracts::CONTRACT_VERSION`; tests/test_contract_version.py fails
 # when this string and that version differ.
-CONTRACT_VERSION = "2.2.0"
+CONTRACT_VERSION = "2.3.0"
 
 from .topics import (
     ROOT,
