@@ -1,2 +1,2 @@
-APK.audio fbbcc9f8a30508bbd6d770293518e6b96b827b56  (contracts/rust, contracts/python, contracts/tokens, contracts/problems, contracts/vectors)
-DISCOVERY.Engine 2048d211f126baeefec096f3c20a32f6cb93f378  (SDK, SRC/RUNNER, Docker/plugin-base.yml, Docker/plugin-volumes.yml)
+APK.audio 57ce3b0494debc8bd9909fabca69c0f75b2486f5  (contracts/rust, contracts/python, contracts/tokens, contracts/problems, contracts/vectors, contracts/proto)
+DISCOVERY.Engine 1ce703bb15aea6e4f6e0db0069495de866d7579c  (SDK, SRC/RUNNER, Docker/plugin-base.yml, Docker/plugin-volumes.yml)

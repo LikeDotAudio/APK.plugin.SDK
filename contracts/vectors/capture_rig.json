@@ -1,0 +1,24 @@
+{
+  "$comment": "contracts/proto/capture_rig.proto RigSnapshot: the recorder agent's encoder (PODS/POD.THICK/CAPTURE.Recorder SRC/src/rig.rs, `cargo test`) must produce `snapshot_hex` for each case, and WEB.OsApi's hand decoder (SRC/capture_store.py, capture_store_test.py) must read it back as `rig_text` — the {leaf: text} the OS has always read. Stored in rigs.state zlib-compressed; the hex here is BEFORE compression (zlib bytes differ between encoders). SCALAR leaves read as {\"value\", \"unit\", \"command\"} with `number` as the value when set.",
+  "cases": [
+    {
+      "why": "a meter: a NAB ALL setting, a ROUND ROBIN number, a plain reading, a trace document",
+      "device": "visa/DMM/34401A/Dev7",
+      "ts": 1800000000.5,
+      "leaves": [
+        {"name": "Nab/Get_Function", "kind": "SCALAR", "value": "VOLT", "unit": "", "command": ":FUNC?"},
+        {"name": "Reading/RoundRobin/VOLT_DC", "kind": "SCALAR", "value": "+1.0E+01", "number": 10.0, "unit": "V", "command": ":MEAS:VOLT:DC?"},
+        {"name": "Reading/volts", "kind": "TEXT", "value": "1.5"},
+        {"name": "Trace/CHAN1", "kind": "TEXT", "value": "{\"points\":[1,2,3]}"}
+      ],
+      "readings": 4,
+      "rig_text": {
+        "Nab/Get_Function": "{\"value\": \"VOLT\", \"unit\": \"\", \"command\": \":FUNC?\"}",
+        "Reading/RoundRobin/VOLT_DC": "{\"value\": 10.0, \"unit\": \"V\", \"command\": \":MEAS:VOLT:DC?\"}",
+        "Reading/volts": "1.5",
+        "Trace/CHAN1": "{\"points\":[1,2,3]}"
+      },
+      "snapshot_hex": "0a14766973612f444d4d2f3334343031412f44657637110000208074d2da41180422220a104e61622f4765745f46756e6374696f6e1204564f4c5422063a46554e433f280122440a1a52656164696e672f526f756e64526f62696e2f564f4c545f444312082b312e30452b30311a0156220e3a4d4541533a564f4c543a44433f280131000000000000244022140a0d52656164696e672f766f6c74731203312e3522210a0b54726163652f4348414e3112127b22706f696e7473223a5b312c322c335d7d"
+    }
+  ]
+}

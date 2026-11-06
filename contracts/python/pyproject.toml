@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "apkaudio_contracts"
-version = "2.1.0"
+version = "2.2.0"
 description = "Python binding for APK.audio bus contracts and topics"
 authors = [{ name = "Anthony Kuzub", email = "anthony@apk.audio" }]
 license = { text = "MIT" }

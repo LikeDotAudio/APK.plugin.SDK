@@ -1,0 +1,53 @@
+// Part of the APK.audio project — http://APK.audio — made by Anthony Kuzub
+// MIT Licence. Free, for everyone, for ever. Full text in LICENSE at the root.
+//
+// ONE RIG SNAPSHOT — the whole of one device at one moment, as the capture
+// recorder stores it (ROAD-3532).
+//
+// WHO WRITES IT: the recorder agent, PODS/POD.THICK/CAPTURE.Recorder (Rust,
+// prost structs in SRC/src/rig.rs that mirror this file field for field; its
+// SRC/contracts/capture_rig.proto is a copy that `cargo test` holds equal to
+// this one when the checkout has it).
+// WHO READS IT: WEB.OsApi (SRC/capture_store.py, a hand decoder of these
+// fields — no protobuf runtime in that image) and anything else that opens the
+// recorder's SQLite file: `rigs.state` is this message, zlib-compressed
+// (RFC 1950). A row whose inflated bytes start with `{` is the JSON rig the
+// Python recorder wrote before ROAD-3532 ({leaf: text}); every reader keeps both.
+//
+//   protoc --decode=apkaudio.capture.RigSnapshot contracts/proto/capture_rig.proto < inflated.bin
+//
+// FIELD NUMBERS ARE THE CONTRACT. Add fields; never renumber or reuse one.
+
+syntax = "proto3";
+
+package apkaudio.capture;
+
+// What a leaf is.
+enum LeafKind {
+  // The leaf's text exactly as the device's plugin published it — a bare word,
+  // a number, a JSON document (a trace, a /Reply envelope). `value` holds it
+  // verbatim; `unit` and `command` are empty.
+  TEXT = 0;
+  // One value the recorder read itself (NAB ALL `Nab/<setting>`, READ ALWAYS
+  // `Reading/<endpoint>/<field>`, ROUND ROBIN `Reading/RoundRobin/<FUNC>`):
+  // the answer, its unit, and the query that asked it. Its JSON form — what
+  // the Rig slot carries and the OS reads — is {"value", "unit", "command"},
+  // with `number` as the value when it is set.
+  SCALAR = 1;
+}
+
+message Leaf {
+  string name = 1;          // the leaf path under the device: `Nab/Get_Function`, `Reading/meter_reading/value`, `Trace/CHAN1`
+  string value = 2;         // SCALAR: the answer as the instrument said it (quotes stripped); TEXT: the whole leaf text
+  string unit = 3;          // SCALAR: `V`, `A`, `Ω`, … or empty
+  string command = 4;       // SCALAR: the SCPI query that read it, from the root (`:VOLT:RANG?`)
+  LeafKind kind = 5;
+  optional double number = 6;  // SCALAR: the answer as a number, when the asker parsed it as one (ROUND ROBIN)
+}
+
+message RigSnapshot {
+  string device = 1;        // `<protocol>/<rest…>`: `visa/DMM/34401A/DevttyUSB0` — the plugin's naming, never an IP
+  double ts = 2;            // epoch seconds of the moment the rig was written
+  uint32 readings = 3;      // how many leaves are data (Reading/, Nab/, Trace/, a picture) — the rigs.readings column
+  repeated Leaf leaves = 4; // every leaf the device has reported, sorted by name
+}

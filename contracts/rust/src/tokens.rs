@@ -76,8 +76,31 @@ pub fn on_accent() -> &'static str {
     &brand().on_accent.hex
 }
 
+/// THE STATE VOCABULARY (`tokens/state.json`): every liveness word the bench
+/// says, and which of the three tones it is drawn in. Twin of Python
+/// `tokens.state_tone` (ROAD-3554).
+const STATE_JSON: &str = include_str!("../../tokens/state.json");
+
+fn state() -> &'static serde_json::Value {
+    static S: std::sync::OnceLock<serde_json::Value> = std::sync::OnceLock::new();
+    S.get_or_init(|| serde_json::from_str(STATE_JSON).unwrap_or(serde_json::Value::Null))
+}
+
+/// The tone (`good` | `dead` | `kinda`) a liveness word is drawn in; an unknown word is the default.
+pub fn state_tone(word: &str) -> &'static str {
+    let s = state();
+    s["words"].get(word.trim().to_lowercase()).or_else(|| s.get("default")).and_then(|v| v.as_str()).unwrap_or("kinda")
+}
+
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn offline_is_dead_and_online_is_good() {
+        assert_eq!(super::state_tone("Offline"), "dead");
+        assert_eq!(super::state_tone("online"), "good");
+        assert_eq!(super::state_tone("no such word"), "kinda");
+    }
+
     #[test]
     fn the_file_parses_and_every_swatch_is_present() {
         // The point of this test is the `include_str!`: it asserts the compiled-in

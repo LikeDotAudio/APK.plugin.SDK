@@ -1,0 +1,19 @@
+{
+  "$comment": "The unit gate (contracts src/unit-gate.ts; Python WEB.OsApi capture_store.write_to; Rust CAPTURE.Recorder askers/relay.rs reads `out.payload` as a request). A VISA unit's …/Write becomes a request on the gate topic while the recorder agent is online; otherwise, or for any other topic, the publish is unchanged. `payload` is compared as JSON when it is an object.",
+  "gate_topic": "APK.audio/System/Protocols/capture-recorder/outgoing/write",
+  "cases": [
+    {"why": "a VISA write, the agent online: a request", "topic": "APK.audio/System/Protocols/visa/Device/DMM/34401A/Dev7/Write", "command": ":READ?", "by": "tone-stepper", "online": true, "ttl_s": 1,
+     "out": {"topic": "APK.audio/System/Protocols/capture-recorder/outgoing/write", "payload": {"device": "visa/DMM/34401A/Dev7", "command": ":READ?", "by": "tone-stepper", "ttl_s": 1}}},
+    {"why": "no ttl given: the agent's relay_ttl_s applies", "topic": "APK.audio/System/Protocols/visa/Device/Power/66101A/Dev730-0/Write", "command": "OUTP OFF", "by": "browser", "online": true,
+     "out": {"topic": "APK.audio/System/Protocols/capture-recorder/outgoing/write", "payload": {"device": "visa/Power/66101A/Dev730-0", "command": "OUTP OFF", "by": "browser"}}},
+    {"why": "the agent offline: nothing else asks the bench, so straight to the unit", "topic": "APK.audio/System/Protocols/visa/Device/DMM/34401A/Dev7/Write", "command": ":READ?", "by": "browser", "online": false,
+     "out": {"topic": "APK.audio/System/Protocols/visa/Device/DMM/34401A/Dev7/Write", "payload": ":READ?"}},
+    {"why": "not a VISA unit's write: untouched", "topic": "APK.audio/System/Protocols/chromecast/Device/X/Write", "command": "play", "by": "browser", "online": true,
+     "out": {"topic": "APK.audio/System/Protocols/chromecast/Device/X/Write", "payload": "play"}}
+  ],
+  "agent_rows": [
+    {"row": "{\"agent\":\"capture-recorder\",\"status\":\"online\"}", "online": true},
+    {"row": "{\"agent\":\"capture-recorder\",\"status\":\"offline\"}", "online": false},
+    {"row": "", "online": false}
+  ]
+}

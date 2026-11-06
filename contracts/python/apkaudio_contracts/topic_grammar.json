@@ -616,7 +616,7 @@
       "pattern": "APK.audio/System/Captures/{kind}/{capture}",
       "retain": "retained-state",
       "payload": "CaptureSlot",
-      "producer": "PODS/POD.THIN/WEB.OsApi/SRC (capture_recorder, red_flags, tone_stepper, routes_capture_setups)",
+      "producer": "PODS/POD.THICK/CAPTURE.Recorder (Rig, Attention, Qualified, Setup restated); PODS/POD.THIN/WEB.OsApi/SRC (red_flags, tone_stepper, routes_capture_setups)",
       "consumers": [
         "OS Recording",
         "NMOS.Server bridge",
@@ -752,7 +752,7 @@
   "captureSlots": {
     "Rig": {
       "about": "the whole device at one moment: every setting (Nab/…), reading (Reading/…) and trace (Trace/…) it reported",
-      "producer": "PODS/POD.THIN/WEB.OsApi/SRC/capture_recorder.py",
+      "producer": "PODS/POD.THICK/CAPTURE.Recorder/SRC/src/recorder.rs",
       "fields": {
         "device": "string",
         "ts": "number",
@@ -762,7 +762,7 @@
     },
     "Attention": {
       "about": "a device whose state word turned dead",
-      "producer": "PODS/POD.THIN/WEB.OsApi/SRC/capture_recorder.py",
+      "producer": "PODS/POD.THICK/CAPTURE.Recorder/SRC/src/recorder.rs",
       "fields": {
         "device": "string",
         "leaf": "string",
@@ -824,7 +824,7 @@
     },
     "Setup": {
       "about": "what a person called a device, why they record it, and the units they corrected",
-      "producer": "PODS/POD.THIN/WEB.OsApi/SRC/osapi/routes_capture_setups.py",
+      "producer": "PODS/POD.THIN/WEB.OsApi/SRC/osapi/routes_capture_setups.py (saved); PODS/POD.THICK/CAPTURE.Recorder/SRC/src/recorder.rs (restated on every reconnect)",
       "fields": {
         "device": "string",
         "ts": "number"
@@ -841,7 +841,7 @@
     },
     "Qualified": {
       "about": "the queries a device answered alone (winners) and refused (losers, never asked again)",
-      "producer": "PODS/POD.THIN/WEB.OsApi/SRC/capture_recorder.py",
+      "producer": "PODS/POD.THICK/CAPTURE.Recorder/SRC/src/recorder.rs",
       "fields": {
         "device": "string",
         "ts": "number",

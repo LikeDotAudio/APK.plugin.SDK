@@ -156,3 +156,8 @@ pub mod self_test;
 /// hunters and the orchestrator have to agree on what `-1` means; a private
 /// convention is what the twelfth disagrees with.
 pub mod presence;
+
+/// The capture SLOTS (`System/Captures/{kind}/{capture}`): the rule every
+/// producer checks a document against before it publishes — read from the
+/// generated grammar, twin of capture-rule.ts and Python capture_rule. ROAD-3554.
+pub mod capture_rule;
