@@ -17,3 +17,21 @@
 4. Move plugins to the new tag when they need it; the monorepo itself is unaffected (`[patch]`).
 
 `--verify sdk-vX.Y` re-runs the fresh-clone check of any published tag.
+
+## Delivered 2026-10-30 – 2026-11-04
+
+From this repository's own commits (the commit message is the record):
+
+- LOOSE-ci-node20: plugin CI checks out with actions/checkout@v5 (Node 24) (`2d7e828`)
+- chore: pin APK.plugin.SDK sdk-v0.3 (`c72b92b`)
+- chore: pin APK.plugin.SDK sdk-v0.4 (`8c8eaa2`)
+- chore: pin APK.plugin.SDK sdk-v0.5 (`d8bdd0a`)
+- fix(audit): runner foundations (session, unkept, jobs, Python panels, shared volumes); engine off the VISA crate, topics from contracts (`d5f3e7f`)
+- chore: pin APK.plugin.SDK sdk-v0.6 (SDK docs); the [patch] block keeps DATA.ESP32's ocabin entry (`7a297d3`)
+- chore: apkaudio-snmp [patch] -> members/LIB.SNMP, SDK sdk-v0.7, lock refresh (`0181a3f`)
+- PLAN-3432.01: SDK README names contracts/python (apkaudio_contracts) (`63b4372`)
+- docs(SDK): Trunk-Caster — how it works, its interfaces, principles and Next lists; the plan to bring it onto the SDK (`d2656bf`)
+- SDK README: the Use it example pins sdk-v0.9, the current tag (`fa7a3dc`)
+- roadmap lane: nothing to do is kept here — every roadmap item lives in the APK.audio roadmap (`9b0df4a`)
+- docs(sdk): errors and the way back — contracts/problems, fail_as in self tests (`8e17434`)
+- docs(sdk): a plugin sends a code, never a fix — contracts/problems in the SDK tree and principles (`82c5a73`)

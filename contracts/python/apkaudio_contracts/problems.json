@@ -467,6 +467,38 @@
       ],
       "retry": true
     },
+    "youtube_audio_refused_link": {
+      "area": "input",
+      "title": "That link is not one the song fetcher takes",
+      "cause": "Worker-YOUTUBE_AUDIO only fetches from the hosts config.ini [youtube_audio] allowed_hosts names (YouTube and YouTube Music by default), over http(s). The link was something else, or not a link.",
+      "fix": [
+        "Paste the video's own address — https://www.youtube.com/watch?v=…, https://youtu.be/…, a Shorts or a music.youtube.com link.",
+        "For a file you already have, drop it on the Song Analyzer instead."
+      ],
+      "retry": false
+    },
+    "youtube_audio_failed": {
+      "area": "input",
+      "title": "The song could not be fetched from the link",
+      "cause": "yt-dlp could not get an audio stream for the link: the video is private, age- or region-restricted, removed, a live stream, longer than max_duration_s, larger than max_audio_bytes, or YouTube changed and the image's yt-dlp is out of date.",
+      "fix": [
+        "Open the link in a browser and check it plays without signing in.",
+        "If every link fails, rebuild Worker-YOUTUBE_AUDIO — its image installs the newest yt-dlp at build time.",
+        "A very long video: raise max_duration_s in config.ini [youtube_audio]."
+      ],
+      "retry": true
+    },
+    "youtube_audio_store_refused": {
+      "area": "output",
+      "title": "The fetched song could not be stored",
+      "cause": "The worker fetched the audio but its PUT to the file store (http://Storage-Portal/api/files/youtube_audio/<job_id>.<ext>) failed: 404 = the store has no youtube_audio prefix, 409 = that job_id was used before, 401/403 = the worker was not taken as in-network, 413 = too large, or Storage-Portal is unreachable.",
+      "fix": [
+        "A 409: press Analyze again — the page makes a new job_id every time.",
+        "A 404: rebuild Storage-Portal so its nginx.conf carries the youtube_audio prefix.",
+        "Unreachable: check Storage-Portal is running in DockTor and Worker-YOUTUBE_AUDIO is on the apk-audio_default network."
+      ],
+      "retry": true
+    },
     "video_editor_no_answer": {
       "area": "bus",
       "title": "The video editor's worker did not answer",

@@ -33,6 +33,14 @@ def read(path):
         return handle.read()
 
 
+def read_runner_crate():
+    """lib.rs, then the modules split out of it (ROAD-3749): the constants and
+    defaults these tests hold live across them."""
+    src = os.path.dirname(RUNNER_LIB)
+    rest = sorted(f for f in os.listdir(src) if f.endswith(".rs") and f != "lib.rs")
+    return "\n".join([read(RUNNER_LIB)] + [read(os.path.join(src, f)) for f in rest])
+
+
 def rust_const(source, name):
     m = re.search(r'const %s: [^=]+= ([^;]+);' % name, source)
     if not m:
@@ -70,7 +78,7 @@ class FakeClient:
 class TheRunnerConstantsAreTheRustOnes(unittest.TestCase):
     @unittest.skipIf(not os.path.isfile(RUNNER_LIB), "no RUNNER/src beside this tree (the image)")
     def test_exit_codes_tick_and_packet_ceiling(self):
-        lib = read(RUNNER_LIB)
+        lib = read_runner_crate()
         for name in ("EXIT_AGENT_RETURNED", "EXIT_AGENT_PANICKED", "EXIT_SESSION_DIED",
                      "EXIT_STALLED", "EXIT_TERMINATED"):
             self.assertEqual(getattr(runner, name), rust_const(lib, name), name)

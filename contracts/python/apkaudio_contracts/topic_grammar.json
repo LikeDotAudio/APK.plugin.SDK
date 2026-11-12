@@ -428,7 +428,7 @@
       "pattern": "APK.audio/System/Chat",
       "retain": "live-event",
       "payload": "-",
-      "producer": "PODS/POD.manager/MANAGER.Docktor/SRC/manager/api.py (CHAT_TOPIC)",
+      "producer": "PODS/POD.manager/MANAGER.Docktor/SRC/manager/api/__init__.py (CHAT_TOPIC)",
       "consumers": [
         "bench chat readers"
       ]

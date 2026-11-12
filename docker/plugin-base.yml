@@ -24,6 +24,10 @@ services:
       context: "../../../.."
       dockerfile: "PODS/POD.THICK/DISCOVERY.Engine/Docker/Dockerfile"   # relative to the context
       target: plugins
+      # APK_BUILD_JOBS=2 ./up-stack.sh DISCOVERY.Engine caps cargo at 2 jobs
+      # (the Dockerfile's BUILD_JOBS); unset, cargo takes every core.
+      args:
+        BUILD_JOBS: ${APK_BUILD_JOBS:-}
     image: apk-plugins:local
     restart: unless-stopped
     # A REAL PID 1 (LOOSE-discovery-engine-plugin-containers-ignore). The kernel
