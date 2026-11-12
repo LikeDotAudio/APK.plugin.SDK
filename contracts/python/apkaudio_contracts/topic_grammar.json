@@ -313,16 +313,6 @@
         "(none yet — this tree is written and not read)"
       ]
     },
-    "tests": {
-      "pattern": "APK.audio/Tests/{suite}/{...path}",
-      "retain": "live-event",
-      "payload": "-",
-      "producer": "test-orchestrator + browser widgets",
-      "consumers": [
-        "test-orchestrator",
-        "2_Tests panels"
-      ]
-    },
     "cepo": {
       "pattern": "APK.audio/Cepo/{unit}/{...path}",
       "retain": "live-event",
@@ -714,10 +704,20 @@
     "log": {
       "pattern": "APK.audio/System/Log/{source}/{level}",
       "retain": "live-event",
-      "payload": "-",
-      "producer": "every agent",
+      "payload": "LogLine",
+      "producer": "every agent via contracts report.ts logLine(); first: PODS/POD.THIN/OS/core/app-help (OS.showAppProblem)",
       "consumers": [
-        "system console (Phase 4)"
+        "PODS/POD.THIN/Softapps/MANAGEMENT_AND_UTILITIES/UTILITY.Problems (the Log softapp is next)",
+        "any bus watcher"
+      ]
+    },
+    "problems": {
+      "pattern": "APK.audio/System/Problems/{source}/{key}",
+      "retain": "retained-state",
+      "payload": "ProblemRecord",
+      "producer": "every agent via contracts report.ts problemRecord(); first: PODS/POD.THIN/OS/core/app-help (OS.showAppProblem)",
+      "consumers": [
+        "PODS/POD.THIN/Softapps/MANAGEMENT_AND_UTILITIES/UTILITY.Problems"
       ]
     },
     "missions": {
@@ -1428,22 +1428,6 @@
       ]
     },
     {
-      "kind": "tests",
-      "segs": [
-        {
-          "lit": "Tests"
-        },
-        {
-          "rule": "segment",
-          "name": "suite"
-        },
-        {
-          "rest": "segment",
-          "name": "path"
-        }
-      ]
-    },
-    {
       "kind": "timeMark",
       "segs": [
         {
@@ -1871,6 +1855,25 @@
         {
           "oneOf": "logLevel",
           "name": "level"
+        }
+      ]
+    },
+    {
+      "kind": "problems",
+      "segs": [
+        {
+          "lit": "System"
+        },
+        {
+          "lit": "Problems"
+        },
+        {
+          "rule": "segment",
+          "name": "source"
+        },
+        {
+          "rule": "segment",
+          "name": "key"
         }
       ]
     },

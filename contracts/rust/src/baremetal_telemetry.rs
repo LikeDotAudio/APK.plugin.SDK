@@ -95,6 +95,13 @@ pub const LOOPBACK_BIND: &str = "127.0.0.1";
 pub const ROUTE_STATUS: &str = "/status";
 pub const ROUTE_TELEMETRY: &str = "/telemetry";
 
+/// The leaf a node's timeline is posted on — `System/BareMetal/{target}/{node}/timeline`,
+/// retained, one post per `post_every_s` holding the last `window_s` as a baseline plus
+/// timed deltas. The shape is `src/baremetal-timeline.ts` (`BAREMETAL_TIMELINE_LEAF`) and its
+/// generated twin `gen::bare_metal_timeline::BareMetalTimeline`; `tests/payloads.rs` holds the
+/// two spellings of this leaf together.
+pub const TIMELINE_LEAF: &str = "timeline";
+
 /// One of [`SERVING_STATES`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ServingState {

@@ -8,6 +8,12 @@
      "out": {"topic": "APK.audio/System/Protocols/capture-recorder/outgoing/write", "payload": {"device": "visa/Power/66101A/Dev730-0", "command": "OUTP OFF", "by": "browser"}}},
     {"why": "the agent offline: nothing else asks the bench, so straight to the unit", "topic": "APK.audio/System/Protocols/visa/Device/DMM/34401A/Dev7/Write", "command": ":READ?", "by": "browser", "online": false,
      "out": {"topic": "APK.audio/System/Protocols/visa/Device/DMM/34401A/Dev7/Write", "payload": ":READ?"}},
+    {"why": "WHO ASKED (ROAD-3684): the agent online, the request carries the asker's id for the relay to pass on", "topic": "APK.audio/System/Protocols/visa/Device/DMM/34401A/Dev7/Write", "command": ":READ?", "by": "browser:tab-1", "online": true, "correlation_id": "browser:tab-1",
+     "out": {"topic": "APK.audio/System/Protocols/capture-recorder/outgoing/write", "payload": {"device": "visa/DMM/34401A/Dev7", "command": ":READ?", "by": "browser:tab-1", "correlation_id": "browser:tab-1"}}},
+    {"why": "WHO ASKED (ROAD-3684): the agent offline, the write is PLUGIN.VISA's envelope, so the unit's /Reply says the id back", "topic": "APK.audio/System/Protocols/visa/Device/DMM/34401A/Dev7/Write", "command": ":READ?", "by": "browser:tab-1", "online": false, "correlation_id": "browser:tab-1",
+     "out": {"topic": "APK.audio/System/Protocols/visa/Device/DMM/34401A/Dev7/Write", "payload": {"command": ":READ?", "correlation_id": "browser:tab-1"}}},
+    {"why": "an id on a topic that is not a VISA unit's write: untouched", "topic": "APK.audio/System/Protocols/chromecast/Device/X/Write", "command": "play", "by": "browser", "online": false, "correlation_id": "browser:tab-1",
+     "out": {"topic": "APK.audio/System/Protocols/chromecast/Device/X/Write", "payload": "play"}},
     {"why": "not a VISA unit's write: untouched", "topic": "APK.audio/System/Protocols/chromecast/Device/X/Write", "command": "play", "by": "browser", "online": true,
      "out": {"topic": "APK.audio/System/Protocols/chromecast/Device/X/Write", "payload": "play"}}
   ],

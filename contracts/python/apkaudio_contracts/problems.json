@@ -295,6 +295,39 @@
       ],
       "retry": true
     },
+    "bench_terminal_in_use": {
+      "area": "control",
+      "title": "That terminal already has a cable on it",
+      "cause": "A bench terminal ends one connection: IFC joins a port to one other port. The patch names a terminal (a pin, or a port its part declares) that another connection already ends. The details name that connection.",
+      "fix": [
+        "Unpatch the connection the details name, then commit this patch again.",
+        "Or patch a free terminal: another port of the same kind on the device, or an unused patch-bay landing.",
+        "If the terminal is a hub that many devices share (a switch, an access point), give its part one port per device so each cable has its own terminal."
+      ],
+      "retry": false
+    },
+    "rack_overload": {
+      "area": "control",
+      "title": "That rack holds more than it is rated to carry",
+      "cause": "The weight of what is mounted in the rack (its frame aside), rolled up by the no-double-count rule (a kit that declares its total is that total), is more than the rack's static load rating (APK_Rack.StaticLoadRating). The details name the rack, the payload and the rating, in kg.",
+      "fix": [
+        "Move a heavy device to another rack, or to a shelf or the floor beside it.",
+        "Or check the rating: put the maker's static load rating on the rack's part (APK_Rack.StaticLoadRating, kg) if the one there is wrong.",
+        "Or check the weights: a device whose part states the wrong weight tips the sum; correct the part."
+      ],
+      "retry": false
+    },
+    "bom_drawing_not_stored": {
+      "area": "input",
+      "title": "That drawing is not in the model archive",
+      "cause": "A bill of materials of a CAD drawing is counted from the drawing's .ifc twin as the model archive holds it (Storage-Portal /api/files/ifc/<project>/, the project being the drawing id unless the request names one). The archive has no <drawing>.ifc or <drawing>-<UTC>.ifc there, or it did not answer. The details name the project and the address asked.",
+      "fix": [
+        "Store the drawing's .ifc in the archive (APKSoftapp.storeModel with the drawing id as the name), then ask again.",
+        "Or name the project it is stored under: add &project=<project> to the request.",
+        "If the archive did not answer, check that Storage-Portal is up and that the BIM server reaches it (config.ini [files] ifc_store, or APK_BIM_MODEL_STORE)."
+      ],
+      "retry": true
+    },
     "config_invalid": {
       "area": "config",
       "title": "A setting in its config file is wrong",
@@ -528,6 +561,59 @@
         "Saved by a newer editor: update this softapp."
       ],
       "retry": false
+    },
+    "plugin_unavailable": {
+      "area": "device",
+      "title": "The plugin is running but can see nothing",
+      "cause": "Its own account says unavailable: none of the interfaces, sockets or devices it listens on opened, so it is alive and finding nothing.",
+      "fix": [
+        "Read the detail: it names what did not open (an interface, a port, a device node).",
+        "Check the container has the network or device it needs (DockTor shows its mounts and network mode), then restart it from DockTor.",
+        "If another program holds the port, stop that one first — two listeners on one port is the usual cause."
+      ],
+      "retry": true
+    },
+    "plugin_check_failed": {
+      "area": "device",
+      "title": "A plugin's self-test check failed",
+      "cause": "Its self test was run and one named check did not pass. The detail is the check's own one line of why.",
+      "fix": [
+        "Read the check's detail: it says what was missing or wrong.",
+        "Fix that (a config key, a device, the broker), then run the self test again from the plugin's page.",
+        "If it fails with nothing obviously wrong, restart the plugin from DockTor and run it once more."
+      ],
+      "retry": true
+    },
+    "job_failed": {
+      "area": "output",
+      "title": "A worker could not do the job it was given",
+      "cause": "The job was received and answered ok: false — the input was not one it can handle, or the worker hit an error doing it. The detail is the worker's own error.",
+      "fix": [
+        "Read the detail: it names what was wrong with the job or the file.",
+        "Fix the input and send the job again.",
+        "If every job of this kind fails, restart the worker from DockTor and read its log for the first error."
+      ],
+      "retry": true
+    },
+    "osapi_module_missing": {
+      "area": "config",
+      "title": "This part of the OS API is not in the running build",
+      "cause": "The OS API answered 501: the module that serves this route did not import when the server started (a missing dependency, a file not copied into the image, or an error at import).",
+      "fix": [
+        "Rebuild and restart the OS API: PODS/POD.manager/MANAGER.Docktor/K8/up-stack.sh WEB.OsApi.",
+        "Read the OS API's start-up log in DockTor: the line for this module says why it is off."
+      ],
+      "retry": true
+    },
+    "service_unreachable": {
+      "area": "bus",
+      "title": "A service the OS API relies on did not answer",
+      "cause": "The OS API asked another service on the bench (DockTor, the recorder, a stepper) and got no answer: it is stopped, restarting, or not reachable from the OS API's network.",
+      "fix": [
+        "Start the service from DockTor (http://localhost:8765), or PODS/POD.manager/MANAGER.Docktor/K8/up-stack.sh <stack>.",
+        "Wait a few seconds and retry: a restarting service answers once it is up."
+      ],
+      "retry": true
     }
   }
 }

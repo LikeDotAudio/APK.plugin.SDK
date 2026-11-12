@@ -1,0 +1,1205 @@
+{
+ "$comment": "Golden vectors for contracts/ifc/*.json readers: TS src/ifc-vocab.test.ts and Python tests/test_ifc_vocab.py must agree (connectors, parts, signal_formats, presentation).",
+ "connectors": [
+  {
+   "input": "3-pin XLR male",
+   "normalised": "3-pin xlr male",
+   "id": "XLR3-M",
+   "ids": [
+    "XLR3-M"
+   ],
+   "words": {
+    "ElectricalConnectionType": "XLR",
+    "ConnectionSubtype": "XLR-3",
+    "ConnectionGender": "MALE"
+   }
+  },
+  {
+   "input": "XLR-3 F",
+   "normalised": "xlr-3 f",
+   "id": "XLR3-F",
+   "ids": [
+    "XLR3-F"
+   ],
+   "words": {
+    "ElectricalConnectionType": "XLR",
+    "ConnectionSubtype": "XLR-3",
+    "ConnectionGender": "FEMALE"
+   }
+  },
+  {
+   "input": "IEC C14",
+   "normalised": "iec c14",
+   "id": "IEC-C14",
+   "ids": [
+    "IEC-C14"
+   ],
+   "words": {
+    "ElectricalConnectionType": "ACPLUG",
+    "ConnectionSubtype": "IEC 60320 C14",
+    "ConnectionGender": "MALE"
+   }
+  },
+  {
+   "input": "IEC C13",
+   "normalised": "iec c13",
+   "id": "IEC-C13",
+   "ids": [
+    "IEC-C13"
+   ],
+   "words": {
+    "ElectricalConnectionType": "ACPLUG",
+    "ConnectionSubtype": "IEC 60320 C13",
+    "ConnectionGender": "FEMALE"
+   }
+  },
+  {
+   "input": "NEMA 5-15P",
+   "normalised": "nema 5-15p",
+   "id": "NEMA-5-15P",
+   "ids": [
+    "NEMA-5-15P"
+   ],
+   "words": {
+    "ElectricalConnectionType": "ACPLUG",
+    "ConnectionSubtype": "NEMA 5-15P",
+    "ConnectionGender": "MALE"
+   }
+  },
+  {
+   "input": "NEMA 5-15R",
+   "normalised": "nema 5-15r",
+   "id": "NEMA-5-15R",
+   "ids": [
+    "NEMA-5-15R"
+   ],
+   "words": {
+    "ElectricalConnectionType": "ACPLUG",
+    "ConnectionSubtype": "NEMA 5-15R",
+    "ConnectionGender": "FEMALE"
+   }
+  },
+  {
+   "input": "powerCON TRUE1",
+   "normalised": "powercon true1",
+   "id": "POWERCON-TRUE1",
+   "ids": [
+    "POWERCON-TRUE1"
+   ],
+   "words": {
+    "ElectricalConnectionType": "ACPLUG",
+    "ConnectionSubtype": "Neutrik powerCON TRUE1",
+    "ConnectionGender": "NOTKNOWN"
+   }
+  },
+  {
+   "input": "PC1S",
+   "normalised": "pc1s",
+   "id": "POWERCON-TRUE1-F",
+   "ids": [
+    "POWERCON-TRUE1-F"
+   ],
+   "words": {
+    "ElectricalConnectionType": "ACPLUG",
+    "ConnectionSubtype": "Neutrik powerCON TRUE1",
+    "ConnectionGender": "FEMALE"
+   }
+  },
+  {
+   "input": "etherCON",
+   "normalised": "ethercon",
+   "id": "ETHERCON",
+   "ids": [
+    "ETHERCON"
+   ],
+   "words": {
+    "ElectricalConnectionType": "RJ",
+    "ConnectionSubtype": "Neutrik etherCON (RJ45)",
+    "ConnectionGender": "NOTKNOWN"
+   }
+  },
+  {
+   "input": "RJ45",
+   "normalised": "rj45",
+   "id": "RJ45",
+   "ids": [
+    "RJ45"
+   ],
+   "words": {
+    "ElectricalConnectionType": "RJ",
+    "ConnectionSubtype": "RJ45 (8P8C)",
+    "ConnectionGender": "NOTKNOWN"
+   }
+  },
+  {
+   "input": "BNC (50 Ω)",
+   "normalised": "bnc (50 ω)",
+   "id": "COAX-BNC-50",
+   "ids": [
+    "COAX-BNC-50"
+   ],
+   "words": {
+    "ElectricalConnectionType": "COAXIAL",
+    "ConnectionSubtype": "BNC (50 ohm)",
+    "ConnectionGender": "NOTKNOWN"
+   }
+  },
+  {
+   "input": "BNC (12G)",
+   "normalised": "bnc (12g)",
+   "id": "COAX-BNC-12G",
+   "ids": [
+    "COAX-BNC-12G"
+   ],
+   "words": {
+    "ElectricalConnectionType": "COAXIAL",
+    "ConnectionSubtype": "BNC 12G (75 ohm)",
+    "ConnectionGender": "NOTKNOWN"
+   }
+  },
+  {
+   "input": "HD-BNC",
+   "normalised": "hd-bnc",
+   "id": "COAX-HD-BNC",
+   "ids": [
+    "COAX-HD-BNC"
+   ],
+   "words": {
+    "ElectricalConnectionType": "COAXIAL",
+    "ConnectionSubtype": "HD-BNC (75 ohm)",
+    "ConnectionGender": "NOTKNOWN"
+   }
+  },
+  {
+   "input": "1/4\" TRS",
+   "normalised": "1/4\" trs",
+   "id": "TRS-6.35",
+   "ids": [
+    "TRS-6.35"
+   ],
+   "words": {
+    "ElectricalConnectionType": "TRS",
+    "ConnectionSubtype": "1/4\" TRS",
+    "ConnectionGender": "NOTKNOWN"
+   }
+  },
+  {
+   "input": "1/4 inch TS",
+   "normalised": "1/4\" ts",
+   "id": "TS-6.35",
+   "ids": [
+    "TS-6.35"
+   ],
+   "words": {
+    "ElectricalConnectionType": "TRS",
+    "ConnectionSubtype": "1/4\" TS",
+    "ConnectionGender": "NOTKNOWN"
+   }
+  },
+  {
+   "input": "3.5mm Headphone Jack (1)",
+   "normalised": "3.5 mm headphone jack (1)",
+   "id": "TRS-3.5-F",
+   "ids": [
+    "TRS-3.5-F"
+   ],
+   "words": {
+    "ElectricalConnectionType": "TRS",
+    "ConnectionSubtype": "3.5 mm TRS",
+    "ConnectionGender": "FEMALE"
+   }
+  },
+  {
+   "input": "Bantam",
+   "normalised": "bantam",
+   "id": "TT",
+   "ids": [
+    "TT"
+   ],
+   "words": {
+    "ElectricalConnectionType": "TRS",
+    "ConnectionSubtype": "Bantam (TT)",
+    "ConnectionGender": "NOTKNOWN"
+   }
+  },
+  {
+   "input": "ADC PJ339 jack",
+   "normalised": "adc pj339 jack",
+   "id": "ADC-PJ339",
+   "ids": [
+    "ADC-PJ339"
+   ],
+   "words": {
+    "ElectricalConnectionType": "TRS",
+    "ConnectionSubtype": "ADC PJ339 (bantam TT jack)",
+    "ConnectionGender": "FEMALE"
+   }
+  },
+  {
+   "input": "Phoenix 3-pin",
+   "normalised": "phoenix 3-pin",
+   "id": "EUROBLOCK-3",
+   "ids": [
+    "EUROBLOCK-3"
+   ],
+   "words": {
+    "ElectricalConnectionType": "OTHER",
+    "ConnectionSubtype": "Phoenix 3-pin",
+    "ConnectionGender": "NOTKNOWN"
+   }
+  },
+  {
+   "input": "3.5 mm 4-pin terminal block",
+   "normalised": "3.5 mm 4-pin terminal block",
+   "id": "EUROBLOCK-3.5-4",
+   "ids": [
+    "EUROBLOCK-3.5-4"
+   ],
+   "words": {
+    "ElectricalConnectionType": "OTHER",
+    "ConnectionSubtype": "Phoenix 3.5 mm 4-pin",
+    "ConnectionGender": "NOTKNOWN"
+   }
+  },
+  {
+   "input": "Phoenix 5.08mm 4-pin",
+   "normalised": "phoenix 5.08 mm 4-pin",
+   "id": "EUROBLOCK-5.08-4",
+   "ids": [
+    "EUROBLOCK-5.08-4"
+   ],
+   "words": {
+    "ElectricalConnectionType": "OTHER",
+    "ConnectionSubtype": "Phoenix 5.08 mm 4-pin",
+    "ConnectionGender": "NOTKNOWN"
+   }
+  },
+  {
+   "input": "EDAC 38",
+   "normalised": "edac 38",
+   "id": "EDAC-38",
+   "ids": [
+    "EDAC-38"
+   ],
+   "words": {
+    "ElectricalConnectionType": "OTHER",
+    "ConnectionSubtype": "EDAC/ELCO 516 38-pin",
+    "ConnectionGender": "NOTKNOWN"
+   }
+  },
+  {
+   "input": "E16S",
+   "normalised": "e16s",
+   "id": "EDAC-56-F",
+   "ids": [
+    "EDAC-56-F"
+   ],
+   "words": {
+    "ElectricalConnectionType": "OTHER",
+    "ConnectionSubtype": "EDAC/ELCO 516 56-pin",
+    "ConnectionGender": "FEMALE"
+   }
+  },
+  {
+   "input": "DB-9 F",
+   "normalised": "db-9 f",
+   "id": "DSUB-9-F",
+   "ids": [
+    "DSUB-9-F"
+   ],
+   "words": {
+    "ElectricalConnectionType": "DSUB",
+    "ConnectionSubtype": "D-sub 9-pin (DE-9)",
+    "ConnectionGender": "FEMALE"
+   }
+  },
+  {
+   "input": "SFP",
+   "normalised": "sfp",
+   "id": "SFP",
+   "ids": [
+    "SFP"
+   ],
+   "words": {
+    "ElectricalConnectionType": "OTHER",
+    "ConnectionSubtype": "SFP cage",
+    "ConnectionGender": "FEMALE"
+   }
+  },
+  {
+   "input": "LC Duplex",
+   "normalised": "lc duplex",
+   "id": "FIBRE-LC-DUPLEX",
+   "ids": [
+    "FIBRE-LC-DUPLEX"
+   ],
+   "words": {
+    "ElectricalConnectionType": "OTHER",
+    "ConnectionSubtype": "LC duplex",
+    "ConnectionGender": "NOTKNOWN"
+   }
+  },
+  {
+   "input": "ground lug",
+   "normalised": "ground lug",
+   "id": "GROUND-LUG",
+   "ids": [
+    "GROUND-LUG"
+   ],
+   "words": {
+    "ElectricalConnectionType": "OTHER",
+    "ConnectionSubtype": "Earth terminal",
+    "ConnectionGender": "NOTKNOWN",
+    "ConductorFunction": "PROTECTIVEEARTH"
+   }
+  },
+  {
+   "input": "Jack",
+   "normalised": "jack",
+   "id": "UNSPECIFIED-JACK",
+   "ids": [
+    "UNSPECIFIED-JACK"
+   ],
+   "words": {
+    "ElectricalConnectionType": "NOTKNOWN",
+    "ConnectionSubtype": "Jack (type not stated)",
+    "ConnectionGender": "NOTKNOWN"
+   }
+  },
+  {
+   "input": "speakON NL4 F",
+   "normalised": "speakon nl4 f",
+   "id": "SPEAKON-NL4-F",
+   "ids": [
+    "SPEAKON-NL4-F"
+   ],
+   "words": {
+    "ElectricalConnectionType": "OTHER",
+    "ConnectionSubtype": "speakON NL4",
+    "ConnectionGender": "FEMALE"
+   }
+  },
+  {
+   "input": "  XLR–3   F ",
+   "normalised": "xlr-3 f",
+   "id": "XLR3-F",
+   "ids": [
+    "XLR3-F"
+   ],
+   "words": {
+    "ElectricalConnectionType": "XLR",
+    "ConnectionSubtype": "XLR-3",
+    "ConnectionGender": "FEMALE"
+   }
+  },
+  {
+   "input": "Wobble 9000",
+   "normalised": "wobble 9000",
+   "id": null,
+   "ids": [],
+   "words": null
+  },
+  {
+   "input": "",
+   "normalised": "",
+   "id": null,
+   "ids": [],
+   "words": null
+  },
+  {
+   "input": "XLR / USB-C",
+   "normalised": "xlr / usb-c",
+   "id": null,
+   "ids": [
+    "XLR3",
+    "USB-C"
+   ],
+   "words": null
+  },
+  {
+   "input": "Attached Cable / Wobble",
+   "normalised": "attached cable / wobble",
+   "id": null,
+   "ids": [],
+   "words": null
+  },
+  {
+   "input": "3.5 mm male",
+   "normalised": "3.5 mm male",
+   "id": "TRS-3.5-M",
+   "ids": [
+    "TRS-3.5-M"
+   ],
+   "words": {
+    "ElectricalConnectionType": "TRS",
+    "ConnectionSubtype": "3.5 mm TRS",
+    "ConnectionGender": "MALE"
+   }
+  },
+  {
+   "input": "3.5 mm male",
+   "domain": "rf",
+   "normalised": "3.5 mm male",
+   "id": "COAX-APC-3.5-M",
+   "ids": [
+    "COAX-APC-3.5-M"
+   ],
+   "words": {
+    "ElectricalConnectionType": "COAXIAL",
+    "ConnectionSubtype": "3.5 mm (precision RF)",
+    "ConnectionGender": "MALE"
+   }
+  },
+  {
+   "input": "3.5 mm female",
+   "domain": "rf",
+   "normalised": "3.5 mm female",
+   "id": "COAX-APC-3.5-F",
+   "ids": [
+    "COAX-APC-3.5-F"
+   ],
+   "words": {
+    "ElectricalConnectionType": "COAXIAL",
+    "ConnectionSubtype": "3.5 mm (precision RF)",
+    "ConnectionGender": "FEMALE"
+   }
+  },
+  {
+   "input": "3.5 mm",
+   "domain": "rf",
+   "normalised": "3.5 mm",
+   "id": "COAX-APC-3.5",
+   "ids": [
+    "COAX-APC-3.5"
+   ],
+   "words": {
+    "ElectricalConnectionType": "COAXIAL",
+    "ConnectionSubtype": "3.5 mm (precision RF)",
+    "ConnectionGender": "NOTKNOWN"
+   }
+  },
+  {
+   "input": "3.5 mm female",
+   "domain": "audio",
+   "normalised": "3.5 mm female",
+   "id": "TRS-3.5-F",
+   "ids": [
+    "TRS-3.5-F"
+   ],
+   "words": {
+    "ElectricalConnectionType": "TRS",
+    "ConnectionSubtype": "3.5 mm TRS",
+    "ConnectionGender": "FEMALE"
+   }
+  },
+  {
+   "input": "N-type female (FSV3004/3007/3013); 3.5 mm male (FSV3030); 2.92 mm male (FSV3044)",
+   "domain": "rf",
+   "normalised": "n-type female (fsv3004/3007/3013); 3.5 mm male (fsv3030); 2.92 mm male (fsv3044)",
+   "id": null,
+   "ids": [
+    "COAX-N-F",
+    "COAX-APC-3.5-M",
+    "COAX-APC-2.92-M"
+   ],
+   "words": null
+  },
+  {
+   "input": "3-pin WE/XLR Adapter",
+   "normalised": "3-pin we/xlr adapter",
+   "id": null,
+   "ids": [
+    "WE-4069",
+    "XLR3"
+   ],
+   "words": null
+  },
+  {
+   "input": "XLR pigtail / RCA screw terminal",
+   "normalised": "xlr pigtail / rca screw terminal",
+   "id": null,
+   "ids": [
+    "XLR3",
+    "SCREW-TERMINAL"
+   ],
+   "words": null
+  },
+  {
+   "input": "RCA terminal block / XLR adapter",
+   "domain": "audio",
+   "normalised": "rca terminal block / xlr adapter",
+   "id": null,
+   "ids": [
+    "SCREW-TERMINAL",
+    "XLR3"
+   ],
+   "words": null
+  },
+  {
+   "input": "low-thermal copper multi-pin input connector with coupling nut (34102A cable / 34104A blank / 34103A 4-wire shorting plug); body and shield earthed",
+   "domain": "signal",
+   "normalised": "low-thermal copper multi-pin input connector with coupling nut (34102a cable / 34104a blank / 34103a 4-wire shorting plug); body and shield earthed",
+   "id": "LOW-THERMAL-34420",
+   "ids": [
+    "LOW-THERMAL-34420"
+   ],
+   "words": {
+    "ElectricalConnectionType": "OTHER",
+    "ConnectionSubtype": "Keysight 34420A low-thermal input",
+    "ConnectionGender": "NOTKNOWN"
+   }
+  },
+  {
+   "input": "Western Electric 405A jack",
+   "normalised": "western electric 405a jack",
+   "id": "WE-405A",
+   "ids": [
+    "WE-405A"
+   ],
+   "words": {
+    "ElectricalConnectionType": "OTHER",
+    "ConnectionSubtype": "Western Electric No. 405A jack",
+    "ConnectionGender": "FEMALE"
+   }
+  },
+  {
+   "input": "WE 639 plug",
+   "normalised": "we 639 plug",
+   "id": "WE-639-PLUG",
+   "ids": [
+    "WE-639-PLUG"
+   ],
+   "words": {
+    "ElectricalConnectionType": "OTHER",
+    "ConnectionSubtype": "Western Electric 639 integral plug",
+    "ConnectionGender": "MALE"
+   }
+  },
+  {
+   "input": "34420A low-thermal copper input",
+   "normalised": "34420a low-thermal copper input",
+   "id": "LOW-THERMAL-34420",
+   "ids": [
+    "LOW-THERMAL-34420"
+   ],
+   "words": {
+    "ElectricalConnectionType": "OTHER",
+    "ConnectionSubtype": "Keysight 34420A low-thermal input",
+    "ConnectionGender": "NOTKNOWN"
+   }
+  },
+  {
+   "input": "Keysight 34420A input",
+   "normalised": "keysight 34420a input",
+   "id": "LOW-THERMAL-34420",
+   "ids": [
+    "LOW-THERMAL-34420"
+   ],
+   "words": {
+    "ElectricalConnectionType": "OTHER",
+    "ConnectionSubtype": "Keysight 34420A low-thermal input",
+    "ConnectionGender": "NOTKNOWN"
+   }
+  },
+  {
+   "input": "Euroblock 3-pin, 3.5 mm pitch",
+   "normalised": "euroblock 3-pin, 3.5 mm pitch",
+   "id": "EUROBLOCK-3.5-3",
+   "ids": [
+    "EUROBLOCK-3.5-3"
+   ],
+   "words": {
+    "ElectricalConnectionType": "OTHER",
+    "ConnectionSubtype": "Phoenix 3.5 mm 3-pin",
+    "ConnectionGender": "NOTKNOWN"
+   }
+  },
+  {
+   "input": "Neutrik speakON NL4",
+   "normalised": "neutrik speakon nl4",
+   "id": "SPEAKON-NL4",
+   "ids": [
+    "SPEAKON-NL4"
+   ],
+   "words": {
+    "ElectricalConnectionType": "OTHER",
+    "ConnectionSubtype": "speakON NL4",
+    "ConnectionGender": "NOTKNOWN"
+   }
+  },
+  {
+   "input": "WE-405A / XLR3",
+   "normalised": "we-405a / xlr3",
+   "id": null,
+   "ids": [
+    "WE-405A",
+    "XLR3"
+   ],
+   "words": null
+  },
+  {
+   "input": "WE-639-PLUG / XLR3",
+   "normalised": "we-639-plug / xlr3",
+   "id": null,
+   "ids": [
+    "WE-639-PLUG",
+    "XLR3"
+   ],
+   "words": null
+  }
+ ],
+ "parts": [
+  {
+   "part": {
+    "category": "Audio",
+    "class": "Loudspeaker",
+    "name": "L-Acoustics KS21i"
+   },
+   "expect": {
+    "entity": "IfcAudioVisualApplianceType",
+    "predefined": "SPEAKER",
+    "element_type": null,
+    "occurrence": "IfcAudioVisualAppliance",
+    "qto": "Qto_AudioVisualApplianceBaseQuantities",
+    "source": "class",
+    "class_pset": "Pset_AudioVisualApplianceTypeSpeaker"
+   }
+  },
+  {
+   "part": {
+    "category": "Audio",
+    "class": "Amplifier",
+    "name": "Lab.gruppen D80:4L"
+   },
+   "expect": {
+    "entity": "IfcAudioVisualApplianceType",
+    "predefined": "AMPLIFIER",
+    "element_type": null,
+    "occurrence": "IfcAudioVisualAppliance",
+    "qto": "Qto_AudioVisualApplianceBaseQuantities",
+    "source": "class",
+    "class_pset": "Pset_AudioVisualApplianceTypeAmplifier"
+   }
+  },
+  {
+   "part": {
+    "category": "Audio",
+    "class": "Audio (by maker)",
+    "name": "Thing"
+   },
+   "expect": {
+    "entity": "IfcAudioVisualApplianceType",
+    "predefined": "USERDEFINED",
+    "element_type": "Audio",
+    "occurrence": "IfcAudioVisualAppliance",
+    "qto": "Qto_AudioVisualApplianceBaseQuantities",
+    "source": "category"
+   }
+  },
+  {
+   "part": {
+    "category": "Audio",
+    "class": "DSP / Mixer",
+    "name": "Q-SYS Core 110f"
+   },
+   "expect": {
+    "entity": "IfcAudioVisualApplianceType",
+    "predefined": "USERDEFINED",
+    "element_type": "DSP / Mixer",
+    "occurrence": "IfcAudioVisualAppliance",
+    "qto": "Qto_AudioVisualApplianceBaseQuantities",
+    "source": "class"
+   }
+  },
+  {
+   "part": {
+    "category": "Microphones",
+    "class": "Cardioid Condenser Microphone",
+    "name": "Green12"
+   },
+   "expect": {
+    "entity": "IfcAudioVisualApplianceType",
+    "predefined": "MICROPHONE",
+    "element_type": null,
+    "occurrence": "IfcAudioVisualAppliance",
+    "qto": "Qto_AudioVisualApplianceBaseQuantities",
+    "source": "category"
+   }
+  },
+  {
+   "part": {
+    "category": "Microphones",
+    "class": "Stereo Mic Set",
+    "name": "Pair"
+   },
+   "expect": {
+    "entity": "IfcElementAssemblyType",
+    "predefined": "ACCESSORY_ASSEMBLY",
+    "element_type": null,
+    "occurrence": "IfcElementAssembly",
+    "qto": null,
+    "source": "class"
+   }
+  },
+  {
+   "part": {
+    "category": "Video",
+    "class": "Display",
+    "name": "Sony FW-85"
+   },
+   "expect": {
+    "entity": "IfcAudioVisualApplianceType",
+    "predefined": "DISPLAY",
+    "element_type": null,
+    "occurrence": "IfcAudioVisualAppliance",
+    "qto": "Qto_AudioVisualApplianceBaseQuantities",
+    "source": "class"
+   }
+  },
+  {
+   "part": {
+    "category": "Video",
+    "class": "Display",
+    "name": "Epson laser projector"
+   },
+   "expect": {
+    "entity": "IfcAudioVisualApplianceType",
+    "predefined": "PROJECTOR",
+    "element_type": null,
+    "occurrence": "IfcAudioVisualAppliance",
+    "qto": "Qto_AudioVisualApplianceBaseQuantities",
+    "source": "class"
+   }
+  },
+  {
+   "part": {
+    "category": "Network",
+    "class": "Network",
+    "name": "Cisco Catalyst 9300 48-port PoE switch"
+   },
+   "expect": {
+    "entity": "IfcCommunicationsApplianceType",
+    "predefined": "IPNETWORKEQUIPMENT",
+    "element_type": null,
+    "occurrence": "IfcCommunicationsAppliance",
+    "qto": "Qto_CommunicationsApplianceBaseQuantities",
+    "source": "class"
+   }
+  },
+  {
+   "part": {
+    "category": "Network",
+    "class": "Network",
+    "name": "Juniper MX204 router"
+   },
+   "expect": {
+    "entity": "IfcCommunicationsApplianceType",
+    "predefined": "ROUTER",
+    "element_type": null,
+    "occurrence": "IfcCommunicationsAppliance",
+    "qto": "Qto_CommunicationsApplianceBaseQuantities",
+    "source": "class"
+   }
+  },
+  {
+   "part": {
+    "category": "Network",
+    "class": "Network",
+    "name": "Brocade BR-G720"
+   },
+   "expect": {
+    "entity": "IfcCommunicationsApplianceType",
+    "predefined": "NETWORKAPPLIANCE",
+    "element_type": null,
+    "occurrence": "IfcCommunicationsAppliance",
+    "qto": "Qto_CommunicationsApplianceBaseQuantities",
+    "source": "category"
+   }
+  },
+  {
+   "part": {
+    "category": "Network",
+    "class": "Network",
+    "name": "10G SFP+ transceiver"
+   },
+   "expect": {
+    "entity": "IfcCommunicationsApplianceType",
+    "predefined": "TRANSITIONCOMPONENT",
+    "element_type": null,
+    "occurrence": "IfcCommunicationsAppliance",
+    "qto": "Qto_CommunicationsApplianceBaseQuantities",
+    "source": "class"
+   }
+  },
+  {
+   "part": {
+    "category": "Infrastructure",
+    "class": "Patch Panel",
+    "name": "Neutrik NEU-0154"
+   },
+   "expect": {
+    "entity": "IfcDistributionBoardType",
+    "predefined": "DISTRIBUTIONFRAME",
+    "element_type": null,
+    "occurrence": "IfcDistributionBoard",
+    "qto": null,
+    "source": "class",
+    "class_pset": "Pset_DistributionBoardTypeDistributionFrame"
+   }
+  },
+  {
+   "part": {
+    "category": "Infrastructure",
+    "class": "Rack & Enclosure",
+    "name": "Middle Atlantic WRK-44"
+   },
+   "expect": {
+    "entity": "IfcElementAssemblyType",
+    "predefined": "USERDEFINED",
+    "element_type": "EquipmentRack",
+    "occurrence": "IfcElementAssembly",
+    "qto": null,
+    "source": "class",
+    "frame": {
+     "entity": "IfcFurnitureType",
+     "predefined": "TECHNICALCABINET"
+    }
+   }
+  },
+  {
+   "part": {
+    "category": "Power",
+    "class": "Power",
+    "name": "Vertiv PDU 24-outlet"
+   },
+   "expect": {
+    "entity": "IfcElectricDistributionBoardType",
+    "predefined": "DISTRIBUTIONBOARD",
+    "element_type": null,
+    "occurrence": "IfcElectricDistributionBoard",
+    "qto": "Qto_DistributionBoardBaseQuantities",
+    "source": "class"
+   }
+  },
+  {
+   "part": {
+    "category": "Power",
+    "class": "Power",
+    "name": "APC Smart-UPS 1500"
+   },
+   "expect": {
+    "entity": "IfcElectricFlowStorageDeviceType",
+    "predefined": "UPS",
+    "element_type": null,
+    "occurrence": "IfcElectricFlowStorageDevice",
+    "qto": "Qto_ElectricFlowStorageDeviceBaseQuantities",
+    "source": "class"
+   }
+  },
+  {
+   "part": {
+    "category": "Power",
+    "class": "Power",
+    "name": "Sennheiser SL BOUNDARY 114-S DW-4 B"
+   },
+   "expect": {
+    "entity": "IfcElectricApplianceType",
+    "predefined": "USERDEFINED",
+    "element_type": "Power",
+    "occurrence": "IfcElectricAppliance",
+    "qto": "Qto_ElectricApplianceBaseQuantities",
+    "source": "category"
+   }
+  },
+  {
+   "part": {
+    "category": "Test & Measurement",
+    "class": "DMM",
+    "name": "Keysight 34465A"
+   },
+   "expect": {
+    "entity": "IfcFlowInstrumentType",
+    "predefined": "VOLTMETER_RMS",
+    "element_type": null,
+    "occurrence": "IfcFlowInstrument",
+    "qto": "Qto_FlowInstrumentBaseQuantities",
+    "source": "class"
+   }
+  },
+  {
+   "part": {
+    "category": "Test & Measurement",
+    "class": "DMM",
+    "name": "Keysight 34411A",
+    "ext": {
+     "ifc": {
+      "entity": "IfcFlowInstrument",
+      "predefined_type": "VOLTMETER"
+     }
+    }
+   },
+   "expect": {
+    "entity": "IfcFlowInstrumentType",
+    "predefined": "VOLTMETER_RMS",
+    "element_type": null,
+    "occurrence": "IfcFlowInstrument",
+    "qto": "Qto_FlowInstrumentBaseQuantities",
+    "source": "part"
+   }
+  },
+  {
+   "part": {
+    "category": "Test & Measurement",
+    "class": "Oscilloscope",
+    "name": "Rigol DS1054Z"
+   },
+   "expect": {
+    "entity": "IfcFlowInstrumentType",
+    "predefined": "USERDEFINED",
+    "element_type": "Oscilloscope",
+    "occurrence": "IfcFlowInstrument",
+    "qto": "Qto_FlowInstrumentBaseQuantities",
+    "source": "class"
+   }
+  },
+  {
+   "part": {
+    "category": "Accessories",
+    "class": "Cable",
+    "name": "XLR cable 10 m"
+   },
+   "expect": {
+    "entity": "IfcCableSegmentType",
+    "predefined": "CABLESEGMENT",
+    "element_type": null,
+    "occurrence": "IfcCableSegment",
+    "qto": "Qto_CableSegmentBaseQuantities",
+    "source": "class"
+   }
+  },
+  {
+   "part": {
+    "category": "Accessories",
+    "class": "Mount & Hardware",
+    "name": "Rack screw #10-32 Robertson"
+   },
+   "expect": {
+    "entity": "IfcMechanicalFastenerType",
+    "predefined": "SCREW",
+    "element_type": "Robertson (square-drive) screw",
+    "occurrence": "IfcMechanicalFastener",
+    "qto": null,
+    "source": "class"
+   }
+  },
+  {
+   "part": {
+    "category": "Computing",
+    "class": "Software",
+    "name": "Dante Controller"
+   },
+   "expect": {
+    "entity": null,
+    "predefined": null,
+    "element_type": null,
+    "occurrence": null,
+    "qto": null,
+    "source": "class"
+   }
+  },
+  {
+   "part": {
+    "category": "Other",
+    "class": null,
+    "name": "?"
+   },
+   "expect": {
+    "entity": "IfcBuildingElementProxyType",
+    "predefined": "USERDEFINED",
+    "element_type": "Other",
+    "occurrence": "IfcBuildingElementProxy",
+    "qto": null,
+    "source": "category"
+   }
+  },
+  {
+   "part": {
+    "category": "Bogus",
+    "class": "",
+    "name": "?"
+   },
+   "expect": {
+    "entity": "IfcBuildingElementProxyType",
+    "predefined": "USERDEFINED",
+    "element_type": "Other",
+    "occurrence": "IfcBuildingElementProxy",
+    "qto": null,
+    "source": "category"
+   }
+  }
+ ],
+ "signal_formats": [
+  {
+   "input": "AES67",
+   "id": "AES67",
+   "canonical": "AES67",
+   "slot": "Protocols"
+  },
+  {
+   "input": "aes-67",
+   "id": "AES67",
+   "canonical": "AES67",
+   "slot": "Protocols"
+  },
+  {
+   "input": "Dante / AES67",
+   "id": "AES67",
+   "canonical": "AES67",
+   "slot": "Protocols"
+  },
+  {
+   "input": "Ravenna / AES67",
+   "id": "AES67",
+   "canonical": "AES67",
+   "slot": "Protocols"
+  },
+  {
+   "input": "RAVENNA/AES67",
+   "id": "AES67",
+   "canonical": "AES67",
+   "slot": "Protocols"
+  },
+  {
+   "input": "AES67-RX",
+   "id": "AES67-RX",
+   "canonical": "AES67",
+   "slot": "Protocols"
+  },
+  {
+   "input": "DANTE-AES67",
+   "id": "DANTE-AES67",
+   "canonical": "AES67",
+   "slot": "Protocols"
+  },
+  {
+   "input": "DANTE-TX8",
+   "id": "DANTE-TX8",
+   "canonical": "DANTE",
+   "slot": "Protocols"
+  },
+  {
+   "input": "Dante Primary",
+   "id": "DANTE",
+   "canonical": "DANTE",
+   "slot": "Protocols"
+  },
+  {
+   "input": "dante",
+   "id": "DANTE",
+   "canonical": "DANTE",
+   "slot": "Protocols"
+  },
+  {
+   "input": "ST 2110-30",
+   "id": "ST2110-30",
+   "canonical": "ST2110-30",
+   "slot": "Protocols"
+  },
+  {
+   "input": "ST2110-30-RX16",
+   "id": "ST2110-30-RX16",
+   "canonical": "ST2110-30",
+   "slot": "Protocols"
+  },
+  {
+   "input": "SMPTE ST 2110-20",
+   "id": "ST2110-20",
+   "canonical": "ST2110-20",
+   "slot": "Protocols"
+  },
+  {
+   "input": "IS-04",
+   "id": "NMOS-IS04",
+   "canonical": "NMOS-IS04",
+   "slot": "Protocols"
+  },
+  {
+   "input": "AVB",
+   "id": "MILAN",
+   "canonical": "MILAN",
+   "slot": "Protocols"
+  },
+  {
+   "input": "WheatNet-IP",
+   "id": "WHEATNET-IP",
+   "canonical": "WHEATNET-IP",
+   "slot": "Protocols"
+  },
+  {
+   "input": "SoundGrid Secondary",
+   "id": "SOUNDGRID",
+   "canonical": "SOUNDGRID",
+   "slot": "Protocols"
+  },
+  {
+   "input": "RAVENNA-TX",
+   "id": "RAVENNA-TX",
+   "canonical": "RAVENNA",
+   "slot": "Protocols"
+  },
+  {
+   "input": "Wobble",
+   "id": null,
+   "canonical": null,
+   "slot": null
+  },
+  {
+   "input": "",
+   "id": null,
+   "canonical": null,
+   "slot": null
+  }
+ ],
+ "presentation": [
+  {
+   "gender": "MALE",
+   "presentation": "PLUG"
+  },
+  {
+   "gender": "FEMALE",
+   "presentation": "SOCKET"
+  },
+  {
+   "gender": "OTHER",
+   "presentation": "NOTKNOWN"
+  },
+  {
+   "gender": "NOTKNOWN",
+   "presentation": "NOTKNOWN"
+  },
+  {
+   "gender": "UNSET",
+   "presentation": "NOTKNOWN"
+  },
+  {
+   "connector": "WE-405A",
+   "presentation": "SOCKET"
+  },
+  {
+   "connector": "WE-639-PLUG",
+   "presentation": "PLUG"
+  },
+  {
+   "connector": "LOW-THERMAL-34420",
+   "presentation": "NOTKNOWN"
+  },
+  {
+   "connector": "XLR3",
+   "presentation": "NOTKNOWN"
+  },
+  {
+   "connector": "IEC-C14",
+   "presentation": "PLUG"
+  }
+ ]
+}

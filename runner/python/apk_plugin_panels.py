@@ -102,6 +102,15 @@ def placement_of(tree: str) -> str:
     return rest if sep and n and n.isdigit() else tree
 
 
+def _keep_identity(fields: Dict[str, str], leaf: str, value: str) -> None:
+    """A device's identity leaf, heard. Never emptier than the last good one (ROAD-3566): an
+    empty or cleared leaf on a device still here keeps the value it had; a device that is
+    gone (offline, expired) still empties its panel."""
+    value = str(value or "").strip()
+    if value:
+        fields[leaf] = value
+
+
 class Template:
     """One family's template, parsed once."""
 
@@ -354,13 +363,13 @@ class Book:
                         device.online = is_online_now(_text(doc["last_online"]))
                     for leaf in KEY_LEAVES:
                         if leaf in doc:
-                            device.fields[leaf] = _text(doc[leaf]).strip()
+                            _keep_identity(device.fields, leaf, _text(doc[leaf]))
                 elif payload.strip() == "":
                     device.online = False
             elif field == "last_online":
                 device.online = is_online_now(payload)
             elif field in KEY_LEAVES:
-                device.fields[field] = payload.strip()
+                _keep_identity(device.fields, field, payload)
             out.extend(self._reconcile(base))
         return out
 

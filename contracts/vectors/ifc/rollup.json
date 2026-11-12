@@ -1,0 +1,2017 @@
+{
+ "about": "contracts/src/ifc/rollup.ts and DATABASE.server.BIM SRC/bim/rollup.py give exactly `expect` for each `node` (power-3, ROAD-3582). Add cases here; both suites read this file.",
+ "cases": [
+  {
+   "name": "a kit that declares its total is that total, not the sum of its parts (50.5, not 101)",
+   "node": {
+    "id": "kit",
+    "weightKg": 50.5,
+    "parts": [
+     {
+      "id": "display",
+      "weightKg": 38.5
+     },
+     {
+      "id": "arm",
+      "weightKg": 12
+     }
+    ]
+   },
+   "expect": {
+    "id": "kit",
+    "watts": null,
+    "wattsFrom": "unknown",
+    "heatW": null,
+    "heatFrom": "unknown",
+    "heatAssumed": false,
+    "weightKg": 50.5,
+    "weightFrom": "declared",
+    "powerFactor": 1,
+    "pfAssumed": true,
+    "va": null,
+    "unknown": {
+     "watts": 2,
+     "heatW": 2,
+     "weightKg": 0
+    },
+    "partial": {
+     "watts": false,
+     "heatW": false,
+     "weightKg": false
+    },
+    "parts": [
+     {
+      "id": "display",
+      "watts": null,
+      "wattsFrom": "unknown",
+      "heatW": null,
+      "heatFrom": "unknown",
+      "heatAssumed": false,
+      "weightKg": 38.5,
+      "weightFrom": "declared",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": null,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     },
+     {
+      "id": "arm",
+      "watts": null,
+      "wattsFrom": "unknown",
+      "heatW": null,
+      "heatFrom": "unknown",
+      "heatAssumed": false,
+      "weightKg": 12,
+      "weightFrom": "declared",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": null,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     }
+    ]
+   }
+  },
+  {
+   "name": "the same kit stating nothing is the sum of its direct parts",
+   "node": {
+    "id": "kit",
+    "parts": [
+     {
+      "id": "display",
+      "weightKg": 38.5
+     },
+     {
+      "id": "arm",
+      "weightKg": 12
+     }
+    ]
+   },
+   "expect": {
+    "id": "kit",
+    "watts": null,
+    "wattsFrom": "unknown",
+    "heatW": null,
+    "heatFrom": "unknown",
+    "heatAssumed": false,
+    "weightKg": 50.5,
+    "weightFrom": "sum of parts",
+    "powerFactor": 1,
+    "pfAssumed": true,
+    "va": null,
+    "unknown": {
+     "watts": 2,
+     "heatW": 2,
+     "weightKg": 0
+    },
+    "partial": {
+     "watts": false,
+     "heatW": false,
+     "weightKg": false
+    },
+    "parts": [
+     {
+      "id": "display",
+      "watts": null,
+      "wattsFrom": "unknown",
+      "heatW": null,
+      "heatFrom": "unknown",
+      "heatAssumed": false,
+      "weightKg": 38.5,
+      "weightFrom": "declared",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": null,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     },
+     {
+      "id": "arm",
+      "watts": null,
+      "wattsFrom": "unknown",
+      "heatW": null,
+      "heatFrom": "unknown",
+      "heatAssumed": false,
+      "weightKg": 12,
+      "weightFrom": "declared",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": null,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     }
+    ]
+   }
+  },
+  {
+   "name": "a part type's figure stands in when the occurrence states none, and still wins over the parts",
+   "node": {
+    "id": "kit",
+    "type": {
+     "weightKg": 49,
+     "watts": 120
+    },
+    "parts": [
+     {
+      "id": "display",
+      "weightKg": 38.5
+     },
+     {
+      "id": "arm",
+      "weightKg": 12
+     }
+    ]
+   },
+   "expect": {
+    "id": "kit",
+    "watts": 120,
+    "wattsFrom": "part",
+    "heatW": 120,
+    "heatFrom": "assumed: all power becomes heat",
+    "heatAssumed": true,
+    "weightKg": 49,
+    "weightFrom": "part",
+    "powerFactor": 1,
+    "pfAssumed": true,
+    "va": 120,
+    "unknown": {
+     "watts": 0,
+     "heatW": 0,
+     "weightKg": 0
+    },
+    "partial": {
+     "watts": false,
+     "heatW": false,
+     "weightKg": false
+    },
+    "parts": [
+     {
+      "id": "display",
+      "watts": null,
+      "wattsFrom": "unknown",
+      "heatW": null,
+      "heatFrom": "unknown",
+      "heatAssumed": false,
+      "weightKg": 38.5,
+      "weightFrom": "declared",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": null,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     },
+     {
+      "id": "arm",
+      "watts": null,
+      "wattsFrom": "unknown",
+      "heatW": null,
+      "heatFrom": "unknown",
+      "heatAssumed": false,
+      "weightKg": 12,
+      "weightFrom": "declared",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": null,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     }
+    ]
+   }
+  },
+  {
+   "name": "the occurrence's own figure wins over its type's",
+   "node": {
+    "id": "amp",
+    "watts": 300,
+    "heatW": 180,
+    "type": {
+     "watts": 500,
+     "heatW": 400,
+     "weightKg": 9.2
+    }
+   },
+   "expect": {
+    "id": "amp",
+    "watts": 300,
+    "wattsFrom": "declared",
+    "heatW": 180,
+    "heatFrom": "declared",
+    "heatAssumed": false,
+    "weightKg": 9.2,
+    "weightFrom": "part",
+    "powerFactor": 1,
+    "pfAssumed": true,
+    "va": 300,
+    "unknown": {
+     "watts": 0,
+     "heatW": 0,
+     "weightKg": 0
+    },
+    "partial": {
+     "watts": false,
+     "heatW": false,
+     "weightKg": false
+    },
+    "parts": []
+   }
+  },
+  {
+   "name": "one part without a weight: the known sum, partial, one unknown",
+   "node": {
+    "id": "shelf",
+    "parts": [
+     {
+      "id": "a",
+      "weightKg": 2.5
+     },
+     {
+      "id": "b"
+     },
+     {
+      "id": "c",
+      "weightKg": 1
+     }
+    ]
+   },
+   "expect": {
+    "id": "shelf",
+    "watts": null,
+    "wattsFrom": "unknown",
+    "heatW": null,
+    "heatFrom": "unknown",
+    "heatAssumed": false,
+    "weightKg": 3.5,
+    "weightFrom": "partial: known parts only",
+    "powerFactor": 1,
+    "pfAssumed": true,
+    "va": null,
+    "unknown": {
+     "watts": 3,
+     "heatW": 3,
+     "weightKg": 1
+    },
+    "partial": {
+     "watts": false,
+     "heatW": false,
+     "weightKg": true
+    },
+    "parts": [
+     {
+      "id": "a",
+      "watts": null,
+      "wattsFrom": "unknown",
+      "heatW": null,
+      "heatFrom": "unknown",
+      "heatAssumed": false,
+      "weightKg": 2.5,
+      "weightFrom": "declared",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": null,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     },
+     {
+      "id": "b",
+      "watts": null,
+      "wattsFrom": "unknown",
+      "heatW": null,
+      "heatFrom": "unknown",
+      "heatAssumed": false,
+      "weightKg": null,
+      "weightFrom": "unknown",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": null,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     },
+     {
+      "id": "c",
+      "watts": null,
+      "wattsFrom": "unknown",
+      "heatW": null,
+      "heatFrom": "unknown",
+      "heatAssumed": false,
+      "weightKg": 1,
+      "weightFrom": "declared",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": null,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     }
+    ]
+   }
+  },
+  {
+   "name": "every part unknown is unknown (null), never 0",
+   "node": {
+    "id": "shelf",
+    "parts": [
+     {
+      "id": "a"
+     },
+     {
+      "id": "b"
+     }
+    ]
+   },
+   "expect": {
+    "id": "shelf",
+    "watts": null,
+    "wattsFrom": "unknown",
+    "heatW": null,
+    "heatFrom": "unknown",
+    "heatAssumed": false,
+    "weightKg": null,
+    "weightFrom": "unknown",
+    "powerFactor": 1,
+    "pfAssumed": true,
+    "va": null,
+    "unknown": {
+     "watts": 2,
+     "heatW": 2,
+     "weightKg": 2
+    },
+    "partial": {
+     "watts": false,
+     "heatW": false,
+     "weightKg": false
+    },
+    "parts": [
+     {
+      "id": "a",
+      "watts": null,
+      "wattsFrom": "unknown",
+      "heatW": null,
+      "heatFrom": "unknown",
+      "heatAssumed": false,
+      "weightKg": null,
+      "weightFrom": "unknown",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": null,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     },
+     {
+      "id": "b",
+      "watts": null,
+      "wattsFrom": "unknown",
+      "heatW": null,
+      "heatFrom": "unknown",
+      "heatAssumed": false,
+      "weightKg": null,
+      "weightFrom": "unknown",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": null,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     }
+    ]
+   }
+  },
+  {
+   "name": "a bare node stating nothing is unknown",
+   "node": {
+    "id": "x"
+   },
+   "expect": {
+    "id": "x",
+    "watts": null,
+    "wattsFrom": "unknown",
+    "heatW": null,
+    "heatFrom": "unknown",
+    "heatAssumed": false,
+    "weightKg": null,
+    "weightFrom": "unknown",
+    "powerFactor": 1,
+    "pfAssumed": true,
+    "va": null,
+    "unknown": {
+     "watts": 0,
+     "heatW": 0,
+     "weightKg": 0
+    },
+    "partial": {
+     "watts": false,
+     "heatW": false,
+     "weightKg": false
+    },
+    "parts": []
+   }
+  },
+  {
+   "name": "no parts at all: unknown too, not 0",
+   "node": {
+    "id": "x",
+    "parts": []
+   },
+   "expect": {
+    "id": "x",
+    "watts": null,
+    "wattsFrom": "unknown",
+    "heatW": null,
+    "heatFrom": "unknown",
+    "heatAssumed": false,
+    "weightKg": null,
+    "weightFrom": "unknown",
+    "powerFactor": 1,
+    "pfAssumed": true,
+    "va": null,
+    "unknown": {
+     "watts": 0,
+     "heatW": 0,
+     "weightKg": 0
+    },
+    "partial": {
+     "watts": false,
+     "heatW": false,
+     "weightKg": false
+    },
+    "parts": []
+   }
+  },
+  {
+   "name": "no heat stated: the declared power, assumed",
+   "node": {
+    "id": "dsp",
+    "watts": 65
+   },
+   "expect": {
+    "id": "dsp",
+    "watts": 65,
+    "wattsFrom": "declared",
+    "heatW": 65,
+    "heatFrom": "assumed: all power becomes heat",
+    "heatAssumed": true,
+    "weightKg": null,
+    "weightFrom": "unknown",
+    "powerFactor": 1,
+    "pfAssumed": true,
+    "va": 65,
+    "unknown": {
+     "watts": 0,
+     "heatW": 0,
+     "weightKg": 0
+    },
+    "partial": {
+     "watts": false,
+     "heatW": false,
+     "weightKg": false
+    },
+    "parts": []
+   }
+  },
+  {
+   "name": "heat from the type, power factor from the type, VA = W / PF",
+   "node": {
+    "id": "amp",
+    "type": {
+     "watts": 450,
+     "heatW": 210,
+     "powerFactor": 0.9
+    }
+   },
+   "expect": {
+    "id": "amp",
+    "watts": 450,
+    "wattsFrom": "part",
+    "heatW": 210,
+    "heatFrom": "part",
+    "heatAssumed": false,
+    "weightKg": null,
+    "weightFrom": "unknown",
+    "powerFactor": 0.9,
+    "pfAssumed": false,
+    "va": 500,
+    "unknown": {
+     "watts": 0,
+     "heatW": 0,
+     "weightKg": 0
+    },
+    "partial": {
+     "watts": false,
+     "heatW": false,
+     "weightKg": false
+    },
+    "parts": []
+   }
+  },
+  {
+   "name": "a parent stating nothing sums its parts' heat, assumed when any part's is",
+   "node": {
+    "id": "rack",
+    "parts": [
+     {
+      "id": "a",
+      "watts": 100,
+      "heatW": 60
+     },
+     {
+      "id": "b",
+      "watts": 40
+     },
+     {
+      "id": "c",
+      "heatW": 5
+     }
+    ]
+   },
+   "expect": {
+    "id": "rack",
+    "watts": 140,
+    "wattsFrom": "partial: known parts only",
+    "heatW": 105,
+    "heatFrom": "sum of parts",
+    "heatAssumed": true,
+    "weightKg": null,
+    "weightFrom": "unknown",
+    "powerFactor": 1,
+    "pfAssumed": true,
+    "va": 140,
+    "unknown": {
+     "watts": 1,
+     "heatW": 0,
+     "weightKg": 3
+    },
+    "partial": {
+     "watts": true,
+     "heatW": false,
+     "weightKg": false
+    },
+    "parts": [
+     {
+      "id": "a",
+      "watts": 100,
+      "wattsFrom": "declared",
+      "heatW": 60,
+      "heatFrom": "declared",
+      "heatAssumed": false,
+      "weightKg": null,
+      "weightFrom": "unknown",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": 100,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     },
+     {
+      "id": "b",
+      "watts": 40,
+      "wattsFrom": "declared",
+      "heatW": 40,
+      "heatFrom": "assumed: all power becomes heat",
+      "heatAssumed": true,
+      "weightKg": null,
+      "weightFrom": "unknown",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": 40,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     },
+     {
+      "id": "c",
+      "watts": null,
+      "wattsFrom": "unknown",
+      "heatW": 5,
+      "heatFrom": "declared",
+      "heatAssumed": false,
+      "weightKg": null,
+      "weightFrom": "unknown",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": null,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     }
+    ]
+   }
+  },
+  {
+   "name": "a parent with a declared power and no heat: its power, assumed (its parts are not added)",
+   "node": {
+    "id": "kit",
+    "watts": 200,
+    "parts": [
+     {
+      "id": "a",
+      "watts": 150,
+      "heatW": 150
+     }
+    ]
+   },
+   "expect": {
+    "id": "kit",
+    "watts": 200,
+    "wattsFrom": "declared",
+    "heatW": 200,
+    "heatFrom": "assumed: all power becomes heat",
+    "heatAssumed": true,
+    "weightKg": null,
+    "weightFrom": "unknown",
+    "powerFactor": 1,
+    "pfAssumed": true,
+    "va": 200,
+    "unknown": {
+     "watts": 0,
+     "heatW": 0,
+     "weightKg": 1
+    },
+    "partial": {
+     "watts": false,
+     "heatW": false,
+     "weightKg": false
+    },
+    "parts": [
+     {
+      "id": "a",
+      "watts": 150,
+      "wattsFrom": "declared",
+      "heatW": 150,
+      "heatFrom": "declared",
+      "heatAssumed": false,
+      "weightKg": null,
+      "weightFrom": "unknown",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": 150,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     }
+    ]
+   }
+  },
+  {
+   "name": "a PDU passes its loads through: an undeclared draw is 0, its weight still unknown",
+   "node": {
+    "id": "pdu",
+    "passThrough": true
+   },
+   "expect": {
+    "id": "pdu",
+    "watts": 0,
+    "wattsFrom": "pass-through",
+    "heatW": 0,
+    "heatFrom": "pass-through",
+    "heatAssumed": false,
+    "weightKg": null,
+    "weightFrom": "unknown",
+    "powerFactor": 1,
+    "pfAssumed": true,
+    "va": 0,
+    "unknown": {
+     "watts": 0,
+     "heatW": 0,
+     "weightKg": 0
+    },
+    "partial": {
+     "watts": false,
+     "heatW": false,
+     "weightKg": false
+    },
+    "parts": []
+   }
+  },
+  {
+   "name": "a PDU that declares its own draw counts it",
+   "node": {
+    "id": "pdu",
+    "passThrough": true,
+    "watts": 6,
+    "weightKg": 3.1
+   },
+   "expect": {
+    "id": "pdu",
+    "watts": 6,
+    "wattsFrom": "declared",
+    "heatW": 6,
+    "heatFrom": "assumed: all power becomes heat",
+    "heatAssumed": true,
+    "weightKg": 3.1,
+    "weightFrom": "declared",
+    "powerFactor": 1,
+    "pfAssumed": true,
+    "va": 6,
+    "unknown": {
+     "watts": 0,
+     "heatW": 0,
+     "weightKg": 0
+    },
+    "partial": {
+     "watts": false,
+     "heatW": false,
+     "weightKg": false
+    },
+    "parts": []
+   }
+  },
+  {
+   "name": "a boolean is not a number",
+   "node": {
+    "id": "x",
+    "watts": true,
+    "weightKg": false
+   },
+   "expect": {
+    "id": "x",
+    "watts": null,
+    "wattsFrom": "unknown",
+    "heatW": null,
+    "heatFrom": "unknown",
+    "heatAssumed": false,
+    "weightKg": null,
+    "weightFrom": "unknown",
+    "powerFactor": 1,
+    "pfAssumed": true,
+    "va": null,
+    "unknown": {
+     "watts": 0,
+     "heatW": 0,
+     "weightKg": 0
+    },
+    "partial": {
+     "watts": false,
+     "heatW": false,
+     "weightKg": false
+    },
+    "parts": []
+   }
+  },
+  {
+   "name": "a power factor of 0 is no power factor (PF 1, assumed)",
+   "node": {
+    "id": "x",
+    "watts": 50,
+    "powerFactor": 0
+   },
+   "expect": {
+    "id": "x",
+    "watts": 50,
+    "wattsFrom": "declared",
+    "heatW": 50,
+    "heatFrom": "assumed: all power becomes heat",
+    "heatAssumed": true,
+    "weightKg": null,
+    "weightFrom": "unknown",
+    "powerFactor": 1,
+    "pfAssumed": true,
+    "va": 50,
+    "unknown": {
+     "watts": 0,
+     "heatW": 0,
+     "weightKg": 0
+    },
+    "partial": {
+     "watts": false,
+     "heatW": false,
+     "weightKg": false
+    },
+    "parts": []
+   }
+  },
+  {
+   "name": "sums are rounded to 0.001 (0.1 + 0.2 = 0.3)",
+   "node": {
+    "id": "x",
+    "parts": [
+     {
+      "weightKg": 0.1
+     },
+     {
+      "weightKg": 0.2
+     },
+     {
+      "watts": 0.0005
+     },
+     {
+      "watts": 1.0004
+     }
+    ]
+   },
+   "expect": {
+    "id": "x",
+    "watts": 1.001,
+    "wattsFrom": "partial: known parts only",
+    "heatW": 1.001,
+    "heatFrom": "partial: known parts only",
+    "heatAssumed": true,
+    "weightKg": 0.3,
+    "weightFrom": "partial: known parts only",
+    "powerFactor": 1,
+    "pfAssumed": true,
+    "va": 1.001,
+    "unknown": {
+     "watts": 2,
+     "heatW": 2,
+     "weightKg": 2
+    },
+    "partial": {
+     "watts": true,
+     "heatW": true,
+     "weightKg": true
+    },
+    "parts": [
+     {
+      "id": null,
+      "watts": null,
+      "wattsFrom": "unknown",
+      "heatW": null,
+      "heatFrom": "unknown",
+      "heatAssumed": false,
+      "weightKg": 0.1,
+      "weightFrom": "declared",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": null,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     },
+     {
+      "id": null,
+      "watts": null,
+      "wattsFrom": "unknown",
+      "heatW": null,
+      "heatFrom": "unknown",
+      "heatAssumed": false,
+      "weightKg": 0.2,
+      "weightFrom": "declared",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": null,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     },
+     {
+      "id": null,
+      "watts": 0.0005,
+      "wattsFrom": "declared",
+      "heatW": 0.0005,
+      "heatFrom": "assumed: all power becomes heat",
+      "heatAssumed": true,
+      "weightKg": null,
+      "weightFrom": "unknown",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": 0.001,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     },
+     {
+      "id": null,
+      "watts": 1.0004,
+      "wattsFrom": "declared",
+      "heatW": 1.0004,
+      "heatFrom": "assumed: all power becomes heat",
+      "heatAssumed": true,
+      "weightKg": null,
+      "weightFrom": "unknown",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": 1,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     }
+    ]
+   }
+  },
+  {
+   "name": "a rack under its static load rating: the frame is in its weight, not its payload",
+   "node": {
+    "id": "R1",
+    "capacityKg": 100,
+    "parts": [
+     {
+      "id": "R1/frame",
+      "role": "frame",
+      "weightKg": 60
+     },
+     {
+      "id": "amp",
+      "weightKg": 20
+     },
+     {
+      "id": "dsp",
+      "weightKg": 5
+     }
+    ]
+   },
+   "expect": {
+    "id": "R1",
+    "watts": 0,
+    "wattsFrom": "partial: known parts only",
+    "heatW": 0,
+    "heatFrom": "partial: known parts only",
+    "heatAssumed": false,
+    "weightKg": 85,
+    "weightFrom": "sum of parts",
+    "powerFactor": 1,
+    "pfAssumed": true,
+    "va": 0,
+    "unknown": {
+     "watts": 2,
+     "heatW": 2,
+     "weightKg": 0
+    },
+    "partial": {
+     "watts": true,
+     "heatW": true,
+     "weightKg": false
+    },
+    "parts": [
+     {
+      "id": "R1/frame",
+      "watts": 0,
+      "wattsFrom": "pass-through",
+      "heatW": 0,
+      "heatFrom": "pass-through",
+      "heatAssumed": false,
+      "weightKg": 60,
+      "weightFrom": "declared",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": 0,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     },
+     {
+      "id": "amp",
+      "watts": null,
+      "wattsFrom": "unknown",
+      "heatW": null,
+      "heatFrom": "unknown",
+      "heatAssumed": false,
+      "weightKg": 20,
+      "weightFrom": "declared",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": null,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     },
+     {
+      "id": "dsp",
+      "watts": null,
+      "wattsFrom": "unknown",
+      "heatW": null,
+      "heatFrom": "unknown",
+      "heatAssumed": false,
+      "weightKg": 5,
+      "weightFrom": "declared",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": null,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     }
+    ],
+    "payloadKg": 25,
+    "payloadPartial": false,
+    "capacityKg": 100,
+    "overload": false
+   }
+  },
+  {
+   "name": "a rack over its rating",
+   "node": {
+    "id": "R1",
+    "capacityKg": 30,
+    "parts": [
+     {
+      "id": "R1/frame",
+      "role": "frame",
+      "weightKg": 60
+     },
+     {
+      "id": "amp",
+      "weightKg": 20
+     },
+     {
+      "id": "amp2",
+      "weightKg": 20
+     }
+    ]
+   },
+   "expect": {
+    "id": "R1",
+    "watts": 0,
+    "wattsFrom": "partial: known parts only",
+    "heatW": 0,
+    "heatFrom": "partial: known parts only",
+    "heatAssumed": false,
+    "weightKg": 100,
+    "weightFrom": "sum of parts",
+    "powerFactor": 1,
+    "pfAssumed": true,
+    "va": 0,
+    "unknown": {
+     "watts": 2,
+     "heatW": 2,
+     "weightKg": 0
+    },
+    "partial": {
+     "watts": true,
+     "heatW": true,
+     "weightKg": false
+    },
+    "parts": [
+     {
+      "id": "R1/frame",
+      "watts": 0,
+      "wattsFrom": "pass-through",
+      "heatW": 0,
+      "heatFrom": "pass-through",
+      "heatAssumed": false,
+      "weightKg": 60,
+      "weightFrom": "declared",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": 0,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     },
+     {
+      "id": "amp",
+      "watts": null,
+      "wattsFrom": "unknown",
+      "heatW": null,
+      "heatFrom": "unknown",
+      "heatAssumed": false,
+      "weightKg": 20,
+      "weightFrom": "declared",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": null,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     },
+     {
+      "id": "amp2",
+      "watts": null,
+      "wattsFrom": "unknown",
+      "heatW": null,
+      "heatFrom": "unknown",
+      "heatAssumed": false,
+      "weightKg": 20,
+      "weightFrom": "declared",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": null,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     }
+    ],
+    "payloadKg": 40,
+    "payloadPartial": false,
+    "capacityKg": 30,
+    "overload": true
+   }
+  },
+  {
+   "name": "unknown weight could still tip it: overload is unknown (null)",
+   "node": {
+    "id": "R1",
+    "capacityKg": 30,
+    "parts": [
+     {
+      "id": "R1/frame",
+      "role": "frame"
+     },
+     {
+      "id": "amp",
+      "weightKg": 20
+     },
+     {
+      "id": "mystery"
+     }
+    ]
+   },
+   "expect": {
+    "id": "R1",
+    "watts": 0,
+    "wattsFrom": "partial: known parts only",
+    "heatW": 0,
+    "heatFrom": "partial: known parts only",
+    "heatAssumed": false,
+    "weightKg": 20,
+    "weightFrom": "partial: known parts only",
+    "powerFactor": 1,
+    "pfAssumed": true,
+    "va": 0,
+    "unknown": {
+     "watts": 2,
+     "heatW": 2,
+     "weightKg": 2
+    },
+    "partial": {
+     "watts": true,
+     "heatW": true,
+     "weightKg": true
+    },
+    "parts": [
+     {
+      "id": "R1/frame",
+      "watts": 0,
+      "wattsFrom": "pass-through",
+      "heatW": 0,
+      "heatFrom": "pass-through",
+      "heatAssumed": false,
+      "weightKg": null,
+      "weightFrom": "unknown",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": 0,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     },
+     {
+      "id": "amp",
+      "watts": null,
+      "wattsFrom": "unknown",
+      "heatW": null,
+      "heatFrom": "unknown",
+      "heatAssumed": false,
+      "weightKg": 20,
+      "weightFrom": "declared",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": null,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     },
+     {
+      "id": "mystery",
+      "watts": null,
+      "wattsFrom": "unknown",
+      "heatW": null,
+      "heatFrom": "unknown",
+      "heatAssumed": false,
+      "weightKg": null,
+      "weightFrom": "unknown",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": null,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     }
+    ],
+    "payloadKg": 20,
+    "payloadPartial": true,
+    "capacityKg": 30,
+    "overload": null
+   }
+  },
+  {
+   "name": "the known payload alone already exceeds the rating: overload, though partial",
+   "node": {
+    "id": "R1",
+    "capacityKg": 30,
+    "parts": [
+     {
+      "id": "amp",
+      "weightKg": 20
+     },
+     {
+      "id": "amp2",
+      "weightKg": 20
+     },
+     {
+      "id": "mystery"
+     }
+    ]
+   },
+   "expect": {
+    "id": "R1",
+    "watts": null,
+    "wattsFrom": "unknown",
+    "heatW": null,
+    "heatFrom": "unknown",
+    "heatAssumed": false,
+    "weightKg": 40,
+    "weightFrom": "partial: known parts only",
+    "powerFactor": 1,
+    "pfAssumed": true,
+    "va": null,
+    "unknown": {
+     "watts": 3,
+     "heatW": 3,
+     "weightKg": 1
+    },
+    "partial": {
+     "watts": false,
+     "heatW": false,
+     "weightKg": true
+    },
+    "parts": [
+     {
+      "id": "amp",
+      "watts": null,
+      "wattsFrom": "unknown",
+      "heatW": null,
+      "heatFrom": "unknown",
+      "heatAssumed": false,
+      "weightKg": 20,
+      "weightFrom": "declared",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": null,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     },
+     {
+      "id": "amp2",
+      "watts": null,
+      "wattsFrom": "unknown",
+      "heatW": null,
+      "heatFrom": "unknown",
+      "heatAssumed": false,
+      "weightKg": 20,
+      "weightFrom": "declared",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": null,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     },
+     {
+      "id": "mystery",
+      "watts": null,
+      "wattsFrom": "unknown",
+      "heatW": null,
+      "heatFrom": "unknown",
+      "heatAssumed": false,
+      "weightKg": null,
+      "weightFrom": "unknown",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": null,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     }
+    ],
+    "payloadKg": 40,
+    "payloadPartial": true,
+    "capacityKg": 30,
+    "overload": true
+   }
+  },
+  {
+   "name": "an empty rack carries nothing: payload 0, no overload",
+   "node": {
+    "id": "R1",
+    "capacityKg": 30,
+    "parts": [
+     {
+      "id": "R1/frame",
+      "role": "frame",
+      "weightKg": 60
+     }
+    ]
+   },
+   "expect": {
+    "id": "R1",
+    "watts": 0,
+    "wattsFrom": "sum of parts",
+    "heatW": 0,
+    "heatFrom": "sum of parts",
+    "heatAssumed": false,
+    "weightKg": 60,
+    "weightFrom": "sum of parts",
+    "powerFactor": 1,
+    "pfAssumed": true,
+    "va": 0,
+    "unknown": {
+     "watts": 0,
+     "heatW": 0,
+     "weightKg": 0
+    },
+    "partial": {
+     "watts": false,
+     "heatW": false,
+     "weightKg": false
+    },
+    "parts": [
+     {
+      "id": "R1/frame",
+      "watts": 0,
+      "wattsFrom": "pass-through",
+      "heatW": 0,
+      "heatFrom": "pass-through",
+      "heatAssumed": false,
+      "weightKg": 60,
+      "weightFrom": "declared",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": 0,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     }
+    ],
+    "payloadKg": 0,
+    "payloadPartial": false,
+    "capacityKg": 30,
+    "overload": false
+   }
+  },
+  {
+   "name": "a rig: two racks (one with a PDU and a kit) and a loose device",
+   "node": {
+    "id": "rig",
+    "parts": [
+     {
+      "id": "R1",
+      "capacityKg": 500,
+      "parts": [
+       {
+        "id": "R1/frame",
+        "role": "frame",
+        "type": {
+         "weightKg": 72
+        }
+       },
+       {
+        "id": "pdu",
+        "passThrough": true,
+        "type": {
+         "weightKg": 2
+        }
+       },
+       {
+        "id": "amp",
+        "type": {
+         "watts": 450,
+         "heatW": 210,
+         "weightKg": 9.2,
+         "powerFactor": 0.9
+        }
+       },
+       {
+        "id": "kit",
+        "weightKg": 50.5,
+        "parts": [
+         {
+          "id": "display",
+          "type": {
+           "weightKg": 38.5,
+           "watts": 180
+          }
+         },
+         {
+          "id": "arm",
+          "weightKg": 12
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "id": "R2",
+      "parts": [
+       {
+        "id": "R2/frame",
+        "role": "frame"
+       },
+       {
+        "id": "switch",
+        "watts": 40,
+        "weightKg": 4
+       }
+      ]
+     },
+     {
+      "id": "desk-speaker",
+      "watts": 30
+     }
+    ]
+   },
+   "expect": {
+    "id": "rig",
+    "watts": 700,
+    "wattsFrom": "partial: known parts only",
+    "heatW": 460,
+    "heatFrom": "partial: known parts only",
+    "heatAssumed": true,
+    "weightKg": 137.7,
+    "weightFrom": "partial: known parts only",
+    "powerFactor": 1,
+    "pfAssumed": true,
+    "va": 700,
+    "unknown": {
+     "watts": 0,
+     "heatW": 0,
+     "weightKg": 1
+    },
+    "partial": {
+     "watts": true,
+     "heatW": true,
+     "weightKg": true
+    },
+    "parts": [
+     {
+      "id": "R1",
+      "watts": 630,
+      "wattsFrom": "partial: known parts only",
+      "heatW": 390,
+      "heatFrom": "partial: known parts only",
+      "heatAssumed": true,
+      "weightKg": 133.7,
+      "weightFrom": "sum of parts",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": 630,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": true,
+       "heatW": true,
+       "weightKg": false
+      },
+      "parts": [
+       {
+        "id": "R1/frame",
+        "watts": 0,
+        "wattsFrom": "pass-through",
+        "heatW": 0,
+        "heatFrom": "pass-through",
+        "heatAssumed": false,
+        "weightKg": 72,
+        "weightFrom": "part",
+        "powerFactor": 1,
+        "pfAssumed": true,
+        "va": 0,
+        "unknown": {
+         "watts": 0,
+         "heatW": 0,
+         "weightKg": 0
+        },
+        "partial": {
+         "watts": false,
+         "heatW": false,
+         "weightKg": false
+        },
+        "parts": []
+       },
+       {
+        "id": "pdu",
+        "watts": 0,
+        "wattsFrom": "pass-through",
+        "heatW": 0,
+        "heatFrom": "pass-through",
+        "heatAssumed": false,
+        "weightKg": 2,
+        "weightFrom": "part",
+        "powerFactor": 1,
+        "pfAssumed": true,
+        "va": 0,
+        "unknown": {
+         "watts": 0,
+         "heatW": 0,
+         "weightKg": 0
+        },
+        "partial": {
+         "watts": false,
+         "heatW": false,
+         "weightKg": false
+        },
+        "parts": []
+       },
+       {
+        "id": "amp",
+        "watts": 450,
+        "wattsFrom": "part",
+        "heatW": 210,
+        "heatFrom": "part",
+        "heatAssumed": false,
+        "weightKg": 9.2,
+        "weightFrom": "part",
+        "powerFactor": 0.9,
+        "pfAssumed": false,
+        "va": 500,
+        "unknown": {
+         "watts": 0,
+         "heatW": 0,
+         "weightKg": 0
+        },
+        "partial": {
+         "watts": false,
+         "heatW": false,
+         "weightKg": false
+        },
+        "parts": []
+       },
+       {
+        "id": "kit",
+        "watts": 180,
+        "wattsFrom": "partial: known parts only",
+        "heatW": 180,
+        "heatFrom": "partial: known parts only",
+        "heatAssumed": true,
+        "weightKg": 50.5,
+        "weightFrom": "declared",
+        "powerFactor": 1,
+        "pfAssumed": true,
+        "va": 180,
+        "unknown": {
+         "watts": 1,
+         "heatW": 1,
+         "weightKg": 0
+        },
+        "partial": {
+         "watts": true,
+         "heatW": true,
+         "weightKg": false
+        },
+        "parts": [
+         {
+          "id": "display",
+          "watts": 180,
+          "wattsFrom": "part",
+          "heatW": 180,
+          "heatFrom": "assumed: all power becomes heat",
+          "heatAssumed": true,
+          "weightKg": 38.5,
+          "weightFrom": "part",
+          "powerFactor": 1,
+          "pfAssumed": true,
+          "va": 180,
+          "unknown": {
+           "watts": 0,
+           "heatW": 0,
+           "weightKg": 0
+          },
+          "partial": {
+           "watts": false,
+           "heatW": false,
+           "weightKg": false
+          },
+          "parts": []
+         },
+         {
+          "id": "arm",
+          "watts": null,
+          "wattsFrom": "unknown",
+          "heatW": null,
+          "heatFrom": "unknown",
+          "heatAssumed": false,
+          "weightKg": 12,
+          "weightFrom": "declared",
+          "powerFactor": 1,
+          "pfAssumed": true,
+          "va": null,
+          "unknown": {
+           "watts": 0,
+           "heatW": 0,
+           "weightKg": 0
+          },
+          "partial": {
+           "watts": false,
+           "heatW": false,
+           "weightKg": false
+          },
+          "parts": []
+         }
+        ]
+       }
+      ],
+      "payloadKg": 61.7,
+      "payloadPartial": false,
+      "capacityKg": 500,
+      "overload": false
+     },
+     {
+      "id": "R2",
+      "watts": 40,
+      "wattsFrom": "sum of parts",
+      "heatW": 40,
+      "heatFrom": "sum of parts",
+      "heatAssumed": true,
+      "weightKg": 4,
+      "weightFrom": "partial: known parts only",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": 40,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 1
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": true
+      },
+      "parts": [
+       {
+        "id": "R2/frame",
+        "watts": 0,
+        "wattsFrom": "pass-through",
+        "heatW": 0,
+        "heatFrom": "pass-through",
+        "heatAssumed": false,
+        "weightKg": null,
+        "weightFrom": "unknown",
+        "powerFactor": 1,
+        "pfAssumed": true,
+        "va": 0,
+        "unknown": {
+         "watts": 0,
+         "heatW": 0,
+         "weightKg": 0
+        },
+        "partial": {
+         "watts": false,
+         "heatW": false,
+         "weightKg": false
+        },
+        "parts": []
+       },
+       {
+        "id": "switch",
+        "watts": 40,
+        "wattsFrom": "declared",
+        "heatW": 40,
+        "heatFrom": "assumed: all power becomes heat",
+        "heatAssumed": true,
+        "weightKg": 4,
+        "weightFrom": "declared",
+        "powerFactor": 1,
+        "pfAssumed": true,
+        "va": 40,
+        "unknown": {
+         "watts": 0,
+         "heatW": 0,
+         "weightKg": 0
+        },
+        "partial": {
+         "watts": false,
+         "heatW": false,
+         "weightKg": false
+        },
+        "parts": []
+       }
+      ]
+     },
+     {
+      "id": "desk-speaker",
+      "watts": 30,
+      "wattsFrom": "declared",
+      "heatW": 30,
+      "heatFrom": "assumed: all power becomes heat",
+      "heatAssumed": true,
+      "weightKg": null,
+      "weightFrom": "unknown",
+      "powerFactor": 1,
+      "pfAssumed": true,
+      "va": 30,
+      "unknown": {
+       "watts": 0,
+       "heatW": 0,
+       "weightKg": 0
+      },
+      "partial": {
+       "watts": false,
+       "heatW": false,
+       "weightKg": false
+      },
+      "parts": []
+     }
+    ]
+   }
+  }
+ ]
+}

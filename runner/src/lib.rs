@@ -66,6 +66,9 @@
 //! inside it is finding anything. Teaching a hunter to call `tick()` from its
 //! receive loop is the one-line change that closes the gap for that hunter.
 
+// First, so `elog!` is in scope for every module after it.
+#[macro_use]
+pub mod report;
 pub mod api;
 pub mod jobs;
 pub mod loopback;
@@ -314,7 +317,7 @@ fn run_drains(token: &str, drains: Vec<Drain>, ceiling: Duration) -> Vec<&'stati
         .map(|(name, drain)| {
             let handle = std::thread::Builder::new().name(format!("{token}:drain:{name}")).spawn(drain);
             if let Err(e) = &handle {
-                eprintln!("⚠️  [{token}] could not start drain {name}: {e}");
+                elog!("⚠️  [{token}] could not start drain {name}: {e}");
             }
             (name, handle.ok())
         })
@@ -407,6 +410,7 @@ pub fn serve_group(plugins: Vec<Plugin>, agents: Vec<Agent>) -> ! {
     let names: Vec<&str> = plugins.iter().map(|p| p.token).collect();
     let token = names.join("+");
     let token = token.as_str();
+    report::name(names.first().copied().unwrap_or(token));
     println!(
         "🚀 [{token}] plugin runner — broker {host}:{port} {}",
         apkaudio_contracts::broker_auth::describe()
@@ -473,7 +477,7 @@ pub fn serve_group(plugins: Vec<Plugin>, agents: Vec<Agent>) -> ! {
         .map(|plugin| {
             let config_text = match &override_path {
                 Some(path) => std::fs::read_to_string(path).unwrap_or_else(|e| {
-                    eprintln!("🛑 [{token}] APK_PLUGIN_CONFIG={path} did not read ({e}); using the compiled-in config.ini");
+                    elog!("🛑 [{token}] APK_PLUGIN_CONFIG={path} did not read ({e}); using the compiled-in config.ini");
                     plugin.config_ini.to_string()
                 }),
                 None => plugin.config_ini.to_string(),
@@ -509,7 +513,8 @@ pub fn serve_group(plugins: Vec<Plugin>, agents: Vec<Agent>) -> ! {
                 agent(h, p)
             })
             .unwrap_or_else(|e| {
-                eprintln!("🛑 [{token}] could not start {name}: {e}");
+                elog!("🛑 [{token}] could not start {name}: {e}");
+                report::going_down(token, &format!("could not start {name}: {e}"));
                 std::process::exit(EXIT_AGENT_RETURNED)
             });
         running.push((name, handle));
@@ -529,7 +534,7 @@ pub fn serve_group(plugins: Vec<Plugin>, agents: Vec<Agent>) -> ! {
                 println!("🧹 [{token}] stop requested — draining {} (at most {ceiling:?})", names.join(", "));
                 let late = run_drains(token, drains, ceiling);
                 if !late.is_empty() {
-                    eprintln!("⚠️  [{token}] drain(s) {} still running after {ceiling:?} — exiting anyway", late.join(", "));
+                    elog!("⚠️  [{token}] drain(s) {} still running after {ceiling:?} — exiting anyway", late.join(", "));
                 }
             }
             println!("👋 [{token}] stop requested (SIGTERM/SIGINT) — exiting; the broker sends the last will");
@@ -537,7 +542,8 @@ pub fn serve_group(plugins: Vec<Plugin>, agents: Vec<Agent>) -> ! {
         }
 
         if sessions.iter().any(JoinHandle::is_finished) {
-            eprintln!("🛑 [{token}] the broker session thread ended; exiting so the container restarts");
+            elog!("🛑 [{token}] the broker session thread ended; exiting so the container restarts");
+            report::going_down(token, "the broker session thread ended (exit 69); Docker restarts it");
             std::process::exit(EXIT_SESSION_DIED);
         }
 
@@ -549,18 +555,21 @@ pub fn serve_group(plugins: Vec<Plugin>, agents: Vec<Agent>) -> ! {
             let (name, handle) = running.swap_remove(index);
             match handle.join() {
                 Ok(()) => {
-                    eprintln!("🛑 [{token}] {name} returned; a hunter that stops is a failure — exiting");
+                    elog!("🛑 [{token}] {name} returned; a hunter that stops is a failure — exiting");
+                    report::going_down(token, &format!("{name} returned (exit 70); Docker restarts it"));
                     std::process::exit(EXIT_AGENT_RETURNED);
                 }
                 Err(_) => {
-                    eprintln!("🛑 [{token}] {name} panicked — exiting");
+                    elog!("🛑 [{token}] {name} panicked — exiting");
+                    report::going_down(token, &format!("{name} panicked (exit 101); Docker restarts it"));
                     std::process::exit(EXIT_AGENT_PANICKED);
                 }
             }
         }
 
         if let Some((agent, age)) = stalest_tick().filter(|(_, age)| *age > stall_after) {
-            eprintln!("🛑 [{token}] {agent}: no tick for {age}s (limit {stall_after}s) — stalled, exiting");
+            elog!("🛑 [{token}] {agent}: no tick for {age}s (limit {stall_after}s) — stalled, exiting");
+            report::going_down(token, &format!("{agent}: no tick for {age}s (limit {stall_after}s) — stalled (exit 75); Docker restarts it"));
             std::process::exit(EXIT_STALLED);
         }
     }
@@ -643,6 +652,9 @@ fn spawn_session(
     }
 
     let (client, mut connection) = session.connect();
+    // THE REPORTS RIDE THIS SESSION (ROAD-3695): elog! lines and the
+    // problems below go out as LogLines / ProblemRecords under this token.
+    report::install(&client, token);
     let config = ini_to_json(&config_text);
     let topic = module_topic(&config, token);
     let broker_is_ours = broker_is_local(host);
@@ -664,6 +676,7 @@ fn spawn_session(
         let started = Instant::now();
         std::thread::spawn(move || loop {
             // A silent device's panel leaves on the tick (`panels_expire_after_s`).
+            retry_panels(&client);   // what a full queue refused last time goes first
             let expired = book.lock().unwrap_or_else(|e| e.into_inner()).expire(Instant::now());
             publish_panels(&client, expired);
             let sample = tick_sample(started.elapsed().as_secs());
@@ -698,6 +711,9 @@ fn spawn_session(
                     // Every (re)connect: the broker may have lost its retained
                     // store, and a subscription does not survive a clean session.
                     Event::Incoming(Packet::ConnAck(_)) => {
+                        // Up again: whatever an earlier process of this plugin
+                        // said on its way down is over.
+                        report::clear_any(report::DOWN, Some(token));
                         publish_config(&client, &topic, token, &config, broker_is_ours);
                         // BESIDE THE CONFIG AND FOR THE SAME REASON: a broker
                         // that lost its retained store has lost this too, and a
@@ -791,9 +807,63 @@ fn publish_config(client: &Client, topic: &str, token: &str, config: &Value, bro
 
 /// Device panels, retained; an empty payload clears one. `try_publish`, for the
 /// reason the telemetry tick gives.
+/// Panel publications the client's queue refused, newest per topic, retried on the next tick.
+///
+/// ROAD-3566: a panel change is said ONCE — a repaint, a clear when a device goes or an
+/// earlier process's panel is not claimed — and `try_publish` drops it when the request
+/// queue is full. At start the runner restates and reads back thousands of retained panels,
+/// the queue fills, and the NMOS runner counted 6,785 publish_failures: an orphan panel's
+/// clear and a node's repaint were simply lost, so a dead node's panel stayed retained with
+/// whatever identity it last had. A refused publication now waits here instead.
+static PENDING_PANELS: Mutex<Vec<panels::Publication>> = Mutex::new(Vec::new());
+
 fn publish_panels(client: &Client, out: Vec<panels::Publication>) {
+    let mut pending = PENDING_PANELS.lock().unwrap_or_else(|e| e.into_inner());
+    send_panels(&mut pending, out, |topic, payload| client.try_publish(topic, QoS::AtLeastOnce, true, payload).is_ok());
+}
+
+/// Send each publication. A refused one waits in `pending` (newest per topic); one that
+/// went out supersedes anything for its topic still waiting, so a retry never overwrites
+/// a newer panel with an older one.
+fn send_panels(pending: &mut Vec<panels::Publication>, out: Vec<panels::Publication>, send: impl FnMut(String, String) -> bool) {
+    let mut sent = Vec::new();
+    let refused = try_panels(out.clone(), send);
+    for (topic, _) in &out {
+        if !refused.iter().any(|(t, _)| t == topic) {
+            sent.push(topic.clone());
+        }
+    }
+    pending.retain(|(t, _)| !sent.contains(t));
+    hold_back(pending, refused);
+}
+
+/// Retry what was refused, oldest change first; what is refused again waits again.
+fn retry_panels(client: &Client) {
+    let waiting = std::mem::take(&mut *PENDING_PANELS.lock().unwrap_or_else(|e| e.into_inner()));
+    if !waiting.is_empty() {
+        publish_panels(client, waiting);
+    }
+}
+
+/// Send each publication; return the ones `send` refused (counted, as before).
+fn try_panels(out: Vec<panels::Publication>, mut send: impl FnMut(String, String) -> bool) -> Vec<panels::Publication> {
+    let mut refused = Vec::new();
     for (topic, payload) in out {
-        loopback::published(client.try_publish(topic, QoS::AtLeastOnce, true, payload).is_ok());
+        let ok = send(topic.clone(), payload.clone());
+        loopback::published(ok);
+        if !ok {
+            refused.push((topic, payload));
+        }
+    }
+    refused
+}
+
+/// Queue refused publications, keeping only the newest for a topic: a later repaint or
+/// clear of the same panel supersedes the one that waited.
+fn hold_back(pending: &mut Vec<panels::Publication>, refused: Vec<panels::Publication>) {
+    for (topic, payload) in refused {
+        pending.retain(|(t, _)| *t != topic);
+        pending.push((topic, payload));
     }
 }
 
@@ -837,7 +907,7 @@ fn engage(
     let moved = match register.lock().unwrap_or_else(|e| e.into_inner()).set(token, Engaged::parse(payload)) {
         Ok(moved) => moved,
         Err(e) => {
-            eprintln!("⚠️  [{token}] not a legal module name: {e:?}");
+            elog!("⚠️  [{token}] not a legal module name: {e:?}");
             return;
         }
     };
@@ -901,6 +971,7 @@ fn perform(client: &Client, register: &Mutex<Engagement>, token: &str, door: fn(
         "the run request arrived over the session that answers it",
     ));
     println!("🧪 [{token}] {}", report.headline());
+    report::checks(token, &report);
     publish_report(client, &report);
 }
 
@@ -1205,6 +1276,22 @@ macro_rules! stamp {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn a_refused_panel_publication_waits_and_never_overwrites_a_newer_one() {
+        // ROAD-3566: try_publish refuses when the queue is full; the change must not be lost.
+        let mut pending = Vec::new();
+        let p = |t: &str, v: &str| (t.to_string(), v.to_string());
+        super::send_panels(&mut pending, vec![p("Panels/a", "old"), p("Panels/b", "")], |_, _| false);
+        assert_eq!(pending, vec![p("Panels/a", "old"), p("Panels/b", "")], "both wait");
+        super::send_panels(&mut pending, vec![p("Panels/a", "newer")], |_, _| true);
+        assert_eq!(pending, vec![p("Panels/b", "")], "a newer panel that went out drops the old one waiting");
+        let mut out = Vec::new();
+        let waiting = std::mem::take(&mut pending);
+        super::send_panels(&mut pending, waiting, |t, v| { out.push((t, v)); true });
+        assert_eq!(out, vec![p("Panels/b", "")], "the clear goes out on the retry");
+        assert!(pending.is_empty());
+    }
+
     use super::*;
 
     /// `enabled` switches a plugin off only on an explicit no; absent or

@@ -1,0 +1,12 @@
+{
+  "v": 1,
+  "node": "bench",
+  "from": "2026-11-06T22:40:00Z",
+  "to": "2026-11-06T22:40:55Z",
+  "interval_s": 5,
+  "window_s": 60,
+  "post_every_s": 30,
+  "samples": 12,
+  "baseline": { "identity/device_manifest": { "hostname": { "value": "bench" }, "model": { "value": null } } },
+  "deltas": []
+}

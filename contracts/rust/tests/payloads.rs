@@ -7,11 +7,13 @@
 use apkaudio_contracts::agent_counters::{rates_between, AgentCounters, Sampler};
 use apkaudio_contracts::control_value::ControlValue;
 use apkaudio_contracts::gen::bare_metal_telemetry::BareMetalTelemetry;
+use apkaudio_contracts::gen::bare_metal_timeline::BareMetalTimeline;
 use apkaudio_contracts::device_record::{map_v40_visa_record, DeviceRecord, LegacyVisaRecordV0};
 use apkaudio_contracts::discovery_presence::DiscoveryPresence;
 use apkaudio_contracts::discovery_verified::{self, DiscoveryVerified};
 use apkaudio_contracts::heartbeat::{AgentHeartbeat, LegacyFailoverHeartbeatV0};
 use apkaudio_contracts::scan_log_line::ScanLogLine;
+use apkaudio_contracts::report::{LogLine, ProblemRecord};
 use apkaudio_contracts::{identity, time};
 use serde_json::Value;
 use std::fs;
@@ -354,6 +356,24 @@ fn scan_log_line_invalid() {
     }
 }
 
+/// The report records (contracts/src/report.ts): the generated Rust readers
+/// held to the same corpus the zod schemas are.
+#[test]
+fn log_line_and_problem_record_vectors() {
+    for (name, json) in docs_in("LogLine/valid") {
+        serde_json::from_str::<LogLine>(&json).unwrap_or_else(|e| panic!("{name}: {e}"));
+    }
+    for (name, json) in docs_in("LogLine/invalid") {
+        assert!(serde_json::from_str::<LogLine>(&json).is_err(), "{name} should fail");
+    }
+    for (name, json) in docs_in("ProblemRecord/valid") {
+        serde_json::from_str::<ProblemRecord>(&json).unwrap_or_else(|e| panic!("{name}: {e}"));
+    }
+    for (name, json) in docs_in("ProblemRecord/invalid") {
+        assert!(serde_json::from_str::<ProblemRecord>(&json).is_err(), "{name} should fail");
+    }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // The families this file was NOT reading
 // ─────────────────────────────────────────────────────────────────────────────
@@ -378,6 +398,27 @@ fn bare_metal_telemetry_invalid() {
     for (name, json) in docs_in("BareMetalTelemetry/invalid") {
         assert!(serde_json::from_str::<BareMetalTelemetry>(&json).is_err(), "{name} should fail");
     }
+}
+
+#[test]
+fn bare_metal_timeline_valid() {
+    for (name, json) in docs_in("BareMetalTimeline/valid") {
+        serde_json::from_str::<BareMetalTimeline>(&json).unwrap_or_else(|e| panic!("{name}: {e}"));
+    }
+}
+
+#[test]
+fn bare_metal_timeline_invalid() {
+    for (name, json) in docs_in("BareMetalTimeline/invalid") {
+        assert!(serde_json::from_str::<BareMetalTimeline>(&json).is_err(), "{name} should fail");
+    }
+}
+
+#[test]
+fn bare_metal_timeline_leaf_is_the_typescript_one() {
+    let ts = fs::read_to_string(vectors_dir().join("../src/baremetal-timeline.ts")).expect("the TS source is beside the vectors");
+    let want = format!("BAREMETAL_TIMELINE_LEAF = '{}'", apkaudio_contracts::baremetal_telemetry::TIMELINE_LEAF);
+    assert!(ts.contains(&want), "src/baremetal-timeline.ts does not say {want}");
 }
 
 #[test]
@@ -433,10 +474,13 @@ const RUST_READS: &[&str] = &[
     "AgentCounters",
     "AgentHeartbeat",
     "BareMetalTelemetry",
+    "BareMetalTimeline",
     "ControlValue",
     "DeviceRecord",
     "DiscoveryPresence",
     "DiscoveryVerified",
+    "LogLine",
+    "ProblemRecord",
     "ScanLogLine",
     "SpectrumSweep",
 ];

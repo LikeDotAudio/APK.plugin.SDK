@@ -195,7 +195,7 @@ pub fn start(token: &str, config: &Value) -> Option<u16> {
             Some(port)
         }
         Err(e) => {
-            eprintln!("⚠️  [{token}] loopback telemetry NOT served — {LOOPBACK_BIND}:{port}: {e}");
+            elog!("⚠️  [{token}] loopback telemetry NOT served — {LOOPBACK_BIND}:{port}: {e}");
             None
         }
     }

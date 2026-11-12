@@ -1,0 +1,70 @@
+{
+  "v": 1,
+  "node": "APK-Shop",
+  "from": "2026-11-06T22:40:00.012Z",
+  "to": "2026-11-06T22:40:55.020Z",
+  "interval_s": 5,
+  "window_s": 60,
+  "post_every_s": 30,
+  "samples": "twelve",
+  "baseline": {
+    "host": {
+      "load.1m": {
+        "value": 2.41
+      },
+      "memory.used": {
+        "value": 57.6,
+        "unit": "%"
+      },
+      "uptime": {
+        "value": 812345,
+        "unit": "s"
+      }
+    },
+    "network/bandwidth_monitor": {
+      "enp5s0f0.rx": {
+        "value": 1520.5,
+        "unit": "B/s"
+      },
+      "enp5s0f0.tx": {
+        "value": 0.0,
+        "unit": "B/s"
+      }
+    },
+    "time": {
+      "synchronised": {
+        "value": true
+      },
+      "utc": {
+        "value": "2026-11-06T22:40:00Z"
+      }
+    }
+  },
+  "deltas": [
+    {
+      "t": "2026-11-06T22:40:10.015Z",
+      "table": "host",
+      "key": "load.1m",
+      "value": 2.9
+    },
+    {
+      "t": "2026-11-06T22:40:10.015Z",
+      "table": "network/bandwidth_monitor",
+      "key": "enp5s0f0.tx",
+      "value": 88112.0
+    },
+    {
+      "t": "2026-11-06T22:40:35.019Z",
+      "table": "network/bandwidth_monitor",
+      "key": "veth1cb58d3.rx",
+      "value": 12.0,
+      "unit": "B/s"
+    },
+    {
+      "t": "2026-11-06T22:40:50.010Z",
+      "table": "time",
+      "key": "synchronised",
+      "value": null
+    }
+  ]
+}

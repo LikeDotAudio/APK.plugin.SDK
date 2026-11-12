@@ -52,19 +52,13 @@ fn build(family: &str, args: &Value) -> Result<String, topics::TopicError> {
         "komandState" => topics::komand_state(s(args, "deviceClass"), s(args, "model"), s(args, "capability")),
         "komandMonitor" => topics::komand_monitor(s(args, "dir")),
         "komandClockArmed" => Ok(topics::komand_clock_armed()),
-        "tests" => {
-            let path: Vec<&str> = args["path"]
-                .as_array()
-                .map(|a| a.iter().map(|v| v.as_str().expect("path segment is a string")).collect())
-                .unwrap_or_default();
-            topics::tests(s(args, "suite"), &path)
-        }
-        "testsPrefix" => topics::tests_prefix(s(args, "suite")),
-        "testsWildcard" => topics::tests_wildcard(args["suite"].as_str()),
         "agents" => topics::agents(s(args, "agent")),
         "agentsWildcard" => Ok(topics::agents_wildcard()),
         "config" => topics::config(s(args, "agent")),
         "log" => topics::log(s(args, "source"), s(args, "level")),
+        "logWildcard" => Ok(topics::log_wildcard()),
+        "problems" => topics::problems(s(args, "source"), s(args, "key")),
+        "problemsWildcard" => Ok(topics::problems_wildcard()),
         "dataMigration" => topics::data_migration(s(args, "source"), s(args, "key")),
         "dataMigrationWildcard" => Ok(topics::data_migration_wildcard()),
         "repositoryManager" => {

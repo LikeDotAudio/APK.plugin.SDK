@@ -1,0 +1,182 @@
+{
+ "$comment": "Golden vectors for APK_Identity (network-discovery-6): TS src/ifc-identity.test.ts and Python tests/test_ifc_identity.py. Identity is serial / MAC / NMOS id, never an IP; address- and hash-derived deviceIds are bus keys, not identity.",
+ "basis": [
+  {
+   "input": {
+    "protocol": "visa",
+    "serial": "MY12345678",
+    "address": "TCPIP0::192.168.10.5::INSTR"
+   },
+   "basis": "serial"
+  },
+  {
+   "input": {
+    "protocol": "visa",
+    "serial": "0",
+    "address": "TCPIP0::44.44.44.222::gpib7,4::INSTR"
+   },
+   "basis": "address"
+  },
+  {
+   "input": {
+    "protocol": "midi",
+    "make": "PreSonus",
+    "model": "Faderport 8",
+    "address": ""
+   },
+   "basis": "hash"
+  },
+  {
+   "input": {
+    "protocol": "visa",
+    "serial": "N/A",
+    "address": "USB0::0x0957::0x0407::MY44060332::INSTR"
+   },
+   "basis": "address"
+  }
+ ],
+ "notIdentity": [
+  {
+   "input": "visa:MY12345678",
+   "rejected": false
+  },
+  {
+   "input": "visa:TCPIP::192.168.10.5::INSTR",
+   "rejected": true
+  },
+  {
+   "input": "midi:5718cafba9aea2c3",
+   "rejected": true
+  },
+  {
+   "input": "10.0.0.7",
+   "rejected": true
+  },
+  {
+   "input": "host-10.0.0.7",
+   "rejected": true
+  },
+  {
+   "input": "fe80::1",
+   "rejected": true
+  },
+  {
+   "input": "2001:db8::42",
+   "rejected": true
+  },
+  {
+   "input": "mac:00:1d:c1:12:34:56",
+   "rejected": false
+  },
+  {
+   "input": "serial:MY12345678",
+   "rejected": false
+  },
+  {
+   "input": "nmos:3b8be755-08ff-452b-b217-c9151eb21193",
+   "rejected": false
+  },
+  {
+   "input": "visa:USB0::0x0957::0x0407::MY44060332::INSTR",
+   "rejected": true
+  },
+  {
+   "input": "dante:192.168.1.20",
+   "rejected": true
+  },
+  {
+   "input": "1.2.3",
+   "rejected": false
+  }
+ ],
+ "identity": [
+  {
+   "facts": {
+    "protocol": "visa",
+    "serial": "MY12345678",
+    "address": "TCPIP0::192.168.10.5::INSTR",
+    "deviceId": "visa:MY12345678",
+    "firmware": "A.02.14"
+   },
+   "expect": {
+    "IdentityKey": "serial:MY12345678",
+    "DeviceId": "visa:MY12345678",
+    "SerialNumber": "MY12345678",
+    "Protocol": "visa",
+    "Firmware": "A.02.14"
+   }
+  },
+  {
+   "facts": {
+    "protocol": "visa",
+    "serial": "0",
+    "address": "TCPIP0::44.44.44.222::gpib7,4::INSTR",
+    "deviceId": "visa:TCPIP::44.44.44.222::gpib7-4::INSTR"
+   },
+   "expect": null
+  },
+  {
+   "facts": {
+    "protocol": "mdns",
+    "mac": "00-1D-C1-12-34-56",
+    "address": "10.0.0.7",
+    "deviceId": "mdns:10.0.0.7"
+   },
+   "expect": {
+    "IdentityKey": "mac:00:1d:c1:12:34:56",
+    "MacAddress": "00:1d:c1:12:34:56",
+    "Protocol": "mdns"
+   }
+  },
+  {
+   "facts": {
+    "protocol": "nmos",
+    "nmosNodeId": "3B8BE755-08FF-452B-B217-C9151EB21193",
+    "nmosDeviceId": "58f6b536-ca4c-43fd-880d-87a3ff8a6c4b"
+   },
+   "expect": {
+    "IdentityKey": "nmos:58f6b536-ca4c-43fd-880d-87a3ff8a6c4b",
+    "NmosNodeId": "3b8be755-08ff-452b-b217-c9151eb21193",
+    "NmosDeviceId": "58f6b536-ca4c-43fd-880d-87a3ff8a6c4b",
+    "Protocol": "nmos"
+   }
+  },
+  {
+   "facts": {
+    "protocol": "usb",
+    "usbSerial": "A1B2C3"
+   },
+   "expect": {
+    "IdentityKey": "usb:A1B2C3",
+    "UsbSerial": "A1B2C3",
+    "Protocol": "usb"
+   }
+  },
+  {
+   "facts": {
+    "protocol": "mdns",
+    "address": "10.0.0.9",
+    "mac": "00:00:00:00:00:00"
+   },
+   "expect": null
+  },
+  {
+   "facts": {
+    "protocol": "cast",
+    "mac": "aa:bb:cc:dd:ee:01",
+    "announcedIds": [
+     "3b8be755-08ff-452b-b217-c9151eb21193",
+     "host 10.0.0.4"
+    ]
+   },
+   "expect": {
+    "IdentityKey": "mac:aa:bb:cc:dd:ee:01",
+    "MacAddress": "aa:bb:cc:dd:ee:01",
+    "AnnouncedIds": [
+     "3b8be755-08ff-452b-b217-c9151eb21193"
+    ],
+    "Protocol": "cast"
+   }
+  }
+ ]
+}

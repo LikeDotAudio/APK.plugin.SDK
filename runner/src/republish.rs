@@ -98,7 +98,7 @@ impl PublishTally {
                     } else {
                         String::new()
                     };
-                    eprintln!("   📡 [{} MQTT] ❌ {topic} not published — {why}{also}",
+                    elog!("   📡 [{} MQTT] ❌ {topic} not published — {why}{also}",
                               self.label);
                     self.suppressed = 0;
                     self.spoke_at = Some(now);

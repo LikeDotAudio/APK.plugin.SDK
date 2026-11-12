@@ -514,29 +514,6 @@ pub fn komand_monitor(dir: &str) -> Result<String, TopicError> {
     Ok(format!("{ROOT}/Komand/monitor/{dir}"))
 }
 
-/// `APK.audio/Tests/{suite}` — one prefix per TestOrchestrator module.
-pub fn tests_prefix(suite: &str) -> Result<String, TopicError> {
-    require_segment("suite", suite)?;
-    Ok(format!("{ROOT}/Tests/{suite}"))
-}
-
-pub fn tests(suite: &str, path: &[&str]) -> Result<String, TopicError> {
-    let mut topic = tests_prefix(suite)?;
-    for s in path {
-        require_segment("path segment", s)?;
-        topic.push('/');
-        topic.push_str(s);
-    }
-    Ok(topic)
-}
-
-pub fn tests_wildcard(suite: Option<&str>) -> Result<String, TopicError> {
-    match suite {
-        None => Ok(format!("{ROOT}/Tests/#")),
-        Some(s) => Ok(format!("{}/#", tests_prefix(s)?)),
-    }
-}
-
 pub fn agents(agent: &str) -> Result<String, TopicError> {
     require_segment("agent", agent)?;
     Ok(format!("{ROOT}/System/Agents/{agent}"))
@@ -800,6 +777,24 @@ pub fn log(source: &str, level: &str) -> Result<String, TopicError> {
         return Err(err("log level", level));
     }
     Ok(format!("{ROOT}/System/Log/{source}/{level}"))
+}
+
+/// Every log line on the bench — the Log softapp's one subscription.
+pub fn log_wildcard() -> String {
+    format!("{ROOT}/System/Log/#")
+}
+
+/// One open problem, retained (`ProblemRecord`, see `report`); an empty
+/// retained publish clears it. `key` is `report::problem_key(code, subject)`.
+pub fn problems(source: &str, key: &str) -> Result<String, TopicError> {
+    require_segment("source", source)?;
+    require_segment("key", key)?;
+    Ok(format!("{ROOT}/System/Problems/{source}/{key}"))
+}
+
+/// Every open problem the broker holds — the Problems softapp's subscription.
+pub fn problems_wildcard() -> String {
+    format!("{ROOT}/System/Problems/#")
 }
 
 // ------------------------------------------------- builders added 2026-10-30
@@ -1205,14 +1200,14 @@ pub enum ParsedTopic {
     KomandMonitor { dir: String },
     #[serde(rename = "komandClockArmed")]
     KomandClockArmed,
-    #[serde(rename = "tests")]
-    Tests { suite: String, path: Vec<String> },
     #[serde(rename = "agents")]
     Agents { agent: String },
     #[serde(rename = "config")]
     Config { agent: String },
     #[serde(rename = "log")]
     Log { source: String, level: String },
+    #[serde(rename = "problems")]
+    Problems { source: String, key: String },
     #[serde(rename = "dataMigration")]
     DataMigration { source: String, key: String },
     #[serde(rename = "repositoryManager")]
@@ -1537,15 +1532,6 @@ pub fn parse(raw: &str) -> ParsedTopic {
             (Some("Clock"), Some("Armed"), None, _) => ParsedTopic::KomandClockArmed,
             _ => unknown,
         },
-        // `APK.audio/Tests/{suite}` alone is the orchestrator's prefix and parses
-        // with an empty path; everything below it is suite-private structure.
-        Some("Tests") => match s2 {
-            Some(suite) if is_segment(suite) && segs.iter().skip(3).all(|s| is_segment(s)) => ParsedTopic::Tests {
-                suite: suite.to_string(),
-                path: segs.iter().skip(3).map(|s| s.to_string()).collect(),
-            },
-            _ => unknown,
-        },
         Some("System")
             if matches!(
                 (s2, s3, s4),
@@ -1623,6 +1609,12 @@ pub fn parse(raw: &str) -> ParsedTopic {
                 ParsedTopic::Log {
                     source: source.to_string(),
                     level: level.to_string(),
+                }
+            }
+            (Some("Problems"), Some(source), Some(key), None) if is_segment(source) && is_segment(key) => {
+                ParsedTopic::Problems {
+                    source: source.to_string(),
+                    key: key.to_string(),
                 }
             }
             (Some("DataMigration"), Some(source), Some(key), None) if is_segment(source) && is_segment(key) => {

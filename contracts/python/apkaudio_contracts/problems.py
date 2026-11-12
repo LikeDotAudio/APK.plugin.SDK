@@ -31,6 +31,24 @@ def is_known(code: object) -> bool:
     return isinstance(code, str) and code in catalogue()
 
 
+def code_for_status(status: int) -> str:
+    """The catalogue code for an HTTP status — the twin of `codeForStatus` in
+    src/problems.ts (a server's error reply carries it; the reader looks it up)."""
+    if status in (404, 410):
+        return "http_not_found"
+    if status in (401, 403):
+        return "http_forbidden"
+    if status in (408, 504):
+        return "timeout"
+    if status == 413:
+        return "bad_input"
+    if status >= 500:
+        return "http_server_error"
+    if status >= 400:
+        return "bad_input"
+    return "script_error"
+
+
 def fix_for(code: object) -> list[str]:
     """The fix steps for a code, or [] when the catalogue does not know it."""
     return list(catalogue()[code]["fix"]) if is_known(code) else []

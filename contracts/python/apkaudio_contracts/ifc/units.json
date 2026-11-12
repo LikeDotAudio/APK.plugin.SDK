@@ -1,0 +1,74 @@
+{
+  "schema": "apk.ifc.units/1",
+  "ifc_schema": "IFC4X3_ADD2",
+  "rule": [
+    "A voltage always says its unit: Vrms, Vpk or Vpp. There is no fixed conversion between them (Vrms = Vpp / 2*sqrt(2) holds only for a sine), so a value is never converted and never stored without its unit (owner, 2026-11-06).",
+    "Vrms is the default: RatedVoltage, port Voltage and power.voltage_v are RMS volts, written as IfcElectricVoltageMeasure with no per-property Unit, so the project's SI volt applies and the house convention reads it as RMS.",
+    "Vpp and Vpk are declared units: one IfcContextDependentUnit each (UnitType ELECTRICVOLTAGEUNIT, the volt's dimensions, Name 'Vpp' / 'Vpk'), and a property holding such a value points at it through IfcPropertySingleValue.Unit.",
+    "Levels (dBm, dBu, dBV) have no IFC measure: the value is IfcReal and its IfcPropertySingleValue.Unit is a dimensionless IfcContextDependentUnit (UnitType USERDEFINED) named for the reference. dBm is referred to 1 mW, dBu to 0.775 Vrms, dBV to 1 Vrms. Never converted between each other.",
+    "In part JSON a voltage or level that is not Vrms carries its unit beside it: {\"value\": 10, \"unit\": \"Vpp\"}. A bare number in a field declared Vpp/Vpk/dB* is rejected.",
+    "Impedance is IfcElectricResistanceMeasure in ohm (the project's SI ohm); no context unit needed.",
+    "Project units (IfcSIUnit): length mm, mass kg, power W, voltage V (rms), current A, frequency Hz, resistance ohm."
+  ],
+  "default_voltage_unit": "Vrms",
+  "dimensions_order": ["LengthExponent", "MassExponent", "TimeExponent", "ElectricCurrentExponent", "ThermodynamicTemperatureExponent", "AmountOfSubstanceExponent", "LuminousIntensityExponent"],
+  "units": {
+    "Vrms": {
+      "quantity": "voltage",
+      "ifc": "IfcSIUnit",
+      "UnitType": "ELECTRICVOLTAGEUNIT",
+      "measure": "IfcElectricVoltageMeasure",
+      "dimensions": [2, 1, -3, -1, 0, 0, 0],
+      "default": true,
+      "note": "The project volt. No IfcPropertySingleValue.Unit is written: the default is RMS."
+    },
+    "Vpp": {
+      "quantity": "voltage",
+      "ifc": "IfcContextDependentUnit",
+      "UnitType": "ELECTRICVOLTAGEUNIT",
+      "Name": "Vpp",
+      "measure": "IfcElectricVoltageMeasure",
+      "dimensions": [2, 1, -3, -1, 0, 0, 0],
+      "note": "Peak-to-peak volts. Attached via IfcPropertySingleValue.Unit; never converted to Vrms."
+    },
+    "Vpk": {
+      "quantity": "voltage",
+      "ifc": "IfcContextDependentUnit",
+      "UnitType": "ELECTRICVOLTAGEUNIT",
+      "Name": "Vpk",
+      "measure": "IfcElectricVoltageMeasure",
+      "dimensions": [2, 1, -3, -1, 0, 0, 0],
+      "note": "Peak volts. Attached via IfcPropertySingleValue.Unit; never converted to Vrms."
+    },
+    "dBm": {
+      "quantity": "level",
+      "ifc": "IfcContextDependentUnit",
+      "UnitType": "USERDEFINED",
+      "Name": "dBm",
+      "measure": "IfcReal",
+      "dimensions": [0, 0, 0, 0, 0, 0, 0],
+      "reference": "1 mW",
+      "note": "Power level, dB re 1 mW (into the stated impedance)."
+    },
+    "dBu": {
+      "quantity": "level",
+      "ifc": "IfcContextDependentUnit",
+      "UnitType": "USERDEFINED",
+      "Name": "dBu",
+      "measure": "IfcReal",
+      "dimensions": [0, 0, 0, 0, 0, 0, 0],
+      "reference": "0.775 Vrms",
+      "note": "Voltage level, dB re 0.775 Vrms (pro-audio line level, +4 dBu nominal)."
+    },
+    "dBV": {
+      "quantity": "level",
+      "ifc": "IfcContextDependentUnit",
+      "UnitType": "USERDEFINED",
+      "Name": "dBV",
+      "measure": "IfcReal",
+      "dimensions": [0, 0, 0, 0, 0, 0, 0],
+      "reference": "1 Vrms",
+      "note": "Voltage level, dB re 1 Vrms (consumer line level, -10 dBV nominal)."
+    }
+  }
+}

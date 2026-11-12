@@ -297,6 +297,29 @@ class TheHealthCheck(unittest.TestCase):
             self.assertEqual(health.verdict(path, 60, 1000), (1, "not built: x"))
 
 
+
+class APanelChangeIsNeverLost(unittest.TestCase):
+    """ROAD-3566, the Python twin: a refused panel publish waits and is retried, newest first."""
+    def test_refused_waits_a_newer_one_supersedes_and_the_retry_sends_it(self):
+        class Refusing:
+            def __init__(self):
+                self.ok, self.sent = False, []
+
+            def publish(self, topic, payload, qos=0, retain=False):
+                self.sent.append((topic, payload))
+                return type("Info", (), {"rc": 0 if self.ok else 4})()
+        s = runner.Session.__new__(runner.Session)
+        s.client, s.token = Refusing(), "t"
+        s.publish_panels([("Panels/a", "old"), ("Panels/b", "")])
+        self.assertEqual(s.pending_panels, [("Panels/a", "old"), ("Panels/b", "")])
+        s.client.ok = True
+        s.publish_panels([("Panels/a", "newer")])
+        self.assertEqual(s.pending_panels, [("Panels/b", "")], "a newer panel that went out drops the old one")
+        s.client.sent.clear()
+        s.retry_panels()
+        self.assertEqual(s.client.sent, [("Panels/b", "")], "the clear goes out on the retry")
+        self.assertEqual(s.pending_panels, [])
+
 if __name__ == "__main__":
     unittest.main()
 
@@ -465,3 +488,60 @@ class LoopbackTelemetry(unittest.TestCase):
         before = runner.counters()["publish_failures"]
         session.publish("t", "p", False)
         self.assertEqual(runner.counters()["publish_failures"], before + 1)
+
+
+class TheRunnerReportsThroughTheContract(unittest.TestCase):
+    """ROAD-3695 step 4: elog lines are LogLines, faults are retained ProblemRecords."""
+
+    def setUp(self):
+        if runner._report_contract() is None:
+            self.skipTest("apkaudio_contracts is not importable here")
+        self.saved = dict(runner._REPORT)
+        runner._REPORT.update({"session": None, "name": "zz", "early": [], "raised": {}})
+        self.client = FakeClient()
+        session = runner.Session.__new__(runner.Session)
+        session.token, session.client = "zz", self.client
+        self.session = session
+
+    def tearDown(self):
+        runner._REPORT.clear()
+        runner._REPORT.update(self.saved)
+
+    def sent(self, family):
+        return [(t, p, r) for t, p, r in self.client.sent if "/System/%s/" % family in t]
+
+    def test_a_line_said_before_the_session_is_held_then_said(self):
+        runner.elog("🛑 [zz] the config did not read")
+        self.assertEqual(self.client.sent, [])
+        runner.report_install(self.session)
+        (topic, payload, retain), = self.sent("Log")
+        self.assertEqual(topic, "APK.audio/System/Log/zz/error")
+        self.assertFalse(retain)
+        self.assertEqual(json.loads(payload)["message"], "🛑 [zz] the config did not read")
+        self.assertEqual(runner.level_of("⚠️  [zz] late"), "warn")
+        self.assertEqual(runner.level_of("📡 sent"), "info")
+
+    def test_a_problem_is_raised_again_counted_and_cleared_once(self):
+        runner.report_install(self.session)
+        runner.raise_problem("timeout", "HP 34401A", "no reply")
+        runner.raise_problem("timeout", "HP 34401A", "no reply")
+        records = [json.loads(p) for _, p, _ in self.sent("Problems")]
+        self.assertEqual([r["count"] for r in records], [1, 2])
+        self.assertEqual(records[0]["raised_at"], records[1]["raised_at"])
+        self.assertTrue(all(r for _, _, r in self.sent("Problems")))
+        self.assertTrue(runner.clear_problem("timeout", "HP 34401A"))
+        self.assertEqual(self.sent("Problems")[-1][1], "")
+        self.assertFalse(runner.clear_problem("timeout", "HP 34401A"), "a second clear says nothing")
+
+    def test_unavailable_raises_listening_clears_and_a_failed_check_raises(self):
+        runner.report_install(self.session)
+        runner.agent_state_publications("zz", "unavailable", "no interface came up")
+        record = json.loads(self.sent("Problems")[-1][1])
+        self.assertEqual((record["code"], record["subject"], record["detail"]),
+                         ("plugin_unavailable", "zz", "no interface came up"))
+        runner.agent_state_publications("zz", "listening", "on eth0")
+        self.assertEqual(self.sent("Problems")[-1][1], "")
+        report = runner.Report("zz", "self").with_(runner.Check.fail("own_config", "self", "missing key"))
+        runner.report_checks(report)
+        record = json.loads(self.sent("Problems")[-1][1])
+        self.assertEqual((record["code"], record["subject"]), ("plugin_check_failed", "zz/own_config"))

@@ -126,15 +126,30 @@ pub fn publications_of(label: &str, account: Result<AgentReport, TopicError>) ->
     match account.and_then(|a| a.publications()) {
         Ok(entries) => entries.into_iter().map(|(topic, payload, _retain)| (topic, payload)).collect(),
         Err(e) => {
-            eprintln!("⚠️  [{label}] agent state not published: {e}");
+            elog!("⚠️  [{label}] agent state not published: {e}");
             Vec::new()
         }
     }
 }
 
+/// The account as a problem (ROAD-3695): `unavailable` raises
+/// `plugin_unavailable` about the protocol with the account's own detail,
+/// `listening` clears it — `crate::report::agent_state`. The protocol and the
+/// detail are read off the entries, `…/Protocols/{proto}/Agent/{leaf}`.
+fn raise_for(state: Option<apkaudio_contracts::agent_state::AgentState>, entries: &[(String, Vec<u8>)]) {
+    let Some(state) = state else { return };
+    let leaf = |name: &str| entries.iter().find(|(t, _)| t.ends_with(&format!("/Agent/{name}")));
+    let Some((topic, _)) = leaf(apkaudio_contracts::agent_state::AGENT_LEAF_STATE) else { return };
+    let proto = topic.rsplit('/').nth(2).unwrap_or("agent");
+    let detail = leaf(apkaudio_contracts::agent_state::AGENT_LEAF_DETAIL).map(|(_, p)| String::from_utf8_lossy(p).to_string()).unwrap_or_default();
+    crate::report::agent_state(proto, state, &detail);
+}
+
 /// Say an agent-state account once; returns its entries for the restate timer.
 pub fn report(client: &Client, label: &str, account: Result<AgentReport, TopicError>) -> Vec<(String, Vec<u8>)> {
+    let state = account.as_ref().ok().map(AgentReport::state);
     let entries = publications_of(label, account);
+    raise_for(state, &entries);
     restate(client, &entries);
     entries
 }
@@ -143,7 +158,9 @@ pub fn report(client: &Client, label: &str, account: Result<AgentReport, TopicEr
 /// leaves, then [`report`]. After that nothing here is kept, so plain
 /// [`report`] / [`restate`] suffice.
 pub fn report_first(client: &Client, label: &str, account: Result<AgentReport, TopicError>) -> Vec<(String, Vec<u8>)> {
+    let state = account.as_ref().ok().map(AgentReport::state);
     let entries = publications_of(label, account);
+    raise_for(state, &entries);
     for (topic, _) in &entries {
         forget(client, topic.clone());
     }

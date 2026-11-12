@@ -1,0 +1,38 @@
+{
+  "$comment": "Golden vectors for apk.bim.bench/1 systems (network-discovery-3/4, ROAD-3582): TS src/bim-bench.test.ts and DATABASE.server.BIM tests/test_bench_systems_vectors.py (bim/network.py clean()). `context` is already on the bench; each case is one stored row, PUT on top of the context. A valid row is exactly what the server stores (clean(row) == row); an invalid one is refused by both.",
+  "context": [
+    {"id": "V10", "kind": "vlan", "name": "Dante Primary", "vlan_id": 10},
+    {"id": "V20", "kind": "vlan", "vlan_id": 20}
+  ],
+  "valid": [
+    {"why": "a bare VLAN", "row": {"id": "V30", "kind": "vlan", "vlan_id": 30}},
+    {"why": "a VLAN with its AV profile and access + trunk members", "row": {"id": "V40", "kind": "vlan", "name": "AV Control", "vlan_id": 40, "dscp": 46, "profile": "Dante / AES67 Audio",
+      "members": [{"ref": "U3", "pin": "U3:N1"}, {"ref": "U3", "pin": "U3:N24", "tagged": true}]}},
+    {"why": "a subnet under its VLAN, gateway and pool inside it", "row": {"id": "S-10-10-10-0-24", "kind": "subnet", "name": "Dante Primary", "parent": "V10", "cidr": "10.10.10.0/24",
+      "gateway": "10.10.10.1", "dns": ["10.10.30.5"], "dhcp_start": "10.10.10.100", "dhcp_end": "10.10.10.200"}},
+    {"why": "a planned ST 2110-30 stream with one sender and two receivers", "row": {"id": "F-239-69-10-2-5004", "kind": "stream", "name": "ST2110-30-MAIN", "parent": "V10",
+      "group": "239.69.10.2", "port": 5004, "transport": "ST2110-30", "format": "L24/48k", "channels": 2, "bandwidth_mbps": 2.1, "redundancy": "Hitless ST 2022-7",
+      "members": [{"ref": "U3", "pin": "U3:O1", "role": "sender"}, {"ref": "U7", "pin": "U7:I1", "role": "receiver"}, {"ref": "U8", "pin": "U8:I1", "role": "receiver"}]}},
+    {"why": "a stream with no VLAN sits in the site network", "row": {"id": "F2", "kind": "stream", "group": "239.100.1.1", "port": 20000}}
+  ],
+  "invalid": [
+    {"why": "VLAN 0 is not a VLAN id", "row": {"id": "V0", "kind": "vlan", "vlan_id": 0}},
+    {"why": "VLAN 4095 is reserved", "row": {"id": "V4095", "kind": "vlan", "vlan_id": 4095}},
+    {"why": "VLAN 10 is already on the bench", "row": {"id": "V10b", "kind": "vlan", "vlan_id": 10}},
+    {"why": "a subnet names a VLAN", "row": {"id": "S1", "kind": "subnet", "cidr": "10.1.0.0/24"}},
+    {"why": "a parent must be a VLAN on the bench", "row": {"id": "S1", "kind": "subnet", "parent": "V99", "cidr": "10.1.0.0/24"}},
+    {"why": "host bits set", "row": {"id": "S1", "kind": "subnet", "parent": "V10", "cidr": "10.1.0.1/24"}},
+    {"why": "the gateway is outside the subnet", "row": {"id": "S1", "kind": "subnet", "parent": "V10", "cidr": "10.1.0.0/24", "gateway": "10.2.0.1"}},
+    {"why": "a stream's group is multicast", "row": {"id": "F3", "kind": "stream", "group": "10.10.10.5", "port": 5004}},
+    {"why": "a UDP port is 1..65535", "row": {"id": "F3", "kind": "stream", "group": "239.1.1.1", "port": 70000}},
+    {"why": "a stream member has a role", "row": {"id": "F3", "kind": "stream", "group": "239.1.1.1", "port": 5004, "members": [{"ref": "U3", "pin": "U3:O1"}]}},
+    {"why": "a terminal is a member twice", "row": {"id": "V50", "kind": "vlan", "vlan_id": 50, "members": [{"ref": "U3", "pin": "U3:N1"}, {"ref": "U3", "pin": "U3:N1"}]}},
+    {"why": "a private copy of a key the plan does not have", "row": {"id": "V60", "kind": "vlan", "vlan_id": 60, "poeBudget": 15.4}},
+    {"why": "an id with a space", "row": {"id": "V 70", "kind": "vlan", "vlan_id": 70}}
+  ],
+  "blocks": {
+    "$comment": "A network editor's CAD block keeps only the ids of the systems it plans.",
+    "valid": [{"type": "ipam_scope", "id": "ipam_x", "scopeName": "X", "systems": ["V10", "S-10-10-10-0-24"]}],
+    "invalid": [{"type": "ipam_scope", "id": "ipam_x", "scopeName": "X", "systems": ["S 1"]}]
+  }
+}

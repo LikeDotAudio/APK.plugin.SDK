@@ -1,0 +1,1711 @@
+{
+ "schema": "apk.ifc.signal-formats/1",
+ "ifc_schema": "IFC4X3_ADD2",
+ "rule": [
+  "What a port CARRIES or MEANS when it is not a physical connector; ifc/connectors.json holds the connectors.",
+  "slot Protocols: Pset_DistributionPortTypeCable.Protocols (IfcIdentifier list) on the carrying port, whose SystemType is the family's.",
+  "slots Codec / Container / MediaFormat / Logic: APK_Signal.<slot> (IFC4X3 has no word for them).",
+  "A port typed only by a Logic word is a CAD dataflow node, never an IfcDistributionPort.",
+  "Each family's `description` is the one line a palette or picker shows for it.",
+  "One protocol, one canonical id (owner, ROAD-3598 answer 9, 2026-11-06). `aliases` are the other spellings that name a format, matched whole with case and white space aside ('Dante / AES67', 'Ravenna / AES67' and 'AES-67' are AES67); a spelling two formats claim names neither. A flow variant the CAD draws (DANTE-TX8, AES67-RX, ST2110-30-RX16 ...) names its protocol in `canonical`, and Pset_DistributionPortTypeCable.Protocols always carries the canonical id.",
+  "Hand-kept since ROAD-3588 (2026-11-06): this file is the source. Edit it here, then copy it byte for byte to contracts/python/apkaudio_contracts/ifc/ (npm run gen in contracts) and DATABASE.server.BIM/SRC/bim/data/ifc/ (tools/ifc/vendor_ifc_data.py) and EDITORS.CAD.Like.audio/src/vendor/ifc/."
+ ],
+ "families": {
+  "Audio-Networked": {
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Networked audio — Dante, DDM Manager, Q-LAN, AES67 and other audio-over-IP flows; transmitters generate flows (multicast, or unicast for Q-LAN), receivers subscribe."
+  },
+  "ST-2110": {
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "SMPTE ST 2110 professional media over managed IP — essence flows carried on a network interface (not physical connectors)"
+  },
+  "NMOS": {
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "AMWA NMOS — discovery, registration and connection management for ST 2110 / IP media nodes"
+  },
+  "IP-Streaming": {
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "IP streaming protocols — real-time RTP/RTSP, web streaming (HLS, DASH, CMAF, WebRTC) and broadcast / IPTV transport (multicast, MPEG-TS, SRT, RIST, Zixi)."
+  },
+  "AV-over-IP": {
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "AV-over-IP systems — NDI, SDVoE and vendor encoder / decoder platforms carrying video and audio on a LAN. Dante, Dante AV, AES67 and ST 2110 are in their own families."
+  },
+  "VoIP": {
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "VoIP / unified communications signalling — the call set-up protocols; the voice itself is RTP (IP-Streaming) coded with G.711, G.722 or Opus (Codecs-Audio). WebRTC is in IP-Streaming."
+  },
+  "MXL": {
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "EBU DMF Media eXchange Layer — zero-copy media exchange between software media functions (containers) through shared-memory flows, or across hosts over a fabric. Flows are described by NMOS IS-04 Flow JSON and identified by UUID."
+  },
+  "SMPTE-Audio": {
+   "slot": "Protocols",
+   "SystemType": "AUDIOVISUAL",
+   "description": "SMPTE audio carriage — audio embedded in HD-SDI, non-PCM bitstreams (AC-3, E-AC-3, AAC) inside AES3, and the standard track and channel layouts. Signal formats, not physical connectors."
+  },
+  "Codecs-Audio": {
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "Audio codecs — how audio is coded: uncompressed PCM, lossless (FLAC, ALAC) and lossy (MP3, AAC, Opus, the G.7xx voice codecs). VoIP uses G.711 / G.722 / Opus; streaming AAC / MP3 / Opus."
+  },
+  "Codecs-Video": {
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "Video codecs — legacy (MPEG-1/-2, MPEG-4 Part 2), current (H.264, H.265, AV1 …) and professional / broadcast (JPEG 2000, ProRes, DNx, XAVC …). JPEG XS is ST 2110-22."
+  },
+  "Codecs-Container": {
+   "slot": "Container",
+   "SystemType": "AUDIOVISUAL",
+   "description": "Audio / video containers — the wrappers that hold coded audio, video, subtitles and metadata. MPEG-TS is the container; MPEG-TS-UDP (IP-Streaming) is the transport."
+  },
+  "Media-Images": {
+   "slot": "MediaFormat",
+   "SystemType": null,
+   "description": "Image & Still Graphic Formats — raster, vector, HDR, and RAW photographic media essences."
+  },
+  "Media-3D-Doc": {
+   "slot": "MediaFormat",
+   "SystemType": null,
+   "description": "3D scene models, documents, and data exchange structures."
+  },
+  "Idea": {
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "IDEA ports — where a value enters a dataflow graph: a concept, an assumption, a parameter or a constant."
+  },
+  "Result": {
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "RESULT ports — where a value leaves a dataflow graph: the answer the wiring computes."
+  },
+  "Logic": {
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "Boolean logic ports — compute true / false from the values wired in. NOT takes one input; the others take two or more."
+  },
+  "Arithmetic": {
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "Arithmetic ports — compute a number from the numbers wired in, or compare two numbers to a true / false."
+  }
+ },
+ "formats": [
+  {
+   "id": "DANTE-RX2",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Dante receive flow, 2 channels (consumed)",
+   "canonical": "DANTE"
+  },
+  {
+   "id": "DANTE-RX8",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Dante receive flow, 8 channels (consumed)",
+   "canonical": "DANTE"
+  },
+  {
+   "id": "DANTE-RX16",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Dante receive flow, 16 channels (consumed)",
+   "canonical": "DANTE"
+  },
+  {
+   "id": "DANTE-TX2",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Dante transmit flow, 2 channels (generated)",
+   "canonical": "DANTE"
+  },
+  {
+   "id": "DANTE-TX8",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Dante transmit flow, 8 channels (generated)",
+   "canonical": "DANTE"
+  },
+  {
+   "id": "DANTE-TX16",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Dante transmit flow, 16 channels (generated)",
+   "canonical": "DANTE"
+  },
+  {
+   "id": "DANTE",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Dante flow / channel — Audinate audio-over-IP, unicast or multicast flow",
+   "aliases": [
+    "Audinate Dante",
+    "Dante Primary",
+    "Dante Secondary",
+    "Dante Network",
+    "Dante Primary Network",
+    "Dante Secondary Network",
+    "Dante Primary / Secondary",
+    "Dante Interfaces"
+   ]
+  },
+  {
+   "id": "DANTE-MC",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Dante multicast flow (generated, one-to-many)",
+   "canonical": "DANTE"
+  },
+  {
+   "id": "DANTE-AES67",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Dante flow in AES67 mode (interoperable RTP / PTPv2)",
+   "canonical": "AES67"
+  },
+  {
+   "id": "DDM-RX2",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "DDM Manager receive flow, 2 channels (consumed) — Dante under a Dante Domain Manager domain",
+   "canonical": "DDM"
+  },
+  {
+   "id": "DDM-RX8",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "DDM Manager receive flow, 8 channels (consumed) — Dante under a Dante Domain Manager domain",
+   "canonical": "DDM"
+  },
+  {
+   "id": "DDM-RX16",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "DDM Manager receive flow, 16 channels (consumed) — Dante under a Dante Domain Manager domain",
+   "canonical": "DDM"
+  },
+  {
+   "id": "DDM-TX2",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "DDM Manager transmit flow, 2 channels (generated, multicast) — Dante under a Dante Domain Manager domain",
+   "canonical": "DDM"
+  },
+  {
+   "id": "DDM-TX8",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "DDM Manager transmit flow, 8 channels (generated, multicast) — Dante under a Dante Domain Manager domain",
+   "canonical": "DDM"
+  },
+  {
+   "id": "DDM-TX16",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "DDM Manager transmit flow, 16 channels (generated, multicast) — Dante under a Dante Domain Manager domain",
+   "canonical": "DDM"
+  },
+  {
+   "id": "DDM",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "DDM Manager flow — a Dante flow whose devices are enrolled in a Dante Domain Manager domain (managed, secured Dante); a Dante receiver in the domain hears it",
+   "aliases": [
+    "Dante Domain Manager"
+   ]
+  },
+  {
+   "id": "DDM-MC",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "DDM Manager multicast flow (generated, one-to-many) — Dante's 239.255.x.y : 4321 plan",
+   "canonical": "DDM"
+  },
+  {
+   "id": "QLAN-RX2",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Q-LAN receive stream, 2 channels (consumed)",
+   "canonical": "QLAN"
+  },
+  {
+   "id": "QLAN-RX8",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Q-LAN receive stream, 8 channels (consumed)",
+   "canonical": "QLAN"
+  },
+  {
+   "id": "QLAN-RX16",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Q-LAN receive stream, 16 channels (consumed)",
+   "canonical": "QLAN"
+  },
+  {
+   "id": "QLAN-TX2",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Q-LAN transmit stream, 2 channels (generated, unicast)",
+   "canonical": "QLAN"
+  },
+  {
+   "id": "QLAN-TX8",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Q-LAN transmit stream, 8 channels (generated, unicast)",
+   "canonical": "QLAN"
+  },
+  {
+   "id": "QLAN-TX16",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Q-LAN transmit stream, 16 channels (generated, unicast)",
+   "canonical": "QLAN"
+  },
+  {
+   "id": "QLAN",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Q-LAN stream — QSC Q-SYS audio-over-IP: unicast RTP, 32-bit float, up to 16 channels per stream, PTPv2-clocked",
+   "aliases": [
+    "Q-LAN",
+    "Q-SYS Q-LAN"
+   ]
+  },
+  {
+   "id": "AES67",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "AES67 — the AES standard for audio-over-IP interoperability: L16 / L24 PCM over RTP, PTPv2-clocked, SDP-described; Dante, RAVENNA, Q-LAN and ST 2110-30 meet in it. The canonical word for any port that says AES67.",
+   "aliases": [
+    "AES-67",
+    "AES 67",
+    "AES67 Network",
+    "Dante / AES67",
+    "AES67 / Dante",
+    "Ravenna / AES67",
+    "AES67 / Ravenna",
+    "Q-LAN / AES67"
+   ]
+  },
+  {
+   "id": "AES67-RX",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "AES67 receive flow (consumed)",
+   "canonical": "AES67"
+  },
+  {
+   "id": "AES67-TX",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "AES67 transmit flow (generated, multicast) — the same wire format as ST 2110-30 (see the ST-2110 tab)",
+   "canonical": "AES67"
+  },
+  {
+   "id": "RAVENNA",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "RAVENNA — ALC NetworX's IP media networking technology (AES67-compatible streams, PTPv2-clocked). The canonical word for any port that says RAVENNA.",
+   "aliases": [
+    "RAVENNA Network"
+   ]
+  },
+  {
+   "id": "RAVENNA-RX",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "RAVENNA receive stream (consumed; AES67-compatible)",
+   "canonical": "RAVENNA"
+  },
+  {
+   "id": "RAVENNA-TX",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "RAVENNA transmit stream (generated, multicast; AES67-compatible)",
+   "canonical": "RAVENNA"
+  },
+  {
+   "id": "WHEATNET-IP",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "WheatNet-IP — Wheatstone's audio-over-IP network for broadcast plants (AES67-compatible).",
+   "aliases": [
+    "WheatNet IP",
+    "WheatNet",
+    "WheatNet-IP Network",
+    "WheatNet-IP Primary",
+    "WheatNet-IP Secondary"
+   ]
+  },
+  {
+   "id": "SOUNDGRID",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "SoundGrid — Waves' Ethernet audio network linking SoundGrid I/O, DSP servers and host computers.",
+   "aliases": [
+    "Waves SoundGrid",
+    "SoundGrid Primary",
+    "SoundGrid Secondary"
+   ]
+  },
+  {
+   "id": "MILAN",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "AVB / Milan stream — IEEE 1722 AVTP over TSN (Layer 2: no IP multicast group)",
+   "aliases": [
+    "AVB",
+    "AVB / Milan",
+    "Milan / AVB",
+    "AVnu Milan",
+    "AVB Network"
+   ]
+  },
+  {
+   "id": "DANTE-AV",
+   "family": "Audio-Networked",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Dante AV — video (and embedded audio) over Dante",
+   "aliases": [
+    "Dante AV"
+   ]
+  },
+  {
+   "id": "ST2110-10",
+   "family": "ST-2110",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "System timing & definitions — PTP (IEEE 1588, ST 2059-2 profile), RTP/UDP over IPv4 multicast (IGMPv3) or unicast; UDP ≤ 1460 octets (8960 extended, signalled MAXUDP); one SDP per stream with mediaclk + ts-refclk",
+   "aliases": [
+    "ST 2110-10",
+    "SMPTE ST 2110-10",
+    "SMPTE 2110-10",
+    "ST2110_10"
+   ]
+  },
+  {
+   "id": "ST2110-20",
+   "family": "ST-2110",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Uncompressed active video — RFC 4175-based, 90 kHz clock, video/raw; YCbCr / RGB / ICtCp 4:4:4 / 4:2:2 / 4:2:0 at 8-16 bit; BT.709 / BT.2020 / BT.2100; GPM or BPM packing",
+   "aliases": [
+    "ST 2110-20",
+    "SMPTE ST 2110-20",
+    "SMPTE 2110-20",
+    "ST2110_20"
+   ]
+  },
+  {
+   "id": "ST2110-21",
+   "family": "ST-2110",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Traffic shaping & delivery timing for video senders — TP=2110TPN (narrow, gapped), 2110TPNL (narrow linear) or 2110TPW (wide, software); receivers N / W / A",
+   "aliases": [
+    "ST 2110-21",
+    "SMPTE ST 2110-21",
+    "SMPTE 2110-21",
+    "ST2110_21"
+   ]
+  },
+  {
+   "id": "ST2110-22",
+   "family": "ST-2110",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Constant bit-rate compressed video (e.g. JPEG XS)",
+   "aliases": [
+    "ST 2110-22",
+    "SMPTE ST 2110-22",
+    "SMPTE 2110-22",
+    "ST2110_22"
+   ]
+  },
+  {
+   "id": "ST2110-23",
+   "family": "ST-2110",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Single video essence over multiple -20 streams",
+   "aliases": [
+    "ST 2110-23",
+    "SMPTE ST 2110-23",
+    "SMPTE 2110-23",
+    "ST2110_23"
+   ]
+  },
+  {
+   "id": "ST2110-30",
+   "family": "ST-2110",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "PCM digital audio over AES67 (L16 / L24) — 48 kHz mandatory; receiver levels A (1-8 ch @ 1 ms), B (+ 125 µs), C (up to 64 ch @ 125 µs), AX / BX / CX add 96 kHz; channel-order=SMPTE2110.(ST, 51, 71, 222, SGRP …)",
+   "aliases": [
+    "ST 2110-30",
+    "SMPTE ST 2110-30",
+    "SMPTE 2110-30",
+    "ST2110_30"
+   ]
+  },
+  {
+   "id": "ST2110-30-RX2",
+   "family": "ST-2110",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "ST 2110-30 audio receiver, 2 channels (consumed)",
+   "canonical": "ST2110-30"
+  },
+  {
+   "id": "ST2110-30-RX8",
+   "family": "ST-2110",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "ST 2110-30 audio receiver, 8 channels (consumed)",
+   "canonical": "ST2110-30"
+  },
+  {
+   "id": "ST2110-30-RX16",
+   "family": "ST-2110",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "ST 2110-30 audio receiver, 16 channels (consumed)",
+   "canonical": "ST2110-30"
+  },
+  {
+   "id": "ST2110-30-TX2",
+   "family": "ST-2110",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "ST 2110-30 audio sender, 2 channels (generated)",
+   "canonical": "ST2110-30"
+  },
+  {
+   "id": "ST2110-30-TX8",
+   "family": "ST-2110",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "ST 2110-30 audio sender, 8 channels (generated)",
+   "canonical": "ST2110-30"
+  },
+  {
+   "id": "ST2110-30-TX16",
+   "family": "ST-2110",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "ST 2110-30 audio sender, 16 channels (generated)",
+   "canonical": "ST2110-30"
+  },
+  {
+   "id": "ST2110-31",
+   "family": "ST-2110",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "AES3 transparent transport",
+   "aliases": [
+    "ST 2110-31",
+    "SMPTE ST 2110-31",
+    "SMPTE 2110-31",
+    "ST2110_31"
+   ]
+  },
+  {
+   "id": "ST2110-40",
+   "family": "ST-2110",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "SMPTE ST 291-1 ancillary data",
+   "aliases": [
+    "ST 2110-40",
+    "SMPTE ST 2110-40",
+    "SMPTE 2110-40",
+    "ST2110_40"
+   ]
+  },
+  {
+   "id": "ST2110-41",
+   "family": "ST-2110",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Fast metadata framework",
+   "aliases": [
+    "ST 2110-41",
+    "SMPTE ST 2110-41",
+    "SMPTE 2110-41",
+    "ST2110_41"
+   ]
+  },
+  {
+   "id": "ST2110-43",
+   "family": "ST-2110",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Timed text markup (TTML)",
+   "aliases": [
+    "ST 2110-43",
+    "SMPTE ST 2110-43",
+    "SMPTE 2110-43",
+    "ST2110_43"
+   ]
+  },
+  {
+   "id": "ST2022-7",
+   "family": "ST-2110",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Seamless protection switching — identical RTP streams on two paths (red / blue), rebuilt packet by packet; receiver skew class A ≤ 10 ms, B ≤ 50 ms, C ≤ 150 / 450 ms; signalled a=group:DUP in 2110",
+   "aliases": [
+    "ST 2022-7",
+    "SMPTE ST 2022-7",
+    "SMPTE 2022-7"
+   ]
+  },
+  {
+   "id": "NMOS",
+   "family": "NMOS",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "NMOS Node — IS-04 discovery & registration / IS-05 connection management API endpoint"
+  },
+  {
+   "id": "NMOS-IS04",
+   "family": "NMOS",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "AMWA IS-04 discovery & registration",
+   "aliases": [
+    "IS-04",
+    "AMWA IS-04",
+    "NMOS IS-04"
+   ]
+  },
+  {
+   "id": "NMOS-IS05",
+   "family": "NMOS",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "AMWA IS-05 device connection management",
+   "aliases": [
+    "IS-05",
+    "AMWA IS-05",
+    "NMOS IS-05"
+   ]
+  },
+  {
+   "id": "NMOS-IS07",
+   "family": "NMOS",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "AMWA IS-07 event & tally",
+   "aliases": [
+    "IS-07",
+    "AMWA IS-07",
+    "NMOS IS-07"
+   ]
+  },
+  {
+   "id": "NMOS-IS08",
+   "family": "NMOS",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "AMWA IS-08 audio channel mapping",
+   "aliases": [
+    "IS-08",
+    "AMWA IS-08",
+    "NMOS IS-08"
+   ]
+  },
+  {
+   "id": "NMOS-IS11",
+   "family": "NMOS",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "AMWA IS-11 stream compatibility management",
+   "aliases": [
+    "IS-11",
+    "AMWA IS-11",
+    "NMOS IS-11"
+   ]
+  },
+  {
+   "id": "NMOS-BCP-003",
+   "family": "NMOS",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "AMWA BCP-003 security (TLS, authorization)",
+   "aliases": [
+    "BCP-003",
+    "AMWA BCP-003"
+   ]
+  },
+  {
+   "id": "NMOS-REG",
+   "family": "NMOS",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "NMOS Registry / Controller — server application (IS-04 registry, IS-05 controller)"
+  },
+  {
+   "id": "ST299-1",
+   "family": "SMPTE-Audio",
+   "slot": "Protocols",
+   "SystemType": "AUDIOVISUAL",
+   "description": "SMPTE ST 299-1 — 24-bit AES3 audio embedded in HD-SDI (ST 292-1): 4 groups × 4 ch = 16 ch at 48 kHz (8 at 96 kHz), data in C-stream HANC; group data DIDs 2E7h / 1E6h / 1E5h / 2E4h, control 1E3h / 2E2h / 2E1h / 1E0h"
+  },
+  {
+   "id": "ST337",
+   "family": "SMPTE-Audio",
+   "slot": "Protocols",
+   "SystemType": "AUDIOVISUAL",
+   "description": "SMPTE ST 337 — non-PCM audio / data in AES3: bursts led by Pa/Pb sync (16-bit F872h / 4E1Fh), Pc burst_info, Pd length; channel-status non-audio bit set; frame mode (one burst over both subframes, ≤ 7 streams) or subframe mode (≤ 14)"
+  },
+  {
+   "id": "ST339",
+   "family": "SMPTE-Audio",
+   "slot": "Protocols",
+   "SystemType": "AUDIOVISUAL",
+   "description": "SMPTE ST 339 — ST 337 generic data types: 0 null, 2 time stamp (stream 7, LTC + sample count), 3 pause, 26 utility (V-sync marker), 30 user-defined"
+  },
+  {
+   "id": "ST340-AC3",
+   "family": "SMPTE-Audio",
+   "slot": "Protocols",
+   "SystemType": "AUDIOVISUAL",
+   "description": "SMPTE ST 340 — AC-3 (Dolby Digital, ATSC A/52) in AES3 via ST 337: data_type 1, one 1536-sample sync frame per burst (32 ms at 48 kHz); AES3 rate must equal the audio rate"
+  },
+  {
+   "id": "ST340-EAC3",
+   "family": "SMPTE-Audio",
+   "slot": "Protocols",
+   "SystemType": "AUDIOVISUAL",
+   "description": "SMPTE ST 340 — E-AC-3 (Dolby Digital Plus) in AES3 via ST 337: data_type 16, 1536-frame burst period, frame mode only, 3324-frame (69.25 ms) decode latency"
+  },
+  {
+   "id": "ST2041-2",
+   "family": "SMPTE-Audio",
+   "slot": "Protocols",
+   "SystemType": "AUDIOVISUAL",
+   "description": "SMPTE ST 2041-2 — MPEG-2 AAC LC / HE AAC in ADTS over AES3 via ST 337: data_type 7, burst every 1024 frames (2048 with SBR)"
+  },
+  {
+   "id": "ST2041-3",
+   "family": "SMPTE-Audio",
+   "slot": "Protocols",
+   "SystemType": "AUDIOVISUAL",
+   "description": "SMPTE ST 2041-3 — MPEG-4 AAC (data_type 10, 1024 / 960 frames) and HE AAC v1 / v2 (data_type 11, 2048 / 1920) over AES3 via ST 337, in ADTS or LATM / LOAS"
+  },
+  {
+   "id": "ST2035",
+   "family": "SMPTE-Audio",
+   "slot": "Protocols",
+   "SystemType": "AUDIOVISUAL",
+   "description": "SMPTE ST 2035 — audio track cases for recorders and embedded / AES3 I/O: tracks 1/2 = AES pair 1, 3/4 = pair 2 …; e.g. case 11c = 5.1 on T1-6 + stereo T7/8, 11d = 5.1 + Lt/Rt, 11e = 5.1 + ST 337 bitstream on T7/8"
+  },
+  {
+   "id": "ST2036-2",
+   "family": "SMPTE-Audio",
+   "slot": "Protocols",
+   "SystemType": "AUDIOVISUAL",
+   "description": "SMPTE ST 2036-2 — UHDTV 22.2 audio: 24 channels, 48 kHz video-locked (96 kHz optional), 16 / 20 / 24-bit; FL FR / FC LFE1 on AES 1-2 … BtFL BtFR on AES 12; top, middle and bottom layers"
+  },
+  {
+   "id": "MXL",
+   "family": "MXL",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "MXL flow — an EBU DMF Media eXchange Layer flow: a ring buffer in a tmpfs-backed MXL domain that one writer fills and any number of readers map read-only (no packetising, no copy)"
+  },
+  {
+   "id": "MXL-VIDEO",
+   "family": "MXL",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "MXL discrete video flow — V210 video, read and written as timestamped grains"
+  },
+  {
+   "id": "MXL-AUDIO",
+   "family": "MXL",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "MXL continuous audio flow — Float32 samples, de-interleaved per channel"
+  },
+  {
+   "id": "MXL-ANC",
+   "family": "MXL",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "MXL discrete ancillary-data flow — ANC grains (captions, timecode, metadata)"
+  },
+  {
+   "id": "MXL-FABRIC",
+   "family": "MXL",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "MXL Fabric — flows shared between hosts over a fast fabric (RDMA, EFA), the Fabric API in MXL 1.1+"
+  },
+  {
+   "id": "RTP",
+   "family": "IP-Streaming",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Real-time Transport Protocol — timed media packets over UDP (RFC 3550)"
+  },
+  {
+   "id": "RTCP",
+   "family": "IP-Streaming",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "RTP Control Protocol — reception reports and sync for an RTP session"
+  },
+  {
+   "id": "RTSP",
+   "family": "IP-Streaming",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Real Time Streaming Protocol — play / pause control of an RTP stream (cameras, encoders)"
+  },
+  {
+   "id": "SRTP",
+   "family": "IP-Streaming",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Secure RTP — encrypted and authenticated RTP media"
+  },
+  {
+   "id": "SAP",
+   "family": "IP-Streaming",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Session Announcement Protocol — multicast announcement of available streams"
+  },
+  {
+   "id": "SDP",
+   "family": "IP-Streaming",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Session Description Protocol — the text that describes a stream (address, port, format)"
+  },
+  {
+   "id": "HLS",
+   "family": "IP-Streaming",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "HTTP Live Streaming — segmented adaptive-bitrate delivery over HTTP"
+  },
+  {
+   "id": "MPEG-DASH",
+   "family": "IP-Streaming",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "MPEG-DASH — Dynamic Adaptive Streaming over HTTP"
+  },
+  {
+   "id": "CMAF",
+   "family": "IP-Streaming",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Common Media Application Format — one fragmented-MP4 package for HLS and DASH"
+  },
+  {
+   "id": "WEBRTC",
+   "family": "IP-Streaming",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "WebRTC — real-time browser audio / video / data (SRTP media, ICE / DTLS)"
+  },
+  {
+   "id": "UDP-MC",
+   "family": "IP-Streaming",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "UDP multicast — one-to-many stream to an IP multicast group"
+  },
+  {
+   "id": "RTP-MC",
+   "family": "IP-Streaming",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "RTP multicast — RTP media sent to an IP multicast group"
+  },
+  {
+   "id": "MPEG-TS-UDP",
+   "family": "IP-Streaming",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "MPEG transport stream over UDP (IPTV, contribution and distribution)"
+  },
+  {
+   "id": "SRT",
+   "family": "IP-Streaming",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Secure Reliable Transport — ARQ-protected, encrypted contribution over the open internet"
+  },
+  {
+   "id": "RIST",
+   "family": "IP-Streaming",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Reliable Internet Stream Transport — VSF open-spec ARQ transport for contribution"
+  },
+  {
+   "id": "ZIXI",
+   "family": "IP-Streaming",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Zixi — proprietary error-corrected live video transport over IP"
+  },
+  {
+   "id": "NDI",
+   "family": "AV-over-IP",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "NDI — NewTek / Vizrt Network Device Interface, full-bandwidth video, audio and tally on a LAN"
+  },
+  {
+   "id": "NDI-HX",
+   "family": "AV-over-IP",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "NDI HX — the compressed (H.264 / H.265) NDI variant for lower-bandwidth links",
+   "aliases": [
+    "NDI|HX",
+    "NDI HX"
+   ]
+  },
+  {
+   "id": "SDVOE",
+   "family": "AV-over-IP",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "SDVoE — Software Defined Video over Ethernet, uncompressed / light-compressed AV on 10 GbE"
+  },
+  {
+   "id": "NVX",
+   "family": "AV-over-IP",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Crestron DM NVX — AV-over-IP encoder / decoder stream"
+  },
+  {
+   "id": "SVSI",
+   "family": "AV-over-IP",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "AMX SVSI — AV-over-IP encoder / decoder stream"
+  },
+  {
+   "id": "QSYS-AV",
+   "family": "AV-over-IP",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "Q-SYS AV over IP — QSC NV-series video and audio on the Q-SYS network"
+  },
+  {
+   "id": "SIP",
+   "family": "VoIP",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "SIP — Session Initiation Protocol, call set-up for VoIP phones, trunks and codecs"
+  },
+  {
+   "id": "H.323",
+   "family": "VoIP",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "H.323 — ITU-T multimedia conferencing signalling (legacy room systems, gateways)"
+  },
+  {
+   "id": "MGCP",
+   "family": "VoIP",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "MGCP — Media Gateway Control Protocol (call agent to gateway)"
+  },
+  {
+   "id": "SCCP",
+   "family": "VoIP",
+   "slot": "Protocols",
+   "SystemType": "DATA",
+   "description": "SCCP — Cisco Skinny Client Control Protocol (Cisco IP phones)"
+  },
+  {
+   "id": "PCM",
+   "family": "Codecs-Audio",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "PCM — uncompressed pulse-code modulation audio"
+  },
+  {
+   "id": "LPCM",
+   "family": "Codecs-Audio",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "LPCM — linear PCM (uncompressed, e.g. 24-bit / 48 kHz)"
+  },
+  {
+   "id": "AES67-L24",
+   "family": "Codecs-Audio",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "AES67 audio stream payload — L24 / L16 linear PCM over RTP"
+  },
+  {
+   "id": "WAV",
+   "family": "Codecs-Audio",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "WAV — RIFF wave audio, a container usually holding PCM"
+  },
+  {
+   "id": "FLAC",
+   "family": "Codecs-Audio",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "FLAC — Free Lossless Audio Codec"
+  },
+  {
+   "id": "ALAC",
+   "family": "Codecs-Audio",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "ALAC — Apple Lossless Audio Codec"
+  },
+  {
+   "id": "WAVPACK",
+   "family": "Codecs-Audio",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "WavPack — lossless (and hybrid) audio compression"
+  },
+  {
+   "id": "APE",
+   "family": "Codecs-Audio",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "Monkey's Audio (APE) — lossless audio compression"
+  },
+  {
+   "id": "MP3",
+   "family": "Codecs-Audio",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "MP3 — MPEG-1 / -2 Audio Layer III"
+  },
+  {
+   "id": "AAC",
+   "family": "Codecs-Audio",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "AAC — Advanced Audio Coding (streaming, broadcast, VoD)"
+  },
+  {
+   "id": "AAC-LC",
+   "family": "Codecs-Audio",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "AAC-LC — AAC Low Complexity profile"
+  },
+  {
+   "id": "HE-AAC",
+   "family": "Codecs-Audio",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "HE-AAC — High-Efficiency AAC (SBR / PS) for low bitrates"
+  },
+  {
+   "id": "OPUS",
+   "family": "Codecs-Audio",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "Opus — low-latency speech and music codec (VoIP, WebRTC, streaming)"
+  },
+  {
+   "id": "VORBIS",
+   "family": "Codecs-Audio",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "Vorbis — Xiph.org lossy audio codec (usually in Ogg / WebM)"
+  },
+  {
+   "id": "WMA",
+   "family": "Codecs-Audio",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "WMA — Windows Media Audio"
+  },
+  {
+   "id": "G.711",
+   "family": "Codecs-Audio",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "G.711 — 64 kb/s PCM µ-law / A-law telephony voice (VoIP)"
+  },
+  {
+   "id": "G.722",
+   "family": "Codecs-Audio",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "G.722 — 7 kHz wideband (HD) voice at 48–64 kb/s"
+  },
+  {
+   "id": "G.723",
+   "family": "Codecs-Audio",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "G.723.1 — 5.3 / 6.3 kb/s low-bitrate voice"
+  },
+  {
+   "id": "G.726",
+   "family": "Codecs-Audio",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "G.726 — ADPCM voice at 16–40 kb/s"
+  },
+  {
+   "id": "G.728",
+   "family": "Codecs-Audio",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "G.728 — 16 kb/s LD-CELP low-delay voice"
+  },
+  {
+   "id": "G.729",
+   "family": "Codecs-Audio",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "G.729 — 8 kb/s CS-ACELP voice"
+  },
+  {
+   "id": "EVS-VOICE",
+   "family": "Codecs-Audio",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "EVS — 3GPP Enhanced Voice Services (VoLTE / VoNR voice codec)"
+  },
+  {
+   "id": "AMR-NB",
+   "family": "Codecs-Audio",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "AMR-NB — Adaptive Multi-Rate narrowband voice"
+  },
+  {
+   "id": "AMR-WB",
+   "family": "Codecs-Audio",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "AMR-WB — Adaptive Multi-Rate wideband (G.722.2) voice"
+  },
+  {
+   "id": "MPEG-1",
+   "family": "Codecs-Video",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "MPEG-1 Video"
+  },
+  {
+   "id": "MPEG-2",
+   "family": "Codecs-Video",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "MPEG-2 Video / H.262 (broadcast and DVD)"
+  },
+  {
+   "id": "MPEG-4-P2",
+   "family": "Codecs-Video",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "MPEG-4 Part 2 Visual (ASP)"
+  },
+  {
+   "id": "DIVX",
+   "family": "Codecs-Video",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "DivX — MPEG-4 Part 2 implementation"
+  },
+  {
+   "id": "XVID",
+   "family": "Codecs-Video",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "Xvid — open MPEG-4 Part 2 implementation"
+  },
+  {
+   "id": "SORENSON",
+   "family": "Codecs-Video",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "Sorenson Video / Spark (legacy QuickTime and Flash)"
+  },
+  {
+   "id": "H.264",
+   "family": "Codecs-Video",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "H.264 / AVC — Advanced Video Coding"
+  },
+  {
+   "id": "H.265",
+   "family": "Codecs-Video",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "H.265 / HEVC — High Efficiency Video Coding"
+  },
+  {
+   "id": "H.266",
+   "family": "Codecs-Video",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "H.266 / VVC — Versatile Video Coding"
+  },
+  {
+   "id": "VP8",
+   "family": "Codecs-Video",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "VP8 — Google / WebM video codec"
+  },
+  {
+   "id": "VP9",
+   "family": "Codecs-Video",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "VP9 — Google / WebM video codec"
+  },
+  {
+   "id": "AV1",
+   "family": "Codecs-Video",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "AV1 — AOMedia Video 1, royalty-free"
+  },
+  {
+   "id": "JPEG2000",
+   "family": "Codecs-Video",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "JPEG 2000 — wavelet intra-frame coding (contribution, cinema, J2K over IP)"
+  },
+  {
+   "id": "PRORES",
+   "family": "Codecs-Video",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "Apple ProRes — intra-frame post-production codec"
+  },
+  {
+   "id": "PRORES-RAW",
+   "family": "Codecs-Video",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "Apple ProRes RAW — camera-sensor RAW in ProRes"
+  },
+  {
+   "id": "DNXHD",
+   "family": "Codecs-Video",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "Avid DNxHD — HD intra-frame post codec"
+  },
+  {
+   "id": "DNXHR",
+   "family": "Codecs-Video",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "Avid DNxHR — resolution-independent DNx (UHD and beyond)"
+  },
+  {
+   "id": "CINEFORM",
+   "family": "Codecs-Video",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "GoPro CineForm — wavelet intermediate codec"
+  },
+  {
+   "id": "XAVC",
+   "family": "Codecs-Video",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "Sony XAVC — H.264-based acquisition format"
+  },
+  {
+   "id": "AVC-INTRA",
+   "family": "Codecs-Video",
+   "slot": "Codec",
+   "SystemType": "AUDIOVISUAL",
+   "description": "Panasonic AVC-Intra — intra-only H.264 acquisition"
+  },
+  {
+   "id": "MP4",
+   "family": "Codecs-Container",
+   "slot": "Container",
+   "SystemType": "AUDIOVISUAL",
+   "description": "MP4 (.mp4) — MPEG-4 Part 14 container"
+  },
+  {
+   "id": "MOV",
+   "family": "Codecs-Container",
+   "slot": "Container",
+   "SystemType": "AUDIOVISUAL",
+   "description": "MOV (.mov) — QuickTime container"
+  },
+  {
+   "id": "MKV",
+   "family": "Codecs-Container",
+   "slot": "Container",
+   "SystemType": "AUDIOVISUAL",
+   "description": "MKV (.mkv) — Matroska container"
+  },
+  {
+   "id": "AVI",
+   "family": "Codecs-Container",
+   "slot": "Container",
+   "SystemType": "AUDIOVISUAL",
+   "description": "AVI (.avi) — Audio Video Interleave container"
+  },
+  {
+   "id": "MXF",
+   "family": "Codecs-Container",
+   "slot": "Container",
+   "SystemType": "AUDIOVISUAL",
+   "description": "MXF (.mxf) — SMPTE Material Exchange Format, the broadcast file wrapper (operational patterns OP1a, OP-Atom)"
+  },
+  {
+   "id": "MXF-DV",
+   "family": "Codecs-Container",
+   "slot": "Container",
+   "SystemType": "AUDIOVISUAL",
+   "description": "MXF DV-DIF (SMPTE ST 383) — DV / DVCPRO 25 / 50 / 100 Mb/s DIF streams in the MXF generic container, audio interleaved in the DIF, frame- or clip-wrapped"
+  },
+  {
+   "id": "MPEG-TS",
+   "family": "Codecs-Container",
+   "slot": "Container",
+   "SystemType": "AUDIOVISUAL",
+   "description": "MPEG-TS (.ts) — MPEG-2 transport stream container"
+  },
+  {
+   "id": "MPEG-PS",
+   "family": "Codecs-Container",
+   "slot": "Container",
+   "SystemType": "AUDIOVISUAL",
+   "description": "MPEG-PS (.mpg) — MPEG program stream container"
+  },
+  {
+   "id": "WEBM",
+   "family": "Codecs-Container",
+   "slot": "Container",
+   "SystemType": "AUDIOVISUAL",
+   "description": "WebM (.webm) — Matroska-based web container (VP8 / VP9 / AV1, Opus / Vorbis)"
+  },
+  {
+   "id": "FLV",
+   "family": "Codecs-Container",
+   "slot": "Container",
+   "SystemType": "AUDIOVISUAL",
+   "description": "FLV (.flv) — Flash Video container"
+  },
+  {
+   "id": "ASF",
+   "family": "Codecs-Container",
+   "slot": "Container",
+   "SystemType": "AUDIOVISUAL",
+   "description": "ASF (.asf) — Advanced Systems Format (Windows Media)"
+  },
+  {
+   "id": "OGG",
+   "family": "Codecs-Container",
+   "slot": "Container",
+   "SystemType": "AUDIOVISUAL",
+   "description": "OGG (.ogg) — Xiph.org Ogg container"
+  },
+  {
+   "id": "3GP",
+   "family": "Codecs-Container",
+   "slot": "Container",
+   "SystemType": "AUDIOVISUAL",
+   "description": "3GP (.3gp) — 3GPP mobile container"
+  },
+  {
+   "id": "M4V",
+   "family": "Codecs-Container",
+   "slot": "Container",
+   "SystemType": "AUDIOVISUAL",
+   "description": "M4V (.m4v) — Apple MPEG-4 video container"
+  },
+  {
+   "id": "PNG",
+   "family": "Media-Images",
+   "slot": "MediaFormat",
+   "SystemType": null,
+   "description": "PNG (.png) — Portable Network Graphics, lossless compressed raster with alpha channel"
+  },
+  {
+   "id": "JPEG",
+   "family": "Media-Images",
+   "slot": "MediaFormat",
+   "SystemType": null,
+   "description": "JPEG / JPG (.jpg) — Joint Photographic Experts Group lossy photo image"
+  },
+  {
+   "id": "TIFF",
+   "family": "Media-Images",
+   "slot": "MediaFormat",
+   "SystemType": null,
+   "description": "TIFF (.tif) — Tagged Image File Format, uncompressed / LZW deep-color master image"
+  },
+  {
+   "id": "SVG",
+   "family": "Media-Images",
+   "slot": "MediaFormat",
+   "SystemType": null,
+   "description": "SVG (.svg) — Scalable Vector Graphics, XML-based 2D vector asset"
+  },
+  {
+   "id": "WEBP",
+   "family": "Media-Images",
+   "slot": "MediaFormat",
+   "SystemType": null,
+   "description": "WebP (.webp) — Modern web image format supporting lossy, lossless, and animated imagery"
+  },
+  {
+   "id": "EXR",
+   "family": "Media-Images",
+   "slot": "MediaFormat",
+   "SystemType": null,
+   "description": "OpenEXR (.exr) — Industrial Light & Magic 16-bit / 32-bit floating point high dynamic range raster"
+  },
+  {
+   "id": "HDR",
+   "family": "Media-Images",
+   "slot": "MediaFormat",
+   "SystemType": null,
+   "description": "Radiance HDR (.hdr) — RGBE high dynamic range environment and scene map"
+  },
+  {
+   "id": "GIF",
+   "family": "Media-Images",
+   "slot": "MediaFormat",
+   "SystemType": null,
+   "description": "GIF (.gif) — Graphics Interchange Format, 8-bit indexed palette animated graphic"
+  },
+  {
+   "id": "BMP",
+   "family": "Media-Images",
+   "slot": "MediaFormat",
+   "SystemType": null,
+   "description": "BMP (.bmp) — Windows bitmap uncompressed raster image"
+  },
+  {
+   "id": "PSD",
+   "family": "Media-Images",
+   "slot": "MediaFormat",
+   "SystemType": null,
+   "description": "PSD (.psd) — Adobe Photoshop layered raster/vector document format"
+  },
+  {
+   "id": "DNG",
+   "family": "Media-Images",
+   "slot": "MediaFormat",
+   "SystemType": null,
+   "description": "Adobe DNG (.dng) — Digital Negative open RAW photography specification"
+  },
+  {
+   "id": "RAW-IMAGE",
+   "family": "Media-Images",
+   "slot": "MediaFormat",
+   "SystemType": null,
+   "description": "RAW Image — Unprocessed camera sensor Bayer / CFA essence"
+  },
+  {
+   "id": "PDF",
+   "family": "Media-3D-Doc",
+   "slot": "MediaFormat",
+   "SystemType": null,
+   "description": "PDF (.pdf) — Adobe Portable Document Format"
+  },
+  {
+   "id": "GLTF",
+   "family": "Media-3D-Doc",
+   "slot": "MediaFormat",
+   "SystemType": null,
+   "description": "glTF (.gltf / .glb) — Khronos Group GL Transmission Format 3D scene / model"
+  },
+  {
+   "id": "USDZ",
+   "family": "Media-3D-Doc",
+   "slot": "MediaFormat",
+   "SystemType": null,
+   "description": "USDZ (.usdz) — Pixar / Apple Universal Scene Description packaged 3D asset"
+  },
+  {
+   "id": "JSON-DATA",
+   "family": "Media-3D-Doc",
+   "slot": "MediaFormat",
+   "SystemType": null,
+   "description": "JSON (.json) — JavaScript Object Notation structured data stream"
+  },
+  {
+   "id": "XML-DATA",
+   "family": "Media-3D-Doc",
+   "slot": "MediaFormat",
+   "SystemType": null,
+   "description": "XML (.xml) — Extensible Markup Language essence or schema"
+  },
+  {
+   "id": "IDEA",
+   "family": "Idea",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "IDEA — a value introduced into the graph (any type)"
+  },
+  {
+   "id": "IDEA-BOOL",
+   "family": "Idea",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "IDEA (yes / no) — a true / false assumption or switch"
+  },
+  {
+   "id": "IDEA-NUM",
+   "family": "Idea",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "IDEA (number) — a quantity, parameter or constant"
+  },
+  {
+   "id": "IDEA-TEXT",
+   "family": "Idea",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "IDEA (text) — a name, note or label value"
+  },
+  {
+   "id": "RESULT",
+   "family": "Result",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "RESULT — the value computed by what is wired in (any type)"
+  },
+  {
+   "id": "RESULT-BOOL",
+   "family": "Result",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "RESULT (yes / no) — a computed true / false"
+  },
+  {
+   "id": "RESULT-NUM",
+   "family": "Result",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "RESULT (number) — a computed quantity"
+  },
+  {
+   "id": "RESULT-TEXT",
+   "family": "Result",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "RESULT (text) — a computed name or label"
+  },
+  {
+   "id": "LOGIC-AND",
+   "family": "Logic",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "AND — true when every input is true"
+  },
+  {
+   "id": "LOGIC-OR",
+   "family": "Logic",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "OR — true when any input is true"
+  },
+  {
+   "id": "LOGIC-NOT",
+   "family": "Logic",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "NOT — the opposite of its one input"
+  },
+  {
+   "id": "LOGIC-XOR",
+   "family": "Logic",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "XOR — true when an odd number of inputs are true"
+  },
+  {
+   "id": "LOGIC-NAND",
+   "family": "Logic",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "NAND — false only when every input is true"
+  },
+  {
+   "id": "LOGIC-NOR",
+   "family": "Logic",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "NOR — true only when no input is true"
+  },
+  {
+   "id": "LOGIC-XNOR",
+   "family": "Logic",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "XNOR — true when an even number of inputs are true"
+  },
+  {
+   "id": "MATH-ADD",
+   "family": "Arithmetic",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "ADD — the sum of the inputs"
+  },
+  {
+   "id": "MATH-SUB",
+   "family": "Arithmetic",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "SUBTRACT — the first input minus the rest"
+  },
+  {
+   "id": "MATH-MUL",
+   "family": "Arithmetic",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "MULTIPLY — the product of the inputs"
+  },
+  {
+   "id": "MATH-DIV",
+   "family": "Arithmetic",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "DIVIDE — the first input divided by the rest (unknown on divide-by-zero)"
+  },
+  {
+   "id": "MATH-MOD",
+   "family": "Arithmetic",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "MODULO — the remainder of the first input divided by the second"
+  },
+  {
+   "id": "MATH-NEG",
+   "family": "Arithmetic",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "NEGATE — minus its one input"
+  },
+  {
+   "id": "MATH-ABS",
+   "family": "Arithmetic",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "ABSOLUTE — its one input without the sign"
+  },
+  {
+   "id": "MATH-MIN",
+   "family": "Arithmetic",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "MIN — the smallest input"
+  },
+  {
+   "id": "MATH-MAX",
+   "family": "Arithmetic",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "MAX — the largest input"
+  },
+  {
+   "id": "MATH-EQ",
+   "family": "Arithmetic",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "EQUAL — true when the two inputs are the same number"
+  },
+  {
+   "id": "MATH-NE",
+   "family": "Arithmetic",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "NOT EQUAL — true when the two inputs differ"
+  },
+  {
+   "id": "MATH-LT",
+   "family": "Arithmetic",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "LESS THAN — true when the first input is below the second"
+  },
+  {
+   "id": "MATH-LE",
+   "family": "Arithmetic",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "AT MOST — true when the first input is at or below the second"
+  },
+  {
+   "id": "MATH-GT",
+   "family": "Arithmetic",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "GREATER THAN — true when the first input is above the second"
+  },
+  {
+   "id": "MATH-GE",
+   "family": "Arithmetic",
+   "slot": "Logic",
+   "SystemType": null,
+   "description": "AT LEAST — true when the first input is at or above the second"
+  }
+ ]
+}

@@ -1,0 +1,1 @@
+{"schemaVersion":1,"ts":"2026-11-11T14:02:07.120Z","source":"os-shell","level":"warn","message":"Jobs: Couldn't reach the server","code":"fetch_failed","subject":"/api/os/builder/jobs","detail":"Failed to fetch","app":"jobs"}

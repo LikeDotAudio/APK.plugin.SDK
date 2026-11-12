@@ -1,0 +1,1 @@
+{"schemaVersion":1,"code":"fetch_failed","source":"os-shell","key":"fetch_failed-1a2b3c4d","raised_at":"2026-11-11T14:02:07.120Z","last_at":"2026-11-11T14:04:07.120Z","count":3,"ttl_s":300,"subject":"/api/os/builder/jobs","detail":"Failed to fetch","fix":["Start WEB.OsApi."],"app":"jobs"}

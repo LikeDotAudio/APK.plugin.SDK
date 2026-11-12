@@ -55,6 +55,9 @@ pub mod tokens;
 /// any reader — this, the Python package, every softapp — looks up the same
 /// title, cause and fix steps.
 pub mod problems;
+/// Logs and problems: one log line and one problem record for every plugin
+/// (twin of src/report.ts; types generated from schemas/{LogLine,ProblemRecord}).
+pub mod report;
 
 pub mod broker_backoff;
 

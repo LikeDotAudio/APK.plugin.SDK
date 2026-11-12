@@ -1,0 +1,1554 @@
+{
+  "namespace": "6f1d3a52-7c0b-4b8e-9a51-6b8f0a7d3e11",
+  "alphabet": "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_$",
+  "rule": "uuid5(namespace, '/'.join(roles)) as 128-bit int, 22 chars of IFC base64, most significant first",
+  "source": "PODS/POD.database/DATABASE.server.BIM/SRC/bim/ifc.py guid()",
+  "cases": [
+    {
+      "roles": [
+        "12-gauge-microphones/green12",
+        "element"
+      ],
+      "guid": "0_lvB97XbVehSvasMc$0RF"
+    },
+    {
+      "roles": [
+        "12-gauge-microphones/green12",
+        "project"
+      ],
+      "guid": "1zUXqXuozME95l0HAmtO6A"
+    },
+    {
+      "roles": [
+        "12-gauge-microphones/green12",
+        "port",
+        "0"
+      ],
+      "guid": "2zy71fNGvT$u4j9EED0eSz"
+    },
+    {
+      "roles": [
+        "12-gauge-microphones/green12",
+        "port0",
+        "pset"
+      ],
+      "guid": "3uhiCOGFXMxhruhRrohEnP"
+    },
+    {
+      "roles": [
+        "12-gauge-microphones/green12",
+        "nests"
+      ],
+      "guid": "1lBULwy1PSSvaY_YJXU1W1"
+    },
+    {
+      "roles": [
+        "aja/og-colorbox-r0",
+        "element"
+      ],
+      "guid": "1M99YkCE5OUOVn$_iIk1gP"
+    },
+    {
+      "roles": [
+        "aja/og-colorbox-r0",
+        "project"
+      ],
+      "guid": "3ssf0jdBPH5wl71E519a20"
+    },
+    {
+      "roles": [
+        "aja/og-colorbox-r0",
+        "port",
+        "0"
+      ],
+      "guid": "03jWXACxPHlP$GgdCLI4zr"
+    },
+    {
+      "roles": [
+        "aja/og-colorbox-r0",
+        "port0",
+        "pset"
+      ],
+      "guid": "3Sw2j7NFPT2wZStNxZF1km"
+    },
+    {
+      "roles": [
+        "aja/og-colorbox-r0",
+        "nests"
+      ],
+      "guid": "08v3$Enz9QfRIRi4Rut5e2"
+    },
+    {
+      "roles": [
+        "apple/mqd22ll-a",
+        "element"
+      ],
+      "guid": "0SpDMb_7nQKRN_InN_VUFy"
+    },
+    {
+      "roles": [
+        "apple/mqd22ll-a",
+        "project"
+      ],
+      "guid": "0GYP3BYNzSMRjSS7xub4ly"
+    },
+    {
+      "roles": [
+        "apple/mqd22ll-a",
+        "port",
+        "0"
+      ],
+      "guid": "3RFRXKPHbSh8lO3wIb4y6p"
+    },
+    {
+      "roles": [
+        "apple/mqd22ll-a",
+        "port0",
+        "pset"
+      ],
+      "guid": "3rvTzaQC5MdOhKSTrdRcAy"
+    },
+    {
+      "roles": [
+        "apple/mqd22ll-a",
+        "nests"
+      ],
+      "guid": "0x63lvAHfUcO2iB5fHNnlB"
+    },
+    {
+      "roles": [
+        "atlona/at-vtp-1000vl-bl",
+        "element"
+      ],
+      "guid": "09R$7buvLVZhFZvSxAn9Bp"
+    },
+    {
+      "roles": [
+        "atlona/at-vtp-1000vl-bl",
+        "project"
+      ],
+      "guid": "1FuQcsWtfNBu$ctejCKMcW"
+    },
+    {
+      "roles": [
+        "atlona/at-vtp-1000vl-bl",
+        "port",
+        "0"
+      ],
+      "guid": "08kztxPYPPvBvtmB4U2DQZ"
+    },
+    {
+      "roles": [
+        "atlona/at-vtp-1000vl-bl",
+        "port0",
+        "pset"
+      ],
+      "guid": "1WYbvlr1vGrQ5cjQDMvSD6"
+    },
+    {
+      "roles": [
+        "atlona/at-vtp-1000vl-bl",
+        "nests"
+      ],
+      "guid": "0ny2J6sJzTtxGV5TulVPt6"
+    },
+    {
+      "roles": [
+        "autoscript/a9010-1025",
+        "element"
+      ],
+      "guid": "00EIKcaazUxug$FKguVUPt"
+    },
+    {
+      "roles": [
+        "autoscript/a9010-1025",
+        "project"
+      ],
+      "guid": "0ichMUV1vSEwi3wMb2sRLg"
+    },
+    {
+      "roles": [
+        "autoscript/a9010-1025",
+        "port",
+        "0"
+      ],
+      "guid": "3S2Ozf9h9Pqgy74I7enHal"
+    },
+    {
+      "roles": [
+        "autoscript/a9010-1025",
+        "port0",
+        "pset"
+      ],
+      "guid": "1DfSU0OU1JJxHj47_9wjTM"
+    },
+    {
+      "roles": [
+        "autoscript/a9010-1025",
+        "nests"
+      ],
+      "guid": "0GLhZirbXJF9qfwpYX2D1K"
+    },
+    {
+      "roles": [
+        "beyerdynamic/mce-530",
+        "element"
+      ],
+      "guid": "0aGqOOxmrGPf0cb5MckTab"
+    },
+    {
+      "roles": [
+        "beyerdynamic/mce-530",
+        "project"
+      ],
+      "guid": "2976nYJIfRzRpAGm98GGZj"
+    },
+    {
+      "roles": [
+        "beyerdynamic/mce-530",
+        "port",
+        "0"
+      ],
+      "guid": "2LHeR8jEPLMAfc9yg02PSN"
+    },
+    {
+      "roles": [
+        "beyerdynamic/mce-530",
+        "port0",
+        "pset"
+      ],
+      "guid": "1dBnUfz5rOXBdpJrjRDAKy"
+    },
+    {
+      "roles": [
+        "beyerdynamic/mce-530",
+        "nests"
+      ],
+      "guid": "2EkBOyG7HVoQTlHGX$gcvc"
+    },
+    {
+      "roles": [
+        "black-magic/vhubsmas12g2020",
+        "element"
+      ],
+      "guid": "3MwQ6BkarIvfdFSaiSzaB4"
+    },
+    {
+      "roles": [
+        "black-magic/vhubsmas12g2020",
+        "project"
+      ],
+      "guid": "27rHy2v7nUOgPmsL7x_iwQ"
+    },
+    {
+      "roles": [
+        "black-magic/vhubsmas12g2020",
+        "port",
+        "0"
+      ],
+      "guid": "1GUPOlX8vQzgCs9V8BRuY5"
+    },
+    {
+      "roles": [
+        "black-magic/vhubsmas12g2020",
+        "port0",
+        "pset"
+      ],
+      "guid": "2rHDFSKXzLzOnYPnXr98y1"
+    },
+    {
+      "roles": [
+        "black-magic/vhubsmas12g2020",
+        "nests"
+      ],
+      "guid": "1HV8VbWc9UYgmggUxqLaW_"
+    },
+    {
+      "roles": [
+        "canare/can-0594",
+        "element"
+      ],
+      "guid": "39sf9xfFvHPuaiM2dfijqP"
+    },
+    {
+      "roles": [
+        "canare/can-0594",
+        "project"
+      ],
+      "guid": "0cY2hNeO5RoPjtnL4xhDXL"
+    },
+    {
+      "roles": [
+        "canare/can-0594",
+        "port",
+        "0"
+      ],
+      "guid": "2XXnzoic1PyhmQR_krfQBF"
+    },
+    {
+      "roles": [
+        "canare/can-0594",
+        "port0",
+        "pset"
+      ],
+      "guid": "2xk7Ij1hTJ4fcNyf_lSKUE"
+    },
+    {
+      "roles": [
+        "canare/can-0594",
+        "nests"
+      ],
+      "guid": "3UanfPR3jUrR4nddEOVu2g"
+    },
+    {
+      "roles": [
+        "chief/cms009w",
+        "element"
+      ],
+      "guid": "0hppxzCI5QEevskwVdQQvz"
+    },
+    {
+      "roles": [
+        "chief/cms009w",
+        "project"
+      ],
+      "guid": "3iyjP5qAjGyfRO6CQ9ydw1"
+    },
+    {
+      "roles": [
+        "chief/cms009w",
+        "port",
+        "0"
+      ],
+      "guid": "2_WJyi5VvMQBNsk2FMr6w9"
+    },
+    {
+      "roles": [
+        "chief/cms009w",
+        "port0",
+        "pset"
+      ],
+      "guid": "2_nMEfZdDRcRL4s6kNU4MN"
+    },
+    {
+      "roles": [
+        "chief/cms009w",
+        "nests"
+      ],
+      "guid": "1HWDKbC7nJWBvtLjRNCj0e"
+    },
+    {
+      "roles": [
+        "cisco/c9400-lc-12qc",
+        "element"
+      ],
+      "guid": "2GFnYCiZnI4w31xhr1WTH1"
+    },
+    {
+      "roles": [
+        "cisco/c9400-lc-12qc",
+        "project"
+      ],
+      "guid": "3itXfSKUfRRQBgF4fhBqSV"
+    },
+    {
+      "roles": [
+        "cisco/c9400-lc-12qc",
+        "port",
+        "0"
+      ],
+      "guid": "2B3k1I$wvI98IgrM31vINx"
+    },
+    {
+      "roles": [
+        "cisco/c9400-lc-12qc",
+        "port0",
+        "pset"
+      ],
+      "guid": "3YcF1TsvXHEvYg$VBlgPzB"
+    },
+    {
+      "roles": [
+        "cisco/c9400-lc-12qc",
+        "nests"
+      ],
+      "guid": "3QBT3IwGHMuOXmiJr15sTW"
+    },
+    {
+      "roles": [
+        "clearcom/lq-r2w4-4w4",
+        "element"
+      ],
+      "guid": "0NtnP4c8THwgTadtNsDhj7"
+    },
+    {
+      "roles": [
+        "clearcom/lq-r2w4-4w4",
+        "project"
+      ],
+      "guid": "2eVcxZYQvIYvXHSzR8zne6"
+    },
+    {
+      "roles": [
+        "clearcom/lq-r2w4-4w4",
+        "port",
+        "0"
+      ],
+      "guid": "0N60Eqx1jVEhumez9VaWxf"
+    },
+    {
+      "roles": [
+        "clearcom/lq-r2w4-4w4",
+        "port0",
+        "pset"
+      ],
+      "guid": "34YWPq2aXTFvSyoz2v8QSr"
+    },
+    {
+      "roles": [
+        "clearcom/lq-r2w4-4w4",
+        "nests"
+      ],
+      "guid": "1IYV17MOrOsuD$plUk0B$D"
+    },
+    {
+      "roles": [
+        "coolshield/part-cs-cornerkey",
+        "element"
+      ],
+      "guid": "02Gr1kzv5OmxeagPOaTMIU"
+    },
+    {
+      "roles": [
+        "coolshield/part-cs-cornerkey",
+        "project"
+      ],
+      "guid": "3GD$34syzHwRKiv5CdM7kq"
+    },
+    {
+      "roles": [
+        "coolshield/part-cs-cornerkey",
+        "port",
+        "0"
+      ],
+      "guid": "3Fb5pADsLJdOFMdL_K$BoE"
+    },
+    {
+      "roles": [
+        "coolshield/part-cs-cornerkey",
+        "port0",
+        "pset"
+      ],
+      "guid": "2BQRgH1X9PG9wad4qx0jiT"
+    },
+    {
+      "roles": [
+        "coolshield/part-cs-cornerkey",
+        "nests"
+      ],
+      "guid": "0Nsu3a$sPLHhJq52_4WQEm"
+    },
+    {
+      "roles": [
+        "crestron/usb-ext-2-local",
+        "element"
+      ],
+      "guid": "26iOokha9LjuY2NP$KcFG2"
+    },
+    {
+      "roles": [
+        "crestron/usb-ext-2-local",
+        "project"
+      ],
+      "guid": "0cLM3XMFrKgPbZ$P88lyaJ"
+    },
+    {
+      "roles": [
+        "crestron/usb-ext-2-local",
+        "port",
+        "0"
+      ],
+      "guid": "1gNyN5RiLRyAYuHnMn0Hjy"
+    },
+    {
+      "roles": [
+        "crestron/usb-ext-2-local",
+        "port0",
+        "pset"
+      ],
+      "guid": "05E8RAmHvGSxxbv7RfFE00"
+    },
+    {
+      "roles": [
+        "crestron/usb-ext-2-local",
+        "nests"
+      ],
+      "guid": "1cXCkaS3rNn8N_mzQ2DEif"
+    },
+    {
+      "roles": [
+        "directout/sfp-madi-mm",
+        "element"
+      ],
+      "guid": "28grjVXLfN2vNOhU$ed$Kj"
+    },
+    {
+      "roles": [
+        "directout/sfp-madi-mm",
+        "project"
+      ],
+      "guid": "0V9BJ9gdPRthUfjlRfME$i"
+    },
+    {
+      "roles": [
+        "directout/sfp-madi-mm",
+        "port",
+        "0"
+      ],
+      "guid": "2DDP033LTIWh5Ox1S3ITGm"
+    },
+    {
+      "roles": [
+        "directout/sfp-madi-mm",
+        "port0",
+        "pset"
+      ],
+      "guid": "2XSUnw0b1UkwKBVAWZa5oL"
+    },
+    {
+      "roles": [
+        "directout/sfp-madi-mm",
+        "nests"
+      ],
+      "guid": "1po8KSPfXLOAVU5LYNkWf9"
+    },
+    {
+      "roles": [
+        "etc/7068a1011-c",
+        "element"
+      ],
+      "guid": "2A4bi3sOTSb8b3KSycHMjk"
+    },
+    {
+      "roles": [
+        "etc/7068a1011-c",
+        "project"
+      ],
+      "guid": "13xko5jOTLNuTcWkMHw7ZV"
+    },
+    {
+      "roles": [
+        "etc/7068a1011-c",
+        "port",
+        "0"
+      ],
+      "guid": "0cYFWZ2MPIbAB1xb91mWL$"
+    },
+    {
+      "roles": [
+        "etc/7068a1011-c",
+        "port0",
+        "pset"
+      ],
+      "guid": "07P2S317PHiwHbcr8w5KlR"
+    },
+    {
+      "roles": [
+        "etc/7068a1011-c",
+        "nests"
+      ],
+      "guid": "16Tqe__KTS0OHiCeRfzBk7"
+    },
+    {
+      "roles": [
+        "extron/60-1737-15",
+        "element"
+      ],
+      "guid": "16Gj2SiazJJAcEuR5NHyx9"
+    },
+    {
+      "roles": [
+        "extron/60-1737-15",
+        "project"
+      ],
+      "guid": "2fHGWksMHTDfRSIVkEKhkg"
+    },
+    {
+      "roles": [
+        "extron/60-1737-15",
+        "port",
+        "0"
+      ],
+      "guid": "2NQODuknPNIQau35UnIQNd"
+    },
+    {
+      "roles": [
+        "extron/60-1737-15",
+        "port0",
+        "pset"
+      ],
+      "guid": "1oSBPLq1DSdAWsH_3C50dR"
+    },
+    {
+      "roles": [
+        "extron/60-1737-15",
+        "nests"
+      ],
+      "guid": "35Hnai$8TNLv_mGAnBngdW"
+    },
+    {
+      "roles": [
+        "fourier-audio/x-fa-te",
+        "element"
+      ],
+      "guid": "1LG6e7Xf9Ib8YNFN4tXs3v"
+    },
+    {
+      "roles": [
+        "fourier-audio/x-fa-te",
+        "project"
+      ],
+      "guid": "14HaXn61jKGhqNXcfNK6Cc"
+    },
+    {
+      "roles": [
+        "fourier-audio/x-fa-te",
+        "port",
+        "0"
+      ],
+      "guid": "1HNRHzA3bTHulzFCbnQJKL"
+    },
+    {
+      "roles": [
+        "fourier-audio/x-fa-te",
+        "port0",
+        "pset"
+      ],
+      "guid": "3NzfHdBFDMH9Z5LDqiMjHe"
+    },
+    {
+      "roles": [
+        "fourier-audio/x-fa-te",
+        "nests"
+      ],
+      "guid": "1Akp2SmRHQ98udj$dk_HtK"
+    },
+    {
+      "roles": [
+        "haivision/5008017",
+        "element"
+      ],
+      "guid": "19o898y5rU4PQ$PadhMFTf"
+    },
+    {
+      "roles": [
+        "haivision/5008017",
+        "project"
+      ],
+      "guid": "0tJyGoY9HNlQYuMI1TTTqU"
+    },
+    {
+      "roles": [
+        "haivision/5008017",
+        "port",
+        "0"
+      ],
+      "guid": "2UQ8i$O0DQ69WoGXKOdBz7"
+    },
+    {
+      "roles": [
+        "haivision/5008017",
+        "port0",
+        "pset"
+      ],
+      "guid": "0Ja18nvXrTge5iD9WkBV3Q"
+    },
+    {
+      "roles": [
+        "haivision/5008017",
+        "nests"
+      ],
+      "guid": "3OeQs_JyrJWedA94uBBt1R"
+    },
+    {
+      "roles": [
+        "interspace-industries/mcv7",
+        "element"
+      ],
+      "guid": "2pxsuGmkfRjPKSoAlSIwgG"
+    },
+    {
+      "roles": [
+        "interspace-industries/mcv7",
+        "project"
+      ],
+      "guid": "36taCFvL5GU8PTw1BtxixM"
+    },
+    {
+      "roles": [
+        "interspace-industries/mcv7",
+        "port",
+        "0"
+      ],
+      "guid": "1P5JnQxzfVJx6VHOMxcOxu"
+    },
+    {
+      "roles": [
+        "interspace-industries/mcv7",
+        "port0",
+        "pset"
+      ],
+      "guid": "1nRJmnlFDIwPKcBWm$29Yw"
+    },
+    {
+      "roles": [
+        "interspace-industries/mcv7",
+        "nests"
+      ],
+      "guid": "1iFjLMNQjVAvX_hxbWLV0a"
+    },
+    {
+      "roles": [
+        "keysight/e3615a",
+        "element"
+      ],
+      "guid": "1t8MPb5inNjvZkoPYcYe6H"
+    },
+    {
+      "roles": [
+        "keysight/e3615a",
+        "project"
+      ],
+      "guid": "3YrhX3tl1LwPbsuPweiDYf"
+    },
+    {
+      "roles": [
+        "keysight/e3615a",
+        "port",
+        "0"
+      ],
+      "guid": "1PRVsf4ufHJhFQtsUBcs4g"
+    },
+    {
+      "roles": [
+        "keysight/e3615a",
+        "port0",
+        "pset"
+      ],
+      "guid": "2gmCEN8gHH78oQT4QJux3H"
+    },
+    {
+      "roles": [
+        "keysight/e3615a",
+        "nests"
+      ],
+      "guid": "0pv0GNReTHrgwqklPRpLzz"
+    },
+    {
+      "roles": [
+        "lenovo/30h00072us",
+        "element"
+      ],
+      "guid": "1rIeia8H5KoOuOHUCbYjXN"
+    },
+    {
+      "roles": [
+        "lenovo/30h00072us",
+        "project"
+      ],
+      "guid": "1lo2nRM7rL_xUtueGSlqkB"
+    },
+    {
+      "roles": [
+        "lenovo/30h00072us",
+        "port",
+        "0"
+      ],
+      "guid": "2_9boJB8PSlhl3b4I_$5mM"
+    },
+    {
+      "roles": [
+        "lenovo/30h00072us",
+        "port0",
+        "pset"
+      ],
+      "guid": "03MVdvPZfPXwJ505j4dQOL"
+    },
+    {
+      "roles": [
+        "lenovo/30h00072us",
+        "nests"
+      ],
+      "guid": "1TCn$vKOTJOu8Qo75ryXmy"
+    },
+    {
+      "roles": [
+        "lightware/9156-0009",
+        "element"
+      ],
+      "guid": "2ODBLj96TN2vm4N50XD8g5"
+    },
+    {
+      "roles": [
+        "lightware/9156-0009",
+        "project"
+      ],
+      "guid": "0J7Z2rtqHIjuGuUFkMZOc3"
+    },
+    {
+      "roles": [
+        "lightware/9156-0009",
+        "port",
+        "0"
+      ],
+      "guid": "1VAWCcN01SSgAifj4bKVf$"
+    },
+    {
+      "roles": [
+        "lightware/9156-0009",
+        "port0",
+        "pset"
+      ],
+      "guid": "1IXSLw41XGeRMFam7_wYig"
+    },
+    {
+      "roles": [
+        "lightware/9156-0009",
+        "nests"
+      ],
+      "guid": "0BZi_bxFrVOhZSZErjVZz6"
+    },
+    {
+      "roles": [
+        "marshall-electronics/v-lcd173hr",
+        "element"
+      ],
+      "guid": "01rJlPDOnLoODUO3YumH0e"
+    },
+    {
+      "roles": [
+        "marshall-electronics/v-lcd173hr",
+        "project"
+      ],
+      "guid": "0jNxI7M3jR4hyUlJUdAtiZ"
+    },
+    {
+      "roles": [
+        "marshall-electronics/v-lcd173hr",
+        "port",
+        "0"
+      ],
+      "guid": "0vIzBibuPKQhRbJJ$ASBMf"
+    },
+    {
+      "roles": [
+        "marshall-electronics/v-lcd173hr",
+        "port0",
+        "pset"
+      ],
+      "guid": "3XIQMk9bDQiQTTJACBbwmk"
+    },
+    {
+      "roles": [
+        "marshall-electronics/v-lcd173hr",
+        "nests"
+      ],
+      "guid": "30oUiWKr9SqgM4$x0twP1w"
+    },
+    {
+      "roles": [
+        "middle-atlantic/dwrsr-4-fk",
+        "element"
+      ],
+      "guid": "1ktNZ1cl5NiwX92NDa_FRR"
+    },
+    {
+      "roles": [
+        "middle-atlantic/dwrsr-4-fk",
+        "project"
+      ],
+      "guid": "0HOThzrPzJThbMyyhZVQdT"
+    },
+    {
+      "roles": [
+        "middle-atlantic/dwrsr-4-fk",
+        "port",
+        "0"
+      ],
+      "guid": "0UNjgYl7rGn9KjKDBk8DIe"
+    },
+    {
+      "roles": [
+        "middle-atlantic/dwrsr-4-fk",
+        "port0",
+        "pset"
+      ],
+      "guid": "03$g5XFLbSyBJiHC6tFsnl"
+    },
+    {
+      "roles": [
+        "middle-atlantic/dwrsr-4-fk",
+        "nests"
+      ],
+      "guid": "189xs55dHKnPtpoZaPxugT"
+    },
+    {
+      "roles": [
+        "middle-atlantic/td2lk",
+        "element"
+      ],
+      "guid": "09m0H52NjJzgY5PX67Tjs_"
+    },
+    {
+      "roles": [
+        "middle-atlantic/td2lk",
+        "project"
+      ],
+      "guid": "0eftdhiy5MXA0ev4cpAHL9"
+    },
+    {
+      "roles": [
+        "middle-atlantic/td2lk",
+        "port",
+        "0"
+      ],
+      "guid": "3NdeB3wrfRpA2VtNzPts$0"
+    },
+    {
+      "roles": [
+        "middle-atlantic/td2lk",
+        "port0",
+        "pset"
+      ],
+      "guid": "3KASeZuVbRABTAJWG9eu8c"
+    },
+    {
+      "roles": [
+        "middle-atlantic/td2lk",
+        "nests"
+      ],
+      "guid": "3VgeCboprG4BbhordEhf3N"
+    },
+    {
+      "roles": [
+        "nady/scm-2090",
+        "element"
+      ],
+      "guid": "0Fiq9axfHLQ9Ht5htPAlK0"
+    },
+    {
+      "roles": [
+        "nady/scm-2090",
+        "project"
+      ],
+      "guid": "3xfoY30tbLuBYhw$yUoOWc"
+    },
+    {
+      "roles": [
+        "nady/scm-2090",
+        "port",
+        "0"
+      ],
+      "guid": "2VY_vUd3nPKfuSjVIUipoI"
+    },
+    {
+      "roles": [
+        "nady/scm-2090",
+        "port0",
+        "pset"
+      ],
+      "guid": "2jsX$Gv5nKvRtQ5M0vvFPS"
+    },
+    {
+      "roles": [
+        "nady/scm-2090",
+        "nests"
+      ],
+      "guid": "2FaDS6ysDRKQ$2ePZ0l9iQ"
+    },
+    {
+      "roles": [
+        "neutrik/neu-1894",
+        "element"
+      ],
+      "guid": "3mHy9wHNHPC812byW3$ZLF"
+    },
+    {
+      "roles": [
+        "neutrik/neu-1894",
+        "project"
+      ],
+      "guid": "1v3$dU6A1UnPu56NF_OxsU"
+    },
+    {
+      "roles": [
+        "neutrik/neu-1894",
+        "port",
+        "0"
+      ],
+      "guid": "3eAl0JSPPI6QGSUy1_tD0X"
+    },
+    {
+      "roles": [
+        "neutrik/neu-1894",
+        "port0",
+        "pset"
+      ],
+      "guid": "2QnxkFA$nGzfr78ALudlGV"
+    },
+    {
+      "roles": [
+        "neutrik/neu-1894",
+        "nests"
+      ],
+      "guid": "2XaVJLDrjOxxMi1zaGRJ7P"
+    },
+    {
+      "roles": [
+        "panduit/pan-1756",
+        "element"
+      ],
+      "guid": "3IE4jp4RvOIR$Sy959z0Ye"
+    },
+    {
+      "roles": [
+        "panduit/pan-1756",
+        "project"
+      ],
+      "guid": "03N8RSy4rQlOJsWqss1lR7"
+    },
+    {
+      "roles": [
+        "panduit/pan-1756",
+        "port",
+        "0"
+      ],
+      "guid": "1REu7U53HGPe9dqB6t1D4w"
+    },
+    {
+      "roles": [
+        "panduit/pan-1756",
+        "port0",
+        "pset"
+      ],
+      "guid": "3u8n5p3R1UtxnQVb97Rchj"
+    },
+    {
+      "roles": [
+        "panduit/pan-1756",
+        "nests"
+      ],
+      "guid": "2zE4dIcFvKORq5k1vaFeug"
+    },
+    {
+      "roles": [
+        "planar/933-1867",
+        "element"
+      ],
+      "guid": "0mOkwS_09U6f1aN2Q$eAuV"
+    },
+    {
+      "roles": [
+        "planar/933-1867",
+        "project"
+      ],
+      "guid": "27hV5AQjrG$Q3hIzqJRO8b"
+    },
+    {
+      "roles": [
+        "planar/933-1867",
+        "port",
+        "0"
+      ],
+      "guid": "0ZEMODYt5HBOR47ZB$k0Rs"
+    },
+    {
+      "roles": [
+        "planar/933-1867",
+        "port0",
+        "pset"
+      ],
+      "guid": "3VsRcNfhDK6gTgh2OI0l83"
+    },
+    {
+      "roles": [
+        "planar/933-1867",
+        "nests"
+      ],
+      "guid": "2fynZaV0PQ7R7Myo_rmxcu"
+    },
+    {
+      "roles": [
+        "qsc/spa2-60-na",
+        "element"
+      ],
+      "guid": "3F3_GulzPIdfoTX0HaATXl"
+    },
+    {
+      "roles": [
+        "qsc/spa2-60-na",
+        "project"
+      ],
+      "guid": "3GYI16Y7XO9wPaK$K4gEwb"
+    },
+    {
+      "roles": [
+        "qsc/spa2-60-na",
+        "port",
+        "0"
+      ],
+      "guid": "2EeO3gnj5VdQQmVlOkQO2_"
+    },
+    {
+      "roles": [
+        "qsc/spa2-60-na",
+        "port0",
+        "pset"
+      ],
+      "guid": "1LZboim8LLgPZiBXM6rthG"
+    },
+    {
+      "roles": [
+        "qsc/spa2-60-na",
+        "nests"
+      ],
+      "guid": "24RaXc99fK49dccQuvqjtq"
+    },
+    {
+      "roles": [
+        "rode/k2",
+        "element"
+      ],
+      "guid": "0TVBQsu8LNVQGf9BSqAwcd"
+    },
+    {
+      "roles": [
+        "rode/k2",
+        "project"
+      ],
+      "guid": "0quCR_xYLG1fCtGeymruox"
+    },
+    {
+      "roles": [
+        "rode/k2",
+        "port",
+        "0"
+      ],
+      "guid": "2KVN0pEDTI_xRx2sc6clmc"
+    },
+    {
+      "roles": [
+        "rode/k2",
+        "port0",
+        "pset"
+      ],
+      "guid": "20xBugNOPM1utMR2jtE7wX"
+    },
+    {
+      "roles": [
+        "rode/k2",
+        "nests"
+      ],
+      "guid": "296Cki5h1MuxVAFgZBAbD4"
+    },
+    {
+      "roles": [
+        "royer-labs/sf-24",
+        "element"
+      ],
+      "guid": "0JrpdB8HjLBPZVbn5ZZqAd"
+    },
+    {
+      "roles": [
+        "royer-labs/sf-24",
+        "project"
+      ],
+      "guid": "0F$1CYiVPUxAWa1YA6UAJA"
+    },
+    {
+      "roles": [
+        "royer-labs/sf-24",
+        "port",
+        "0"
+      ],
+      "guid": "10eELvXhHTWw8T0P4TU3cr"
+    },
+    {
+      "roles": [
+        "royer-labs/sf-24",
+        "port0",
+        "pset"
+      ],
+      "guid": "1ZOHP6WEXVbRsekRHAVsqT"
+    },
+    {
+      "roles": [
+        "royer-labs/sf-24",
+        "nests"
+      ],
+      "guid": "0WGlKVPl9QxvsGRa1WPLon"
+    },
+    {
+      "roles": [
+        "sennheiser/evol-g4-iem",
+        "element"
+      ],
+      "guid": "3JV5YrtEzKPg$VMQ_yYVOD"
+    },
+    {
+      "roles": [
+        "sennheiser/evol-g4-iem",
+        "project"
+      ],
+      "guid": "0ZW5OfwJ5REvBcQNNpYTMQ"
+    },
+    {
+      "roles": [
+        "sennheiser/evol-g4-iem",
+        "port",
+        "0"
+      ],
+      "guid": "0BhuG4UHfJoQtPnuRlUrB2"
+    },
+    {
+      "roles": [
+        "sennheiser/evol-g4-iem",
+        "port0",
+        "pset"
+      ],
+      "guid": "1abAjWQczHC8g001y5nOgx"
+    },
+    {
+      "roles": [
+        "sennheiser/evol-g4-iem",
+        "nests"
+      ],
+      "guid": "3tqlYWNLfJDh6qLghFtOVl"
+    },
+    {
+      "roles": [
+        "shure/mxwncs4",
+        "element"
+      ],
+      "guid": "0sSJoOaa1KJO_QCytiUZ3c"
+    },
+    {
+      "roles": [
+        "shure/mxwncs4",
+        "project"
+      ],
+      "guid": "0kGOdJP55JsP_t57r6JqwO"
+    },
+    {
+      "roles": [
+        "shure/mxwncs4",
+        "port",
+        "0"
+      ],
+      "guid": "1eFDOsPMvGW97NfvCiJnY_"
+    },
+    {
+      "roles": [
+        "shure/mxwncs4",
+        "port0",
+        "pset"
+      ],
+      "guid": "3mOg74CjrOP8NTY_44mJbf"
+    },
+    {
+      "roles": [
+        "shure/mxwncs4",
+        "nests"
+      ],
+      "guid": "0BQKzmDGfGqOsI0WgeL9Hq"
+    },
+    {
+      "roles": [
+        "slate-digital/ml-2",
+        "element"
+      ],
+      "guid": "2xOYVO8B1Um8trqYA7CkbD"
+    },
+    {
+      "roles": [
+        "slate-digital/ml-2",
+        "project"
+      ],
+      "guid": "2EIvMVcm5R4BPXlaWahsGG"
+    },
+    {
+      "roles": [
+        "slate-digital/ml-2",
+        "port",
+        "0"
+      ],
+      "guid": "2hiAkta7vUnvrMVuqbBaCX"
+    },
+    {
+      "roles": [
+        "slate-digital/ml-2",
+        "port0",
+        "pset"
+      ],
+      "guid": "2KHooHChbLCQUZdvr_Ubyl"
+    },
+    {
+      "roles": [
+        "slate-digital/ml-2",
+        "nests"
+      ],
+      "guid": "1Hkm45h35SAvOK0AVShzr_"
+    },
+    {
+      "roles": [
+        "stagemaker/sr10b0411004",
+        "element"
+      ],
+      "guid": "3uPhAqGsLQHvOqGNPVqs3y"
+    },
+    {
+      "roles": [
+        "stagemaker/sr10b0411004",
+        "project"
+      ],
+      "guid": "3NovsWasjV2hTBCNICCkoR"
+    },
+    {
+      "roles": [
+        "stagemaker/sr10b0411004",
+        "port",
+        "0"
+      ],
+      "guid": "1jvL4GrUHT7x0pjqBEz0$I"
+    },
+    {
+      "roles": [
+        "stagemaker/sr10b0411004",
+        "port0",
+        "pset"
+      ],
+      "guid": "1Tnjvc9yPGsA$k1h5BibAt"
+    },
+    {
+      "roles": [
+        "stagemaker/sr10b0411004",
+        "nests"
+      ],
+      "guid": "0S6UvgcSvQ1ANu1L1Q6kLI"
+    },
+    {
+      "roles": [
+        "tascam/bd-mp4k",
+        "element"
+      ],
+      "guid": "0Aw$217bPTCBn5kiq5zJE$"
+    },
+    {
+      "roles": [
+        "tascam/bd-mp4k",
+        "project"
+      ],
+      "guid": "1e3QHbwFPHWfm6ID7T9K92"
+    },
+    {
+      "roles": [
+        "tascam/bd-mp4k",
+        "port",
+        "0"
+      ],
+      "guid": "0VAk4JI1DJP9EF_9h2gvBi"
+    },
+    {
+      "roles": [
+        "tascam/bd-mp4k",
+        "port0",
+        "pset"
+      ],
+      "guid": "0MZpMdda5TUPR6cYuugjpV"
+    },
+    {
+      "roles": [
+        "tascam/bd-mp4k",
+        "nests"
+      ],
+      "guid": "32jUM3XR1Vm9to8EYn$cxa"
+    },
+    {
+      "roles": [
+        "toa/ir-702t-us",
+        "element"
+      ],
+      "guid": "2qozsQEjLJFuTrSh_FUkyf"
+    },
+    {
+      "roles": [
+        "toa/ir-702t-us",
+        "project"
+      ],
+      "guid": "1dQl7zzSbLIxvLfRKw7yta"
+    },
+    {
+      "roles": [
+        "toa/ir-702t-us",
+        "port",
+        "0"
+      ],
+      "guid": "1RBvfIvfLPCw1HLNXo$WkZ"
+    },
+    {
+      "roles": [
+        "toa/ir-702t-us",
+        "port0",
+        "pset"
+      ],
+      "guid": "2w60mk9OjOR9p9vZ5kaung"
+    },
+    {
+      "roles": [
+        "toa/ir-702t-us",
+        "nests"
+      ],
+      "guid": "3sNdg2101NZujmOyzhpN3r"
+    },
+    {
+      "roles": [
+        "unilumin/10g-sfp-module-s",
+        "element"
+      ],
+      "guid": "0VXY7IiCLNfAng3iKRyCge"
+    },
+    {
+      "roles": [
+        "unilumin/10g-sfp-module-s",
+        "project"
+      ],
+      "guid": "0oZlyaLI1L8vRqjNwGFbze"
+    },
+    {
+      "roles": [
+        "unilumin/10g-sfp-module-s",
+        "port",
+        "0"
+      ],
+      "guid": "2ZhCylEbbO_wfrplqhfG3u"
+    },
+    {
+      "roles": [
+        "unilumin/10g-sfp-module-s",
+        "port0",
+        "pset"
+      ],
+      "guid": "2rE1lBpP9T2u3dOWnMi_O0"
+    },
+    {
+      "roles": [
+        "unilumin/10g-sfp-module-s",
+        "nests"
+      ],
+      "guid": "0wAI8G94DSEA5mmC_w5Q5v"
+    },
+    {
+      "roles": [
+        "wattbox/wb-800vps-ipvm-12",
+        "element"
+      ],
+      "guid": "33QL$yc0vOngk0XHQVIEPI"
+    },
+    {
+      "roles": [
+        "wattbox/wb-800vps-ipvm-12",
+        "project"
+      ],
+      "guid": "3tfdLQB3nMxAXFL2yL$XIL"
+    },
+    {
+      "roles": [
+        "wattbox/wb-800vps-ipvm-12",
+        "port",
+        "0"
+      ],
+      "guid": "3UCXwIhsrPSQ8XcmIV77DS"
+    },
+    {
+      "roles": [
+        "wattbox/wb-800vps-ipvm-12",
+        "port0",
+        "pset"
+      ],
+      "guid": "2N9sfQyZvQ_wD4XkxPZWTN"
+    },
+    {
+      "roles": [
+        "wattbox/wb-800vps-ipvm-12",
+        "nests"
+      ],
+      "guid": "18zAlt3GDK_wNxv5lg$uEf"
+    },
+    {
+      "roles": [
+        ""
+      ],
+      "guid": "2ks3$ltPLTr84Vta3fnvxc"
+    },
+    {
+      "roles": [
+        "a"
+      ],
+      "guid": "0hC$7pBdTOAxFikp_BB_KA"
+    },
+    {
+      "roles": [
+        "genelec/8351",
+        "type"
+      ],
+      "guid": "1AvozRHETLZxbNRQLLJjVN"
+    },
+    {
+      "roles": [
+        "part/genelec/8351"
+      ],
+      "guid": "34ZEseQfPO6wf6D5cG5c5V"
+    },
+    {
+      "roles": [
+        "inst/mac:00:1b:21:3a:4f:10"
+      ],
+      "guid": "3zX89demTJDxh2fDdnaSxi"
+    },
+    {
+      "roles": [
+        "rel/connects/0aBc$_",
+        "1xYz"
+      ],
+      "guid": "0ae71WSrPLaOwUgnLBsFhb"
+    },
+    {
+      "roles": [
+        "déjà vu",
+        "ÆØÅ",
+        "日本"
+      ],
+      "guid": "2WPD0wfO1HcxLQZmG8kA6v"
+    },
+    {
+      "roles": [
+        "😀"
+      ],
+      "guid": "22lcJN4V9S0fppKtgza1gJ"
+    },
+    {
+      "roles": [
+        "a/b",
+        "c"
+      ],
+      "guid": "1gbUaU3FrHhu9NtcmnT$_p"
+    },
+    {
+      "roles": [
+        "a",
+        "b/c"
+      ],
+      "guid": "1gbUaU3FrHhu9NtcmnT$_p"
+    }
+  ]
+}

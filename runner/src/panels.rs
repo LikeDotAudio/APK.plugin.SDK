@@ -152,7 +152,7 @@ static TEMPLATES: Mutex<Vec<Template>> = Mutex::new(Vec::new());
 pub fn register(family: &str, manifest: &str, template: &str) {
     match parse_template(family, manifest, template) {
         Ok(t) => TEMPLATES.lock().unwrap_or_else(|e| e.into_inner()).push(t),
-        Err(why) => eprintln!("⚠️  [panels] {family}: {why} — no panel will be presented for it"),
+        Err(why) => elog!("⚠️  [panels] {family}: {why} — no panel will be presented for it"),
     }
 }
 
@@ -375,7 +375,7 @@ impl Book {
                         }
                         for leaf in KEY_LEAVES {
                             if let Some(v) = doc.get(leaf) {
-                                device.fields.insert(leaf.to_string(), text(v).trim().to_string());
+                                keep_identity(&mut device.fields, leaf, &text(v));
                             }
                         }
                     }
@@ -385,7 +385,7 @@ impl Book {
             } else if field == "last_online" {
                 device.online = Some(apkaudio_contracts::presence::is_online_now(payload));
             } else if KEY_LEAVES.contains(&field.as_str()) {
-                device.fields.insert(field, payload.trim().to_string());
+                keep_identity(&mut device.fields, &field, payload);
             }
             out.extend(self.reconcile(&base));
         }
@@ -566,6 +566,19 @@ impl Book {
             "source": format!("plugin:{}", self.token),
             "placements": placements,
         })
+    }
+}
+
+/// A device's identity leaf (`model`, `name`, `serial`), heard. A panel is never presented
+/// with emptier identity than the last good one (ROAD-3566): a cleared or empty leaf on a
+/// device that is still here leaves the value it had — the plugin's NMOS presence unlink
+/// and a DNS-SD record re-resolving both clear a leaf while the device itself stays, and
+/// each repainted its panel "NMOS node — " with no model, name or serial. A device that is
+/// GONE still goes: offline (`last_online`) and expiry empty the panel as before.
+fn keep_identity(fields: &mut BTreeMap<String, String>, leaf: &str, value: &str) {
+    let value = value.trim();
+    if !value.is_empty() {
+        fields.insert(leaf.to_string(), value.to_string());
     }
 }
 

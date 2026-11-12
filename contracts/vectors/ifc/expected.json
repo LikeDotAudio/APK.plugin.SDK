@@ -1,0 +1,2628 @@
+{
+ "console.ifc": {
+  "schema": "IFC4X3_ADD2",
+  "entities": 79,
+  "counts": {
+   "IFCAUDIOVISUALAPPLIANCE": 3,
+   "IFCAUDIOVISUALAPPLIANCETYPE": 2,
+   "IFCBUILDING": 1,
+   "IFCBUILDINGSTOREY": 1,
+   "IFCDISTRIBUTIONBOARD": 1,
+   "IFCDISTRIBUTIONBOARDTYPE": 1,
+   "IFCDISTRIBUTIONPORT": 7,
+   "IFCELEMENTASSEMBLY": 1,
+   "IFCELEMENTASSEMBLYTYPE": 1,
+   "IFCPROJECT": 1,
+   "IFCPROPERTYSET": 12,
+   "IFCPROPERTYSINGLEVALUE": 17,
+   "IFCRELAGGREGATES": 6,
+   "IFCRELCONNECTSPORTS": 3,
+   "IFCRELCONTAINEDINSPATIALSTRUCTURE": 1,
+   "IFCRELDEFINESBYPROPERTIES": 8,
+   "IFCRELDEFINESBYTYPE": 4,
+   "IFCRELNESTS": 3,
+   "IFCSITE": 1,
+   "IFCSIUNIT": 3,
+   "IFCSPACE": 1,
+   "IFCUNITASSIGNMENT": 1
+  },
+  "validation_errors": 0,
+  "elements": {
+   "37": {
+    "type": "IFCDISTRIBUTIONBOARD",
+    "ports": [
+     58,
+     63
+    ],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Ward-Beck Systems",
+      "ModelReference": "JF-TT"
+     },
+     "APK_PatchPoint": {
+      "NormalMode": "half-normal",
+      "Normals": "CH1 SEND (top row) -> CH1 RETURN (bottom row)"
+     }
+    }
+   },
+   "33": {
+    "type": "IFCAUDIOVISUALAPPLIANCE",
+    "ports": [
+     41,
+     46,
+     50,
+     54
+    ],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Ward-Beck Systems",
+      "ModelReference": "M470"
+     }
+    }
+   },
+   "35": {
+    "type": "IFCAUDIOVISUALAPPLIANCE",
+    "ports": [],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Ward-Beck Systems",
+      "ModelReference": "M472"
+     }
+    }
+   },
+   "73": {
+    "type": "IFCAUDIOVISUALAPPLIANCE",
+    "ports": [
+     74
+    ],
+    "psets": {}
+   },
+   "30": {
+    "type": "IFCELEMENTASSEMBLY",
+    "ports": [],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Ward-Beck Systems",
+      "ModelReference": "L2042"
+     }
+    }
+   },
+   "41": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "Pset_DistributionPortTypeCable": {
+      "ElectricalConnectionType": "XLR-3"
+     }
+    }
+   },
+   "46": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "Pset_DistributionPortTypeCable": {
+      "ElectricalConnectionType": "TT bantam"
+     }
+    }
+   },
+   "50": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "Pset_DistributionPortTypeCable": {
+      "ElectricalConnectionType": "TT bantam"
+     }
+    }
+   },
+   "54": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "Pset_DistributionPortTypeCable": {
+      "ElectricalConnectionType": "XLR-3"
+     }
+    }
+   },
+   "58": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "Pset_DistributionPortTypeCable": {
+      "ElectricalConnectionType": "TT bantam"
+     }
+    }
+   },
+   "63": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "Pset_DistributionPortTypeCable": {
+      "ElectricalConnectionType": "TT bantam"
+     }
+    }
+   },
+   "74": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "Pset_DistributionPortTypeCable": {
+      "ElectricalConnectionType": "XLR-3"
+     }
+    }
+   },
+   "26": {
+    "type": "IFCDISTRIBUTIONBOARDTYPE",
+    "ports": [],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Ward-Beck Systems",
+      "ModelReference": "JF-TT"
+     }
+    }
+   },
+   "18": {
+    "type": "IFCAUDIOVISUALAPPLIANCETYPE",
+    "ports": [],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Ward-Beck Systems",
+      "ModelReference": "M470"
+     }
+    }
+   },
+   "22": {
+    "type": "IFCAUDIOVISUALAPPLIANCETYPE",
+    "ports": [],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Ward-Beck Systems",
+      "ModelReference": "M472"
+     }
+    }
+   },
+   "14": {
+    "type": "IFCELEMENTASSEMBLYTYPE",
+    "ports": [],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Ward-Beck Systems",
+      "ModelReference": "L2042"
+     }
+    }
+   }
+  },
+  "connections": [
+   [
+    46,
+    58,
+    null
+   ],
+   [
+    63,
+    50,
+    null
+   ],
+   [
+    74,
+    41,
+    null
+   ]
+  ]
+ },
+ "parts/12-gauge-microphones--green12.ifc": {
+  "schema": "IFC4X3_ADD2",
+  "entities": 37,
+  "counts": {
+   "IFCAPPLICATION": 1,
+   "IFCAUDIOVISUALAPPLIANCE": 1,
+   "IFCAXIS2PLACEMENT3D": 1,
+   "IFCCARTESIANPOINT": 1,
+   "IFCDISTRIBUTIONPORT": 1,
+   "IFCGEOMETRICREPRESENTATIONCONTEXT": 1,
+   "IFCLOCALPLACEMENT": 1,
+   "IFCORGANIZATION": 1,
+   "IFCOWNERHISTORY": 1,
+   "IFCPERSON": 1,
+   "IFCPERSONANDORGANIZATION": 1,
+   "IFCPROJECT": 1,
+   "IFCPROPERTYSET": 3,
+   "IFCPROPERTYSINGLEVALUE": 13,
+   "IFCRELAGGREGATES": 1,
+   "IFCRELCONTAINEDINSPATIALSTRUCTURE": 1,
+   "IFCRELDEFINESBYPROPERTIES": 3,
+   "IFCRELNESTS": 1,
+   "IFCSITE": 1,
+   "IFCSIUNIT": 1,
+   "IFCUNITASSIGNMENT": 1
+  },
+  "validation_errors": 0,
+  "elements": {
+   "15": {
+    "type": "IFCAUDIOVISUALAPPLIANCE",
+    "ports": [
+     30
+    ],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "12 Gauge Microphones",
+      "ModelReference": "Green12",
+      "ModelLabel": "12 Gauge Microphones Green12"
+     },
+     "APK_Part": {
+      "ApkId": "12-gauge-microphones/green12",
+      "ApkCategory": "Microphones",
+      "ApkClass": "Cardioid Condenser Microphone",
+      "Stage": "declared",
+      "DepthMm": "65",
+      "WeightKg": "0.028"
+     }
+    }
+   },
+   "30": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "3-pin XLR male",
+      "ApkDomain": "audio",
+      "ApkSide": "output",
+      "Count": "1"
+     }
+    }
+   }
+  },
+  "connections": []
+ },
+ "parts/12-gauge-microphones--red12.ifc": {
+  "schema": "IFC4X3_ADD2",
+  "entities": 37,
+  "counts": {
+   "IFCAPPLICATION": 1,
+   "IFCAUDIOVISUALAPPLIANCE": 1,
+   "IFCAXIS2PLACEMENT3D": 1,
+   "IFCCARTESIANPOINT": 1,
+   "IFCDISTRIBUTIONPORT": 1,
+   "IFCGEOMETRICREPRESENTATIONCONTEXT": 1,
+   "IFCLOCALPLACEMENT": 1,
+   "IFCORGANIZATION": 1,
+   "IFCOWNERHISTORY": 1,
+   "IFCPERSON": 1,
+   "IFCPERSONANDORGANIZATION": 1,
+   "IFCPROJECT": 1,
+   "IFCPROPERTYSET": 3,
+   "IFCPROPERTYSINGLEVALUE": 13,
+   "IFCRELAGGREGATES": 1,
+   "IFCRELCONTAINEDINSPATIALSTRUCTURE": 1,
+   "IFCRELDEFINESBYPROPERTIES": 3,
+   "IFCRELNESTS": 1,
+   "IFCSITE": 1,
+   "IFCSIUNIT": 1,
+   "IFCUNITASSIGNMENT": 1
+  },
+  "validation_errors": 0,
+  "elements": {
+   "15": {
+    "type": "IFCAUDIOVISUALAPPLIANCE",
+    "ports": [
+     30
+    ],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "12 Gauge Microphones",
+      "ModelReference": "Red12",
+      "ModelLabel": "12 Gauge Microphones Red12"
+     },
+     "APK_Part": {
+      "ApkId": "12-gauge-microphones/red12",
+      "ApkCategory": "Microphones",
+      "ApkClass": "Omnidirectional Condenser Microphone",
+      "Stage": "declared",
+      "DepthMm": "55",
+      "WeightKg": "0.028"
+     }
+    }
+   },
+   "30": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "3-pin XLR male",
+      "ApkDomain": "audio",
+      "ApkSide": "output",
+      "Count": "1"
+     }
+    }
+   }
+  },
+  "connections": []
+ },
+ "parts/2110-solutions--gen5-opt.ifc": {
+  "schema": "IFC4X3_ADD2",
+  "entities": 27,
+  "counts": {
+   "IFCAPPLICATION": 1,
+   "IFCAXIS2PLACEMENT3D": 1,
+   "IFCCARTESIANPOINT": 1,
+   "IFCFLOWINSTRUMENT": 1,
+   "IFCGEOMETRICREPRESENTATIONCONTEXT": 1,
+   "IFCLOCALPLACEMENT": 1,
+   "IFCORGANIZATION": 1,
+   "IFCOWNERHISTORY": 1,
+   "IFCPERSON": 1,
+   "IFCPERSONANDORGANIZATION": 1,
+   "IFCPROJECT": 1,
+   "IFCPROPERTYSET": 2,
+   "IFCPROPERTYSINGLEVALUE": 7,
+   "IFCRELAGGREGATES": 1,
+   "IFCRELCONTAINEDINSPATIALSTRUCTURE": 1,
+   "IFCRELDEFINESBYPROPERTIES": 2,
+   "IFCSITE": 1,
+   "IFCSIUNIT": 1,
+   "IFCUNITASSIGNMENT": 1
+  },
+  "validation_errors": 0,
+  "elements": {
+   "15": {
+    "type": "IFCFLOWINSTRUMENT",
+    "ports": [],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "2110 Solutions",
+      "ModelReference": "GEN5-OPT",
+      "ModelLabel": "2110 Solutions GEN5-OPT"
+     },
+     "APK_Part": {
+      "ApkId": "2110-solutions/gen5-opt",
+      "ApkCategory": "Test & Measurement",
+      "ApkClass": "Instrument",
+      "Stage": "stub"
+     }
+    }
+   }
+  },
+  "connections": []
+ },
+ "parts/2110-solutions--vb440-appliance.ifc": {
+  "schema": "IFC4X3_ADD2",
+  "entities": 49,
+  "counts": {
+   "IFCAPPLICATION": 1,
+   "IFCAXIS2PLACEMENT3D": 1,
+   "IFCCARTESIANPOINT": 1,
+   "IFCCOMMUNICATIONSAPPLIANCE": 1,
+   "IFCDISTRIBUTIONPORT": 3,
+   "IFCGEOMETRICREPRESENTATIONCONTEXT": 1,
+   "IFCLOCALPLACEMENT": 1,
+   "IFCORGANIZATION": 1,
+   "IFCOWNERHISTORY": 1,
+   "IFCPERSON": 1,
+   "IFCPERSONANDORGANIZATION": 1,
+   "IFCPROJECT": 1,
+   "IFCPROPERTYSET": 5,
+   "IFCPROPERTYSINGLEVALUE": 19,
+   "IFCRELAGGREGATES": 1,
+   "IFCRELCONTAINEDINSPATIALSTRUCTURE": 1,
+   "IFCRELDEFINESBYPROPERTIES": 5,
+   "IFCRELNESTS": 1,
+   "IFCSITE": 1,
+   "IFCSIUNIT": 1,
+   "IFCUNITASSIGNMENT": 1
+  },
+  "validation_errors": 0,
+  "elements": {
+   "15": {
+    "type": "IFCCOMMUNICATIONSAPPLIANCE",
+    "ports": [
+     28,
+     35,
+     42
+    ],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "2110 Solutions",
+      "ModelReference": "VB440-APPLIANCE",
+      "ModelLabel": "2110 Solutions VB440-APPLIANCE"
+     },
+     "APK_Part": {
+      "ApkId": "2110-solutions/vb440-appliance",
+      "ApkCategory": "Computing",
+      "ApkClass": "Server & Parts",
+      "Stage": "seeded"
+     }
+    }
+   },
+   "28": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "RJ45",
+      "ApkDomain": "network",
+      "ApkSide": "input",
+      "Count": "1"
+     }
+    }
+   },
+   "35": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "SFP",
+      "ApkDomain": "network",
+      "ApkSide": "connection",
+      "Count": "2"
+     }
+    }
+   },
+   "42": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "IEC C14",
+      "ApkDomain": "power",
+      "ApkSide": "input",
+      "Count": "2"
+     }
+    }
+   }
+  },
+  "connections": []
+ },
+ "parts/360-systems--700-147-0001.ifc": {
+  "schema": "IFC4X3_ADD2",
+  "entities": 42,
+  "counts": {
+   "IFCAPPLICATION": 1,
+   "IFCAUDIOVISUALAPPLIANCE": 1,
+   "IFCAXIS2PLACEMENT3D": 1,
+   "IFCCARTESIANPOINT": 1,
+   "IFCDISTRIBUTIONPORT": 2,
+   "IFCGEOMETRICREPRESENTATIONCONTEXT": 1,
+   "IFCLOCALPLACEMENT": 1,
+   "IFCORGANIZATION": 1,
+   "IFCOWNERHISTORY": 1,
+   "IFCPERSON": 1,
+   "IFCPERSONANDORGANIZATION": 1,
+   "IFCPROJECT": 1,
+   "IFCPROPERTYSET": 4,
+   "IFCPROPERTYSINGLEVALUE": 15,
+   "IFCRELAGGREGATES": 1,
+   "IFCRELCONTAINEDINSPATIALSTRUCTURE": 1,
+   "IFCRELDEFINESBYPROPERTIES": 4,
+   "IFCRELNESTS": 1,
+   "IFCSITE": 1,
+   "IFCSIUNIT": 1,
+   "IFCUNITASSIGNMENT": 1
+  },
+  "validation_errors": 0,
+  "elements": {
+   "15": {
+    "type": "IFCAUDIOVISUALAPPLIANCE",
+    "ports": [
+     28,
+     35
+    ],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "360 Systems",
+      "ModelReference": "700-147-0001",
+      "ModelLabel": "360 Systems 700-147-0001"
+     },
+     "APK_Part": {
+      "ApkId": "360-systems/700-147-0001",
+      "ApkCategory": "Video",
+      "ApkClass": "Player / Recorder",
+      "Stage": "seeded"
+     }
+    }
+   },
+   "28": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "RJ45",
+      "ApkDomain": "network",
+      "ApkSide": "input",
+      "Count": "1"
+     }
+    }
+   },
+   "35": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "IEC C14",
+      "ApkDomain": "power",
+      "ApkSide": "input",
+      "Count": "1"
+     }
+    }
+   }
+  },
+  "connections": []
+ },
+ "parts/a-i-r--liberator.ifc": {
+  "schema": "IFC4X3_ADD2",
+  "entities": 36,
+  "counts": {
+   "IFCAPPLICATION": 1,
+   "IFCAUDIOVISUALAPPLIANCE": 1,
+   "IFCAXIS2PLACEMENT3D": 1,
+   "IFCCARTESIANPOINT": 1,
+   "IFCDISTRIBUTIONPORT": 1,
+   "IFCGEOMETRICREPRESENTATIONCONTEXT": 1,
+   "IFCLOCALPLACEMENT": 1,
+   "IFCORGANIZATION": 1,
+   "IFCOWNERHISTORY": 1,
+   "IFCPERSON": 1,
+   "IFCPERSONANDORGANIZATION": 1,
+   "IFCPROJECT": 1,
+   "IFCPROPERTYSET": 3,
+   "IFCPROPERTYSINGLEVALUE": 12,
+   "IFCRELAGGREGATES": 1,
+   "IFCRELCONTAINEDINSPATIALSTRUCTURE": 1,
+   "IFCRELDEFINESBYPROPERTIES": 3,
+   "IFCRELNESTS": 1,
+   "IFCSITE": 1,
+   "IFCSIUNIT": 1,
+   "IFCUNITASSIGNMENT": 1
+  },
+  "validation_errors": 0,
+  "elements": {
+   "15": {
+    "type": "IFCAUDIOVISUALAPPLIANCE",
+    "ports": [
+     29
+    ],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "A.I.R",
+      "ModelReference": "Liberator",
+      "ModelLabel": "A.I.R Liberator"
+     },
+     "APK_Part": {
+      "ApkId": "a-i-r/liberator",
+      "ApkCategory": "Microphones",
+      "ApkClass": "Multi-Pattern Condenser Microphone",
+      "Stage": "declared",
+      "WidthMm": "46"
+     }
+    }
+   },
+   "29": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "3-pin XLR male",
+      "ApkDomain": "audio",
+      "ApkSide": "output",
+      "Count": "1"
+     }
+    }
+   }
+  },
+  "connections": []
+ },
+ "parts/absen--b5100-1-23.ifc": {
+  "schema": "IFC4X3_ADD2",
+  "entities": 37,
+  "counts": {
+   "IFCAPPLICATION": 1,
+   "IFCAXIS2PLACEMENT2D": 1,
+   "IFCAXIS2PLACEMENT3D": 1,
+   "IFCBUILDINGELEMENTPROXY": 1,
+   "IFCCARTESIANPOINT": 2,
+   "IFCDIRECTION": 1,
+   "IFCEXTRUDEDAREASOLID": 1,
+   "IFCGEOMETRICREPRESENTATIONCONTEXT": 1,
+   "IFCLOCALPLACEMENT": 1,
+   "IFCORGANIZATION": 1,
+   "IFCOWNERHISTORY": 1,
+   "IFCPERSON": 1,
+   "IFCPERSONANDORGANIZATION": 1,
+   "IFCPRODUCTDEFINITIONSHAPE": 1,
+   "IFCPROJECT": 1,
+   "IFCPROPERTYSET": 2,
+   "IFCPROPERTYSINGLEVALUE": 10,
+   "IFCRECTANGLEPROFILEDEF": 1,
+   "IFCRELAGGREGATES": 1,
+   "IFCRELCONTAINEDINSPATIALSTRUCTURE": 1,
+   "IFCRELDEFINESBYPROPERTIES": 2,
+   "IFCSHAPEREPRESENTATION": 1,
+   "IFCSITE": 1,
+   "IFCSIUNIT": 1,
+   "IFCUNITASSIGNMENT": 1
+  },
+  "validation_errors": 0,
+  "elements": {
+   "22": {
+    "type": "IFCBUILDINGELEMENTPROXY",
+    "ports": [],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Absen",
+      "ModelReference": "B5100-1-23",
+      "ModelLabel": "Absen B5100-1-23"
+     },
+     "APK_Part": {
+      "ApkId": "absen/b5100-1-23",
+      "ApkCategory": "Accessories",
+      "ApkClass": "Accessory",
+      "Stage": "seeded",
+      "WidthMm": "1697.5",
+      "HeightMm": "70.5",
+      "DepthMm": "5"
+     }
+    }
+   }
+  },
+  "connections": []
+ },
+ "parts/ac-infinity--ac-aft7-wn.ifc": {
+  "schema": "IFC4X3_ADD2",
+  "entities": 35,
+  "counts": {
+   "IFCAPPLICATION": 1,
+   "IFCAXIS2PLACEMENT3D": 1,
+   "IFCCARTESIANPOINT": 1,
+   "IFCCOMMUNICATIONSAPPLIANCE": 1,
+   "IFCDISTRIBUTIONPORT": 1,
+   "IFCGEOMETRICREPRESENTATIONCONTEXT": 1,
+   "IFCLOCALPLACEMENT": 1,
+   "IFCORGANIZATION": 1,
+   "IFCOWNERHISTORY": 1,
+   "IFCPERSON": 1,
+   "IFCPERSONANDORGANIZATION": 1,
+   "IFCPROJECT": 1,
+   "IFCPROPERTYSET": 3,
+   "IFCPROPERTYSINGLEVALUE": 11,
+   "IFCRELAGGREGATES": 1,
+   "IFCRELCONTAINEDINSPATIALSTRUCTURE": 1,
+   "IFCRELDEFINESBYPROPERTIES": 3,
+   "IFCRELNESTS": 1,
+   "IFCSITE": 1,
+   "IFCSIUNIT": 1,
+   "IFCUNITASSIGNMENT": 1
+  },
+  "validation_errors": 0,
+  "elements": {
+   "15": {
+    "type": "IFCCOMMUNICATIONSAPPLIANCE",
+    "ports": [
+     28
+    ],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "AC Infinity",
+      "ModelReference": "AC-AFT7-WN",
+      "ModelLabel": "AC Infinity AC-AFT7-WN"
+     },
+     "APK_Part": {
+      "ApkId": "ac-infinity/ac-aft7-wn",
+      "ApkCategory": "Infrastructure",
+      "ApkClass": "Rack & Enclosure",
+      "Stage": "seeded"
+     }
+    }
+   },
+   "28": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "Circular 2-pin F",
+      "ApkDomain": "power",
+      "ApkSide": "input",
+      "Count": "1"
+     }
+    }
+   }
+  },
+  "connections": []
+ },
+ "parts/ace-backstage--c-15102.ifc": {
+  "schema": "IFC4X3_ADD2",
+  "entities": 36,
+  "counts": {
+   "IFCAPPLICATION": 1,
+   "IFCAUDIOVISUALAPPLIANCE": 1,
+   "IFCAXIS2PLACEMENT3D": 1,
+   "IFCCARTESIANPOINT": 1,
+   "IFCDISTRIBUTIONPORT": 1,
+   "IFCGEOMETRICREPRESENTATIONCONTEXT": 1,
+   "IFCLOCALPLACEMENT": 1,
+   "IFCORGANIZATION": 1,
+   "IFCOWNERHISTORY": 1,
+   "IFCPERSON": 1,
+   "IFCPERSONANDORGANIZATION": 1,
+   "IFCPROJECT": 1,
+   "IFCPROPERTYSET": 3,
+   "IFCPROPERTYSINGLEVALUE": 12,
+   "IFCRELAGGREGATES": 1,
+   "IFCRELCONTAINEDINSPATIALSTRUCTURE": 1,
+   "IFCRELDEFINESBYPROPERTIES": 3,
+   "IFCRELNESTS": 1,
+   "IFCSITE": 1,
+   "IFCSIUNIT": 1,
+   "IFCUNITASSIGNMENT": 1
+  },
+  "validation_errors": 0,
+  "elements": {
+   "15": {
+    "type": "IFCAUDIOVISUALAPPLIANCE",
+    "ports": [
+     28
+    ],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Ace Backstage",
+      "ModelReference": "C-15102",
+      "ModelLabel": "Ace Backstage C-15102"
+     },
+     "APK_Part": {
+      "ApkId": "ace-backstage/c-15102",
+      "ApkCategory": "Audio",
+      "ApkClass": "Audio",
+      "Stage": "seeded"
+     }
+    }
+   },
+   "28": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "XLR-3 F",
+      "ApkDomain": "audio",
+      "ApkSide": "output",
+      "Count": "1",
+      "Face": "front"
+     }
+    }
+   }
+  },
+  "connections": []
+ },
+ "parts/adafruit--423.ifc": {
+  "schema": "IFC4X3_ADD2",
+  "entities": 34,
+  "counts": {
+   "IFCAPPLICATION": 1,
+   "IFCAXIS2PLACEMENT3D": 1,
+   "IFCBUILDINGELEMENTPROXY": 1,
+   "IFCCARTESIANPOINT": 1,
+   "IFCDISTRIBUTIONPORT": 1,
+   "IFCGEOMETRICREPRESENTATIONCONTEXT": 1,
+   "IFCLOCALPLACEMENT": 1,
+   "IFCORGANIZATION": 1,
+   "IFCOWNERHISTORY": 1,
+   "IFCPERSON": 1,
+   "IFCPERSONANDORGANIZATION": 1,
+   "IFCPROJECT": 1,
+   "IFCPROPERTYSET": 3,
+   "IFCPROPERTYSINGLEVALUE": 10,
+   "IFCRELAGGREGATES": 1,
+   "IFCRELCONTAINEDINSPATIALSTRUCTURE": 1,
+   "IFCRELDEFINESBYPROPERTIES": 3,
+   "IFCRELNESTS": 1,
+   "IFCSITE": 1,
+   "IFCSIUNIT": 1,
+   "IFCUNITASSIGNMENT": 1
+  },
+  "validation_errors": 0,
+  "elements": {
+   "15": {
+    "type": "IFCBUILDINGELEMENTPROXY",
+    "ports": [
+     28
+    ],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Adafruit",
+      "ModelReference": "423",
+      "ModelLabel": "Adafruit 423"
+     },
+     "APK_Part": {
+      "ApkId": "adafruit/423",
+      "ApkCategory": "Accessories",
+      "ApkClass": "Cable",
+      "Stage": "seeded"
+     }
+    }
+   },
+   "28": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "ApkDomain": "control",
+      "ApkSide": "input",
+      "Count": "2"
+     }
+    }
+   }
+  },
+  "connections": []
+ },
+ "parts/adder--alif1002r-us.ifc": {
+  "schema": "IFC4X3_ADD2",
+  "entities": 83,
+  "counts": {
+   "IFCAPPLICATION": 1,
+   "IFCAXIS2PLACEMENT3D": 1,
+   "IFCCARTESIANPOINT": 1,
+   "IFCCOMMUNICATIONSAPPLIANCE": 1,
+   "IFCDISTRIBUTIONPORT": 8,
+   "IFCGEOMETRICREPRESENTATIONCONTEXT": 1,
+   "IFCLOCALPLACEMENT": 1,
+   "IFCORGANIZATION": 1,
+   "IFCOWNERHISTORY": 1,
+   "IFCPERSON": 1,
+   "IFCPERSONANDORGANIZATION": 1,
+   "IFCPROJECT": 1,
+   "IFCPROPERTYSET": 10,
+   "IFCPROPERTYSINGLEVALUE": 38,
+   "IFCRELAGGREGATES": 1,
+   "IFCRELCONTAINEDINSPATIALSTRUCTURE": 1,
+   "IFCRELDEFINESBYPROPERTIES": 10,
+   "IFCRELNESTS": 1,
+   "IFCSITE": 1,
+   "IFCSIUNIT": 1,
+   "IFCUNITASSIGNMENT": 1
+  },
+  "validation_errors": 0,
+  "elements": {
+   "15": {
+    "type": "IFCCOMMUNICATIONSAPPLIANCE",
+    "ports": [
+     28,
+     35,
+     41,
+     48,
+     55,
+     62,
+     69,
+     76
+    ],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Adder",
+      "ModelReference": "ALIF1002R-US",
+      "ModelLabel": "Adder ALIF1002R-US"
+     },
+     "APK_Part": {
+      "ApkId": "adder/alif1002r-us",
+      "ApkCategory": "Network",
+      "ApkClass": "Network",
+      "Stage": "seeded"
+     }
+    }
+   },
+   "28": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "RJ45",
+      "ApkDomain": "network",
+      "ApkSide": "input",
+      "Count": "1"
+     }
+    }
+   },
+   "35": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "ApkDomain": "network",
+      "ApkSide": "input",
+      "Count": "1"
+     }
+    }
+   },
+   "41": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "DVI-I",
+      "ApkDomain": "video",
+      "ApkSide": "output",
+      "Count": "1"
+     }
+    }
+   },
+   "48": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "3.5 mm TRS",
+      "ApkDomain": "audio",
+      "ApkSide": "output",
+      "Count": "1"
+     }
+    }
+   },
+   "55": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "3.5 mm TRS",
+      "ApkDomain": "audio",
+      "ApkSide": "input",
+      "Count": "1"
+     }
+    }
+   },
+   "62": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "DB-9 F",
+      "ApkDomain": "control",
+      "ApkSide": "connection",
+      "Count": "1"
+     }
+    }
+   },
+   "69": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "USB-A",
+      "ApkDomain": "usb",
+      "ApkSide": "input",
+      "Count": "4"
+     }
+    }
+   },
+   "76": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "Circular 2-pin F",
+      "ApkDomain": "power",
+      "ApkSide": "input",
+      "Count": "1"
+     }
+    }
+   }
+  },
+  "connections": []
+ },
+ "parts/adder--psu-iec-12vdc-5a.ifc": {
+  "schema": "IFC4X3_ADD2",
+  "entities": 42,
+  "counts": {
+   "IFCAPPLICATION": 1,
+   "IFCAXIS2PLACEMENT3D": 1,
+   "IFCCARTESIANPOINT": 1,
+   "IFCDISTRIBUTIONPORT": 2,
+   "IFCELECTRICAPPLIANCE": 1,
+   "IFCGEOMETRICREPRESENTATIONCONTEXT": 1,
+   "IFCLOCALPLACEMENT": 1,
+   "IFCORGANIZATION": 1,
+   "IFCOWNERHISTORY": 1,
+   "IFCPERSON": 1,
+   "IFCPERSONANDORGANIZATION": 1,
+   "IFCPROJECT": 1,
+   "IFCPROPERTYSET": 4,
+   "IFCPROPERTYSINGLEVALUE": 15,
+   "IFCRELAGGREGATES": 1,
+   "IFCRELCONTAINEDINSPATIALSTRUCTURE": 1,
+   "IFCRELDEFINESBYPROPERTIES": 4,
+   "IFCRELNESTS": 1,
+   "IFCSITE": 1,
+   "IFCSIUNIT": 1,
+   "IFCUNITASSIGNMENT": 1
+  },
+  "validation_errors": 0,
+  "elements": {
+   "15": {
+    "type": "IFCELECTRICAPPLIANCE",
+    "ports": [
+     28,
+     35
+    ],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Adder",
+      "ModelReference": "PSU-IEC-12VDC-5A",
+      "ModelLabel": "Adder PSU-IEC-12VDC-5A"
+     },
+     "APK_Part": {
+      "ApkId": "adder/psu-iec-12vdc-5a",
+      "ApkCategory": "Power",
+      "ApkClass": "Power",
+      "Stage": "seeded"
+     }
+    }
+   },
+   "28": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "IEC C14",
+      "ApkDomain": "power",
+      "ApkSide": "input",
+      "Count": "1"
+     }
+    }
+   },
+   "35": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "Circular 2-pin M",
+      "ApkDomain": "power",
+      "ApkSide": "output",
+      "Count": "1"
+     }
+    }
+   }
+  },
+  "connections": []
+ },
+ "parts/aiphone--ix-mv7-hb.ifc": {
+  "schema": "IFC4X3_ADD2",
+  "entities": 35,
+  "counts": {
+   "IFCAPPLICATION": 1,
+   "IFCAXIS2PLACEMENT3D": 1,
+   "IFCCARTESIANPOINT": 1,
+   "IFCCOMMUNICATIONSAPPLIANCE": 1,
+   "IFCDISTRIBUTIONPORT": 1,
+   "IFCGEOMETRICREPRESENTATIONCONTEXT": 1,
+   "IFCLOCALPLACEMENT": 1,
+   "IFCORGANIZATION": 1,
+   "IFCOWNERHISTORY": 1,
+   "IFCPERSON": 1,
+   "IFCPERSONANDORGANIZATION": 1,
+   "IFCPROJECT": 1,
+   "IFCPROPERTYSET": 3,
+   "IFCPROPERTYSINGLEVALUE": 11,
+   "IFCRELAGGREGATES": 1,
+   "IFCRELCONTAINEDINSPATIALSTRUCTURE": 1,
+   "IFCRELDEFINESBYPROPERTIES": 3,
+   "IFCRELNESTS": 1,
+   "IFCSITE": 1,
+   "IFCSIUNIT": 1,
+   "IFCUNITASSIGNMENT": 1
+  },
+  "validation_errors": 0,
+  "elements": {
+   "15": {
+    "type": "IFCCOMMUNICATIONSAPPLIANCE",
+    "ports": [
+     28
+    ],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Aiphone",
+      "ModelReference": "IX-MV7-HB",
+      "ModelLabel": "Aiphone IX-MV7-HB"
+     },
+     "APK_Part": {
+      "ApkId": "aiphone/ix-mv7-hb",
+      "ApkCategory": "Control",
+      "ApkClass": "Control",
+      "Stage": "seeded"
+     }
+    }
+   },
+   "28": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "RJ45",
+      "ApkDomain": "network",
+      "ApkSide": "input",
+      "Count": "1"
+     }
+    }
+   }
+  },
+  "connections": []
+ },
+ "parts/aja--ha5-plus.ifc": {
+  "schema": "IFC4X3_ADD2",
+  "entities": 56,
+  "counts": {
+   "IFCAPPLICATION": 1,
+   "IFCAXIS2PLACEMENT3D": 1,
+   "IFCCARTESIANPOINT": 1,
+   "IFCDISTRIBUTIONPORT": 4,
+   "IFCFLOWINSTRUMENT": 1,
+   "IFCGEOMETRICREPRESENTATIONCONTEXT": 1,
+   "IFCLOCALPLACEMENT": 1,
+   "IFCORGANIZATION": 1,
+   "IFCOWNERHISTORY": 1,
+   "IFCPERSON": 1,
+   "IFCPERSONANDORGANIZATION": 1,
+   "IFCPROJECT": 1,
+   "IFCPROPERTYSET": 6,
+   "IFCPROPERTYSINGLEVALUE": 23,
+   "IFCRELAGGREGATES": 1,
+   "IFCRELCONTAINEDINSPATIALSTRUCTURE": 1,
+   "IFCRELDEFINESBYPROPERTIES": 6,
+   "IFCRELNESTS": 1,
+   "IFCSITE": 1,
+   "IFCSIUNIT": 1,
+   "IFCUNITASSIGNMENT": 1
+  },
+  "validation_errors": 0,
+  "elements": {
+   "15": {
+    "type": "IFCFLOWINSTRUMENT",
+    "ports": [
+     28,
+     35,
+     42,
+     49
+    ],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "AJA",
+      "ModelReference": "HA5-PLUS",
+      "ModelLabel": "AJA HA5-PLUS"
+     },
+     "APK_Part": {
+      "ApkId": "aja/ha5-plus",
+      "ApkCategory": "Test & Measurement",
+      "ApkClass": "Instrument",
+      "Stage": "seeded"
+     }
+    }
+   },
+   "28": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "HDMI",
+      "ApkDomain": "video",
+      "ApkSide": "input",
+      "Count": "1"
+     }
+    }
+   },
+   "35": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "BNC",
+      "ApkDomain": "video",
+      "ApkSide": "output",
+      "Count": "1"
+     }
+    }
+   },
+   "42": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "BNC",
+      "ApkDomain": "video",
+      "ApkSide": "output",
+      "Count": "1"
+     }
+    }
+   },
+   "49": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "Circular 2-pin",
+      "ApkDomain": "power",
+      "ApkSide": "output",
+      "Count": "1"
+     }
+    }
+   }
+  },
+  "connections": []
+ },
+ "parts/aja--ki-pro-ult-12g.ifc": {
+  "schema": "IFC4X3_ADD2",
+  "entities": 120,
+  "counts": {
+   "IFCAPPLICATION": 1,
+   "IFCAUDIOVISUALAPPLIANCE": 1,
+   "IFCAXIS2PLACEMENT3D": 1,
+   "IFCCARTESIANPOINT": 1,
+   "IFCDISTRIBUTIONPORT": 13,
+   "IFCGEOMETRICREPRESENTATIONCONTEXT": 1,
+   "IFCLOCALPLACEMENT": 1,
+   "IFCORGANIZATION": 1,
+   "IFCOWNERHISTORY": 1,
+   "IFCPERSON": 1,
+   "IFCPERSONANDORGANIZATION": 1,
+   "IFCPROJECT": 1,
+   "IFCPROPERTYSET": 15,
+   "IFCPROPERTYSINGLEVALUE": 60,
+   "IFCRELAGGREGATES": 1,
+   "IFCRELCONTAINEDINSPATIALSTRUCTURE": 1,
+   "IFCRELDEFINESBYPROPERTIES": 15,
+   "IFCRELNESTS": 1,
+   "IFCSITE": 1,
+   "IFCSIUNIT": 1,
+   "IFCUNITASSIGNMENT": 1
+  },
+  "validation_errors": 0,
+  "elements": {
+   "15": {
+    "type": "IFCAUDIOVISUALAPPLIANCE",
+    "ports": [
+     28,
+     36,
+     43,
+     50,
+     57,
+     64,
+     71,
+     78,
+     85,
+     92,
+     99,
+     106,
+     113
+    ],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "AJA",
+      "ModelReference": "KI-PRO-ULT-12G",
+      "ModelLabel": "AJA KI-PRO-ULT-12G"
+     },
+     "APK_Part": {
+      "ApkId": "aja/ki-pro-ult-12g",
+      "ApkCategory": "Audio",
+      "ApkClass": "Audio",
+      "Stage": "seeded"
+     }
+    }
+   },
+   "28": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "3.5 mm TRS",
+      "ApkDomain": "audio",
+      "ApkSide": "output",
+      "Count": "1",
+      "Face": "front"
+     }
+    }
+   },
+   "36": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "RJ45",
+      "ApkDomain": "network",
+      "ApkSide": "input",
+      "Count": "1"
+     }
+    }
+   },
+   "43": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "DB-9 F",
+      "ApkDomain": "control",
+      "ApkSide": "connection",
+      "Count": "1"
+     }
+    }
+   },
+   "50": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "BNC",
+      "ApkDomain": "video",
+      "ApkSide": "input",
+      "Count": "4"
+     }
+    }
+   },
+   "57": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "BNC",
+      "ApkDomain": "video",
+      "ApkSide": "output",
+      "Count": "4"
+     }
+    }
+   },
+   "64": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "HDMI",
+      "ApkDomain": "video",
+      "ApkSide": "input",
+      "Count": "1"
+     }
+    }
+   },
+   "71": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "HDMI",
+      "ApkDomain": "video",
+      "ApkSide": "output",
+      "Count": "1"
+     }
+    }
+   },
+   "78": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "XLR-3 F",
+      "ApkDomain": "audio",
+      "ApkSide": "input",
+      "Count": "2"
+     }
+    }
+   },
+   "85": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "XLR-3 F",
+      "ApkDomain": "audio",
+      "ApkSide": "output",
+      "Count": "2"
+     }
+    }
+   },
+   "92": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "BNC",
+      "ApkDomain": "clock",
+      "ApkSide": "input",
+      "Count": "1"
+     }
+    }
+   },
+   "99": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "BNC",
+      "ApkDomain": "clock",
+      "ApkSide": "input",
+      "Count": "1"
+     }
+    }
+   },
+   "106": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "BNC",
+      "ApkDomain": "clock",
+      "ApkSide": "output",
+      "Count": "1"
+     }
+    }
+   },
+   "113": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "XLR-4 F",
+      "ApkDomain": "power",
+      "ApkSide": "input",
+      "Count": "1"
+     }
+    }
+   }
+  },
+  "connections": []
+ },
+ "parts/extron--70-491-15.ifc": {
+  "schema": "IFC4X3_ADD2",
+  "entities": 42,
+  "counts": {
+   "IFCAPPLICATION": 1,
+   "IFCAXIS2PLACEMENT3D": 1,
+   "IFCBUILDINGELEMENTPROXY": 1,
+   "IFCCARTESIANPOINT": 1,
+   "IFCDISTRIBUTIONPORT": 2,
+   "IFCGEOMETRICREPRESENTATIONCONTEXT": 1,
+   "IFCLOCALPLACEMENT": 1,
+   "IFCORGANIZATION": 1,
+   "IFCOWNERHISTORY": 1,
+   "IFCPERSON": 1,
+   "IFCPERSONANDORGANIZATION": 1,
+   "IFCPROJECT": 1,
+   "IFCPROPERTYSET": 4,
+   "IFCPROPERTYSINGLEVALUE": 15,
+   "IFCRELAGGREGATES": 1,
+   "IFCRELCONTAINEDINSPATIALSTRUCTURE": 1,
+   "IFCRELDEFINESBYPROPERTIES": 4,
+   "IFCRELNESTS": 1,
+   "IFCSITE": 1,
+   "IFCSIUNIT": 1,
+   "IFCUNITASSIGNMENT": 1
+  },
+  "validation_errors": 0,
+  "elements": {
+   "15": {
+    "type": "IFCBUILDINGELEMENTPROXY",
+    "ports": [
+     27,
+     35
+    ],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Extron",
+      "ModelReference": "70-491-15",
+      "ModelLabel": "Extron 70-491-15"
+     },
+     "APK_Part": {
+      "ApkId": "extron/70-491-15",
+      "ApkCategory": "Other",
+      "Stage": "seeded"
+     }
+    }
+   },
+   "27": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "RJ45",
+      "ApkDomain": "network",
+      "ApkSide": "output",
+      "Count": "2",
+      "Face": "front"
+     }
+    }
+   },
+   "35": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "APK_Terminal": {
+      "Connector": "110 Punch-down",
+      "ApkDomain": "signal",
+      "ApkSide": "output",
+      "Count": "2"
+     }
+    }
+   }
+  },
+  "connections": []
+ },
+ "stadium.ifc": {
+  "schema": "IFC4X3_ADD2",
+  "entities": 291,
+  "counts": {
+   "IFCAUDIOVISUALAPPLIANCE": 7,
+   "IFCAUDIOVISUALAPPLIANCETYPE": 4,
+   "IFCAXIS2PLACEMENT3D": 1,
+   "IFCBUILDING": 1,
+   "IFCBUILDINGSTOREY": 2,
+   "IFCCARTESIANPOINT": 1,
+   "IFCCOMMUNICATIONSAPPLIANCE": 1,
+   "IFCCOMMUNICATIONSAPPLIANCETYPE": 1,
+   "IFCDIRECTION": 2,
+   "IFCDISCRETEACCESSORY": 1,
+   "IFCDISTRIBUTIONCIRCUIT": 1,
+   "IFCDISTRIBUTIONPORT": 12,
+   "IFCELECTRICDISTRIBUTIONBOARD": 1,
+   "IFCELECTRICDISTRIBUTIONBOARDTYPE": 1,
+   "IFCELEMENTASSEMBLY": 2,
+   "IFCELEMENTQUANTITY": 6,
+   "IFCGEOMETRICREPRESENTATIONCONTEXT": 1,
+   "IFCGEOMETRICREPRESENTATIONSUBCONTEXT": 1,
+   "IFCMECHANICALFASTENER": 66,
+   "IFCMECHANICALFASTENERTYPE": 1,
+   "IFCPROJECT": 1,
+   "IFCPROPERTYBOUNDEDVALUE": 19,
+   "IFCPROPERTYENUMERATEDVALUE": 14,
+   "IFCPROPERTYLISTVALUE": 10,
+   "IFCPROPERTYSET": 37,
+   "IFCPROPERTYSINGLEVALUE": 40,
+   "IFCPROTECTIVEDEVICE": 1,
+   "IFCQUANTITYWEIGHT": 6,
+   "IFCRELAGGREGATES": 6,
+   "IFCRELASSIGNSTOGROUP": 1,
+   "IFCRELCONNECTSPORTS": 1,
+   "IFCRELCONTAINEDINSPATIALSTRUCTURE": 2,
+   "IFCRELDEFINESBYPROPERTIES": 24,
+   "IFCRELDEFINESBYTYPE": 7,
+   "IFCRELNESTS": 3,
+   "IFCSITE": 1,
+   "IFCSIUNIT": 3,
+   "IFCSPACE": 1,
+   "IFCUNITASSIGNMENT": 1
+  },
+  "validation_errors": 0,
+  "elements": {
+   "145": {
+    "type": "IFCELECTRICDISTRIBUTIONBOARD",
+    "ports": [],
+    "psets": {
+     "Pset_ElectricalDeviceCommon": {
+      "RatedVoltage": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedVoltage",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "RatedCurrent": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedCurrent",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "NumberOfPoles": 4
+     }
+    }
+   },
+   "151": {
+    "type": "IFCPROTECTIVEDEVICE",
+    "ports": [],
+    "psets": {
+     "Pset_ProtectiveDeviceTypeCircuitBreaker": {
+      "ICU60947": 25000.0,
+      "PerformanceClasses": [
+       "C"
+      ]
+     },
+     "Pset_ElectricalDeviceCommon": {
+      "RatedCurrent": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedCurrent",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      }
+     }
+    }
+   },
+   "51": {
+    "type": "IFCAUDIOVISUALAPPLIANCE",
+    "ports": [
+     56,
+     65,
+     73,
+     81,
+     87,
+     93,
+     102
+    ],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Example",
+      "ModelReference": "DSP-2U"
+     },
+     "Pset_ElectricalDeviceCommon": {
+      "RatedVoltage": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedVoltage",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "NominalFrequencyRange": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "NominalFrequencyRange",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "RatedCurrent": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedCurrent",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "HeatDissipation": 180.0
+     },
+     "Qto_AudioVisualApplianceBaseQuantities": {
+      "GrossWeight": 8.5
+     },
+     "APK_AVDevice": {
+      "RackUnits": 2,
+      "HeatDissipationIdle": 60.0,
+      "InrushCurrent": 20.0
+     }
+    }
+   },
+   "54": {
+    "type": "IFCAUDIOVISUALAPPLIANCE",
+    "ports": [
+     108,
+     117,
+     125,
+     133
+    ],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Example",
+      "ModelReference": "AMP-4x2000"
+     },
+     "Pset_ElectricalDeviceCommon": {
+      "RatedVoltage": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedVoltage",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "NominalFrequencyRange": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "NominalFrequencyRange",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "RatedCurrent": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedCurrent",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "HeatDissipation": 2200.0
+     },
+     "Qto_AudioVisualApplianceBaseQuantities": {
+      "GrossWeight": 14.2
+     },
+     "APK_AVDevice": {
+      "RackUnits": 2,
+      "HeatDissipationIdle": 150.0,
+      "InrushCurrent": 45.0
+     }
+    }
+   },
+   "174": {
+    "type": "IFCAUDIOVISUALAPPLIANCE",
+    "ports": [],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Example",
+      "ModelReference": "LED-WALL"
+     },
+     "Pset_ElectricalDeviceCommon": {
+      "RatedVoltage": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedVoltage",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "NominalFrequencyRange": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "NominalFrequencyRange",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "RatedCurrent": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedCurrent",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "HeatDissipation": 12500.0
+     },
+     "Qto_AudioVisualApplianceBaseQuantities": {
+      "GrossWeight": 1450.0
+     }
+    }
+   },
+   "276": {
+    "type": "IFCAUDIOVISUALAPPLIANCE",
+    "ports": [],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Example",
+      "ModelReference": "LA-12"
+     },
+     "Pset_ElectricalDeviceCommon": {
+      "RatedVoltage": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedVoltage",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "NominalFrequencyRange": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "NominalFrequencyRange",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "RatedCurrent": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedCurrent",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "HeatDissipation": 400.0
+     },
+     "Qto_AudioVisualApplianceBaseQuantities": {
+      "GrossWeight": 38.5
+     }
+    }
+   },
+   "278": {
+    "type": "IFCAUDIOVISUALAPPLIANCE",
+    "ports": [],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Example",
+      "ModelReference": "LA-12"
+     },
+     "Pset_ElectricalDeviceCommon": {
+      "RatedVoltage": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedVoltage",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "NominalFrequencyRange": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "NominalFrequencyRange",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "RatedCurrent": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedCurrent",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "HeatDissipation": 400.0
+     },
+     "Qto_AudioVisualApplianceBaseQuantities": {
+      "GrossWeight": 38.5
+     }
+    }
+   },
+   "279": {
+    "type": "IFCAUDIOVISUALAPPLIANCE",
+    "ports": [],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Example",
+      "ModelReference": "LA-12"
+     },
+     "Pset_ElectricalDeviceCommon": {
+      "RatedVoltage": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedVoltage",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "NominalFrequencyRange": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "NominalFrequencyRange",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "RatedCurrent": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedCurrent",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "HeatDissipation": 400.0
+     },
+     "Qto_AudioVisualApplianceBaseQuantities": {
+      "GrossWeight": 38.5
+     }
+    }
+   },
+   "280": {
+    "type": "IFCAUDIOVISUALAPPLIANCE",
+    "ports": [],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Example",
+      "ModelReference": "LA-12"
+     },
+     "Pset_ElectricalDeviceCommon": {
+      "RatedVoltage": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedVoltage",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "NominalFrequencyRange": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "NominalFrequencyRange",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "RatedCurrent": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedCurrent",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "HeatDissipation": 400.0
+     },
+     "Qto_AudioVisualApplianceBaseQuantities": {
+      "GrossWeight": 38.5
+     }
+    }
+   },
+   "189": {
+    "type": "IFCCOMMUNICATIONSAPPLIANCE",
+    "ports": [
+     191
+    ],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Example",
+      "ModelReference": "SEND-2U"
+     },
+     "Pset_ElectricalDeviceCommon": {
+      "RatedVoltage": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedVoltage",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "NominalFrequencyRange": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "NominalFrequencyRange",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "RatedCurrent": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedCurrent",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "HeatDissipation": 120.0
+     },
+     "Qto_CommunicationsApplianceBaseQuantities": {
+      "GrossWeight": 6.0
+     },
+     "APK_AVDevice": {
+      "RackUnits": 2
+     }
+    }
+   },
+   "281": {
+    "type": "IFCDISCRETEACCESSORY",
+    "ports": [],
+    "psets": {
+     "APK_Rigging": {
+      "SafeWorkingLoad": 500.0,
+      "WindLoadCoefficient": 1.2
+     },
+     "Qto_DiscreteAccessoryBaseQuantities": {
+      "GrossWeight": 14.0
+     }
+    }
+   },
+   "56": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "Pset_DistributionPortTypeCable": {
+      "ElectricalConnectionType": "Phoenix 3.5mm 3-pin",
+      "ConnectionGender": [
+       "FEMALE"
+      ]
+     },
+     "APK_Terminal": {
+      "Pinout": [
+       "+",
+       "-",
+       "Gnd"
+      ]
+     }
+    }
+   },
+   "65": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "Pset_DistributionPortTypeCable": {
+      "ElectricalConnectionType": "Phoenix 3.5mm 3-pin",
+      "ConnectionGender": [
+       "FEMALE"
+      ]
+     },
+     "APK_Terminal": {
+      "Pinout": [
+       "+",
+       "-",
+       "Gnd"
+      ]
+     }
+    }
+   },
+   "73": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "Pset_DistributionPortTypeCable": {
+      "ElectricalConnectionType": "Phoenix 3.5mm 3-pin",
+      "ConnectionGender": [
+       "FEMALE"
+      ]
+     },
+     "APK_Terminal": {
+      "Pinout": [
+       "+",
+       "-",
+       "Gnd"
+      ]
+     }
+    }
+   },
+   "81": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "Pset_DistributionPortTypeCable": {
+      "ElectricalConnectionType": "etherCON RJ45",
+      "ConnectionGender": [
+       "FEMALE"
+      ],
+      "Protocols": [
+       "Dante",
+       "AES67",
+       "SMPTE ST 2110-30",
+       "PTPv2"
+      ]
+     }
+    }
+   },
+   "87": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "Pset_DistributionPortTypeCable": {
+      "ElectricalConnectionType": "etherCON RJ45",
+      "ConnectionGender": [
+       "FEMALE"
+      ],
+      "Protocols": [
+       "Dante",
+       "AES67",
+       "SMPTE ST 2110-30",
+       "PTPv2"
+      ]
+     }
+    }
+   },
+   "93": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "Pset_DistributionPortTypeCable": {
+      "ElectricalConnectionType": "Phoenix 3.5mm 3-pin",
+      "ConnectionGender": [
+       "FEMALE"
+      ],
+      "ConnectionSubtype": "RS-232"
+     },
+     "APK_Terminal": {
+      "Pinout": [
+       "Tx",
+       "Rx",
+       "Gnd"
+      ]
+     }
+    }
+   },
+   "102": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "Pset_DistributionPortTypeCable": {
+      "ElectricalConnectionType": "IEC 60320 C14",
+      "ConnectionGender": [
+       "MALE"
+      ],
+      "ConductorFunction": [
+       "PHASE_L1",
+       "NEUTRAL",
+       "PROTECTIVEEARTH"
+      ]
+     }
+    }
+   },
+   "108": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "Pset_DistributionPortTypeCable": {
+      "ElectricalConnectionType": "Phoenix 3.5mm 3-pin",
+      "ConnectionGender": [
+       "FEMALE"
+      ]
+     },
+     "APK_Terminal": {
+      "Pinout": [
+       "+",
+       "-",
+       "Gnd"
+      ]
+     }
+    }
+   },
+   "117": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "Pset_DistributionPortTypeCable": {
+      "ElectricalConnectionType": "Phoenix 5.08mm 4-pin",
+      "ConnectionGender": [
+       "FEMALE"
+      ]
+     },
+     "APK_Terminal": {
+      "Pinout": [
+       "CH1+",
+       "CH1-"
+      ]
+     }
+    }
+   },
+   "125": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "Pset_DistributionPortTypeCable": {
+      "ElectricalConnectionType": "Phoenix 5.08mm 4-pin",
+      "ConnectionGender": [
+       "FEMALE"
+      ]
+     },
+     "APK_Terminal": {
+      "Pinout": [
+       "CH2+",
+       "CH2-"
+      ]
+     }
+    }
+   },
+   "133": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "Pset_DistributionPortTypeCable": {
+      "ElectricalConnectionType": "powerCON TRUE1",
+      "ConnectionGender": [
+       "MALE"
+      ],
+      "ConductorFunction": [
+       "PHASE_L1",
+       "NEUTRAL",
+       "PROTECTIVEEARTH"
+      ]
+     }
+    }
+   },
+   "191": {
+    "type": "IFCDISTRIBUTIONPORT",
+    "ports": [],
+    "psets": {
+     "Pset_DistributionPortTypeCable": {
+      "ElectricalConnectionType": "IEC 60320 C14",
+      "ConnectionGender": [
+       "MALE"
+      ]
+     }
+    }
+   },
+   "140": {
+    "type": "IFCELECTRICDISTRIBUTIONBOARDTYPE",
+    "ports": [],
+    "psets": {
+     "Pset_ElectricalDeviceCommon": {
+      "RatedVoltage": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedVoltage",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "RatedCurrent": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedCurrent",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "NumberOfPoles": 4
+     }
+    }
+   },
+   "21": {
+    "type": "IFCAUDIOVISUALAPPLIANCETYPE",
+    "ports": [],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Example",
+      "ModelReference": "DSP-2U"
+     },
+     "Pset_ElectricalDeviceCommon": {
+      "RatedVoltage": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedVoltage",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "NominalFrequencyRange": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "NominalFrequencyRange",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "RatedCurrent": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedCurrent",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "HeatDissipation": 180.0
+     },
+     "Qto_AudioVisualApplianceBaseQuantities": {
+      "GrossWeight": 8.5
+     },
+     "APK_AVDevice": {
+      "RackUnits": 2,
+      "HeatDissipationIdle": 60.0,
+      "InrushCurrent": 20.0
+     }
+    }
+   },
+   "36": {
+    "type": "IFCAUDIOVISUALAPPLIANCETYPE",
+    "ports": [],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Example",
+      "ModelReference": "AMP-4x2000"
+     },
+     "Pset_ElectricalDeviceCommon": {
+      "RatedVoltage": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedVoltage",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "NominalFrequencyRange": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "NominalFrequencyRange",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "RatedCurrent": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedCurrent",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "HeatDissipation": 2200.0
+     },
+     "Qto_AudioVisualApplianceBaseQuantities": {
+      "GrossWeight": 14.2
+     },
+     "APK_AVDevice": {
+      "RackUnits": 2,
+      "HeatDissipationIdle": 150.0,
+      "InrushCurrent": 45.0
+     }
+    }
+   },
+   "161": {
+    "type": "IFCAUDIOVISUALAPPLIANCETYPE",
+    "ports": [],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Example",
+      "ModelReference": "LED-WALL"
+     },
+     "Pset_ElectricalDeviceCommon": {
+      "RatedVoltage": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedVoltage",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "NominalFrequencyRange": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "NominalFrequencyRange",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "RatedCurrent": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedCurrent",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "HeatDissipation": 12500.0
+     },
+     "Qto_AudioVisualApplianceBaseQuantities": {
+      "GrossWeight": 1450.0
+     }
+    }
+   },
+   "265": {
+    "type": "IFCAUDIOVISUALAPPLIANCETYPE",
+    "ports": [],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Example",
+      "ModelReference": "LA-12"
+     },
+     "Pset_ElectricalDeviceCommon": {
+      "RatedVoltage": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedVoltage",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "NominalFrequencyRange": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "NominalFrequencyRange",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "RatedCurrent": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedCurrent",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "HeatDissipation": 400.0
+     },
+     "Qto_AudioVisualApplianceBaseQuantities": {
+      "GrossWeight": 38.5
+     }
+    }
+   },
+   "176": {
+    "type": "IFCCOMMUNICATIONSAPPLIANCETYPE",
+    "ports": [],
+    "psets": {
+     "Pset_ManufacturerTypeInformation": {
+      "Manufacturer": "Example",
+      "ModelReference": "SEND-2U"
+     },
+     "Pset_ElectricalDeviceCommon": {
+      "RatedVoltage": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedVoltage",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "NominalFrequencyRange": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "NominalFrequencyRange",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "RatedCurrent": {
+       "type": "IfcPropertyBoundedValue",
+       "Name": "RatedCurrent",
+       "Specification": null,
+       "UpperBoundValue": {
+        "ref": 0
+       },
+       "LowerBoundValue": {
+        "ref": 0
+       },
+       "SetPointValue": null
+      },
+      "HeatDissipation": 120.0
+     },
+     "Qto_CommunicationsApplianceBaseQuantities": {
+      "GrossWeight": 6.0
+     },
+     "APK_AVDevice": {
+      "RackUnits": 2
+     }
+    }
+   }
+  },
+  "connections": [
+   [
+    73,
+    108,
+    null
+   ]
+  ]
+ }
+}

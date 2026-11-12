@@ -280,7 +280,167 @@ def agent_state_publications(module: str, state: str, detail: str,
         out.append((agent_topic(module, leaf), payload, True))
     for leaf, payload in (("state", state), ("detail", detail), ("interface", interface)):
         out.append((module_incoming(module, leaf), payload, True))
+    report_agent_state(module, state, detail)
     return out
+
+
+# ---------------------------------------------------------------- reports
+# ROAD-3695 step 4 — the twin of RUNNER/src/report.rs. Every line `elog`
+# prints to stderr is ALSO said as a LogLine on System/Log/{token}/{level};
+# every fault the runner can name is raised as a retained ProblemRecord on
+# System/Problems/{token}/{key} and cleared when it is over — through
+# `apkaudio_contracts.report` (the image stages it beside the runner; where it
+# is not importable, nothing is sent and the stderr line stands). Never blocks,
+# never raises. Lines said before the session exists are held (at most 32).
+
+REPORT_CHECK_FAILED = "plugin_check_failed"
+REPORT_JOB_FAILED = "job_failed"
+REPORT_UNAVAILABLE = "plugin_unavailable"
+REPORT_DOWN = "plugin_down"
+REPORT_EARLY_LINES = 32
+REPORT_TTL_S = 300
+
+_REPORT: Dict[str, Any] = {"session": None, "name": None, "early": [], "raised": {}}
+_REPORT_LOCK = threading.Lock()
+
+
+def _report_contract():
+    """`apkaudio_contracts.report`, or None — found the way `telemetry_rule` finds its module."""
+    try:
+        from apkaudio_contracts import report
+        return report
+    except Exception:                                   # noqa: BLE001
+        pass
+    candidate = os.path.normpath(os.path.join(HERE, *[".."] * 6, "contracts", "python"))
+    if os.path.isdir(candidate) and candidate not in sys.path:
+        sys.path.append(candidate)
+        try:
+            from apkaudio_contracts import report
+            return report
+        except Exception:                               # noqa: BLE001
+            return None
+    return None
+
+
+def report_source() -> str:
+    session = _REPORT["session"]
+    name = session.token if session is not None else (_REPORT["name"] or os.path.basename(sys.argv[0] or "plugin"))
+    contract = _report_contract()
+    return contract.report_source(name) if contract else name
+
+
+def report_install(session: "Session") -> None:
+    """Give the reports a session (the first wins); what was held is said."""
+    with _REPORT_LOCK:
+        if _REPORT["session"] is not None:
+            return
+        _REPORT["session"] = session
+        held, _REPORT["early"] = _REPORT["early"], []
+    for message in held:
+        _report_send(message)
+
+
+def _report_send(message: Dict[str, Any]) -> bool:
+    session = _REPORT["session"]
+    if session is None:
+        with _REPORT_LOCK:
+            if len(_REPORT["early"]) < REPORT_EARLY_LINES:
+                _REPORT["early"].append(message)
+        return False
+    try:
+        info = session.client.publish(message["topic"], message["payload"], qos=0, retain=message["retain"])
+        return published(getattr(info, "rc", 0) == 0)
+    except Exception:                                   # noqa: BLE001
+        return published(False)
+
+
+def level_of(line: str) -> str:
+    """The level a stderr line is said at, read off its own mark: 🛑/❌ error, ⚠️ warn, else info."""
+    head = line.lstrip()
+    if head.startswith("🛑") or "❌" in head:
+        return "error"
+    if head.startswith("⚠"):
+        return "warn"
+    return "info"
+
+
+def report_log(level: str, message: str, code: Optional[str] = None, subject: Optional[str] = None,
+               detail: Optional[str] = None) -> bool:
+    contract = _report_contract()
+    if contract is None:
+        return False
+    try:
+        m = contract.log_line(report_source(), level, message.strip(), code=code, subject=subject, detail=detail)
+    except Exception:                                   # noqa: BLE001
+        return False
+    return _report_send(m)
+
+
+def elog(line: str, level: Optional[str] = None) -> None:
+    """`print(line, file=sys.stderr)` with a LogLine twin — `elog!` in the Rust runner."""
+    print(line, file=sys.stderr)
+    report_log(level or level_of(line), line)
+
+
+def raise_problem(code: str, subject: Optional[str] = None, detail: str = "") -> bool:
+    """Raise (or raise again: count + first raise kept) a retained problem, and say it as an error line."""
+    contract = _report_contract()
+    if contract is None:
+        return False
+    source = report_source()
+    topic = contract.problem_topic(source, contract.problem_key(code, subject))
+    with _REPORT_LOCK:
+        previous = _REPORT["raised"].get(topic)
+    try:
+        m = contract.problem_record(source, code, subject=subject or None, detail=detail or None,
+                                    ttl_s=REPORT_TTL_S, previous=previous)
+    except Exception:                                   # noqa: BLE001
+        return False
+    with _REPORT_LOCK:
+        _REPORT["raised"][topic] = json.loads(m["payload"])
+    sent = _report_send(m)
+    report_log("error", "problem %s%s" % (code, " — %s" % subject if subject else ""), code=code,
+               subject=subject or None, detail=detail or None)
+    return sent
+
+
+def clear_problem(code: str, subject: Optional[str] = None, any_process: bool = False) -> bool:
+    """Clear a problem this process raised — or, `any_process`, whoever raised it."""
+    contract = _report_contract()
+    if contract is None:
+        return False
+    m = contract.clear_problem(report_source(), code, subject or None)
+    with _REPORT_LOCK:
+        was = _REPORT["raised"].pop(m["topic"], None) is not None
+    if was or any_process:
+        _report_send(m)
+    return was
+
+
+def report_checks(report: "Report") -> None:
+    """One problem per self-test check: a failure raises plugin_check_failed about
+    `<token>/<check>`, a pass clears it."""
+    for check in report.checks:
+        subject = "%s/%s" % (report.module, check.name)
+        if check.outcome == "fail":
+            raise_problem(getattr(check, "problem", None) or REPORT_CHECK_FAILED, subject, check.detail)
+        elif check.outcome == "pass":
+            clear_problem(REPORT_CHECK_FAILED, subject, any_process=True)
+
+
+def report_agent_state(module: str, state: str, detail: str) -> None:
+    """`unavailable` raises plugin_unavailable about the module; `listening` clears it."""
+    if state == "unavailable":
+        raise_problem(REPORT_UNAVAILABLE, module, detail)
+    elif state == "listening":
+        clear_problem(REPORT_UNAVAILABLE, module, any_process=True)
+
+
+def going_down(token: str, why: str) -> None:
+    """plugin_down before an exit the runner chose; the next process's connect clears it."""
+    raise_problem(REPORT_DOWN, token, why)
+    if _REPORT["session"] is not None:
+        time.sleep(0.3)
 
 
 # ---------------------------------------------------------------- config
@@ -729,7 +889,7 @@ def start_loopback(token: str, config: Dict[str, Dict[str, str]]) -> Optional[in
     try:
         server = make_loopback_server(port)
     except OSError as error:
-        print("⚠️  [%s] loopback telemetry NOT served — 127.0.0.1:%d: %s" % (token, port, error), file=sys.stderr)
+        elog("⚠️  [%s] loopback telemetry NOT served — 127.0.0.1:%d: %s" % (token, port, error))
         return None
     _LOOPBACK["port"] = port
     print("📈 [%s] loopback telemetry on http://127.0.0.1:%d/telemetry" % (token, port))
@@ -848,6 +1008,7 @@ class Session:
         self.book = apk_plugin_panels.Book(token, apk_plugin_panels.templates(),
                                            apk_plugin_panels.expire_after_from_config(config, token))
         self.book_lock = threading.Lock()
+        report_install(self)
 
     # -- the publishes
 
@@ -857,10 +1018,11 @@ class Session:
         # `publish_failures` in the loopback telemetry and the tick.
         try:
             info = self.client.publish(topic, payload, qos=qos, retain=retain)
-            published(getattr(info, "rc", 0) == 0)
+            return published(getattr(info, "rc", 0) == 0)
         except Exception as error:                      # noqa: BLE001
             published(False)
             print("⚠️  [%s] publish %s failed: %s" % (self.token, topic, error), file=sys.stderr)
+            return False
 
     def publish_config(self) -> None:
         payload = {"value": self.config, "path": "%s/config.ini" % self.token, "source": "plugin"}
@@ -888,6 +1050,8 @@ class Session:
         if connect_failed(rc):
             print("⚠️  [%s] broker refused the session (rc=%s); paho retries" % (self.token, rc), file=sys.stderr)
             return
+        # Up again: what an earlier process said on its way down is over.
+        clear_problem(REPORT_DOWN, self.token, any_process=True)
         # Every (re)connect: the broker may have lost its retained store, and a
         # subscription does not survive a clean session.
         self.publish_config()
@@ -972,12 +1136,30 @@ class Session:
         report.record(Check.pass_("the_broker_session_carried_this_press", "bus",
                                   "the run request arrived over the session that answers it"))
         print("🧪 [%s] %s" % (self.token, report.headline()))
+        report_checks(report)
         self.publish_report(report)
 
     def publish_panels(self, out) -> None:
-        """Device panels, retained; an empty payload clears one."""
+        """Device panels, retained; an empty payload clears one.
+
+        A panel change is said ONCE (a repaint, a clear), so one the client refuses (no
+        session, a full queue) waits in `pending_panels`, newest per topic, and is retried
+        on the next tick; one that goes out drops anything older still waiting for its
+        topic, so a retry never puts an older panel over a newer one. The Rust runner's
+        rule, the same (ROAD-3566)."""
+        pending = getattr(self, "pending_panels", None)
+        if pending is None:
+            pending = self.pending_panels = []
         for topic, payload in out:
-            self.publish(topic, payload, True)
+            pending[:] = [(t, p) for t, p in pending if t != topic]
+            if not self.publish(topic, payload, True):
+                pending.append((topic, payload))
+
+    def retry_panels(self) -> None:
+        """What a refused publish left waiting goes out first, on the tick."""
+        waiting, self.pending_panels = list(getattr(self, "pending_panels", None) or []), []
+        if waiting:
+            self.publish_panels(waiting)
 
     def publish_report(self, report: Report) -> None:
         for topic, payload, retain in report.publications():
@@ -989,6 +1171,7 @@ class Session:
         while True:
             # A silent device's panel leaves on the tick (`panels_expire_after_s`).
             if self.book.is_active():
+                self.retry_panels()
                 with self.book_lock:
                     expired = self.book.expire(time.monotonic())
                 self.publish_panels(expired)
@@ -1025,7 +1208,7 @@ def _run_stop_hooks() -> None:
             try:
                 hook()
             except Exception as error:                  # noqa: BLE001
-                print("⚠️  stop hook %s raised: %r" % (getattr(hook, "__name__", hook), error), file=sys.stderr)
+                elog("⚠️  stop hook %s raised: %r" % (getattr(hook, "__name__", hook), error))
     thread = threading.Thread(target=all_hooks, daemon=True)
     thread.start()
     thread.join(2.0)
@@ -1082,6 +1265,7 @@ def serve(token: str, config_text: str, config_source: str, self_test: Callable[
     variables over the file BEFORE anything is published, so `<topic>/config`
     and `incoming/api` carry what the plugin runs on, not what the file said.
     """
+    _REPORT["name"] = token
     loaded = ini_to_json(config_text)
     if config_overlay is not None:
         overlaid = config_overlay(json.loads(json.dumps(loaded)))
@@ -1114,7 +1298,7 @@ def serve(token: str, config_text: str, config_source: str, self_test: Callable[
             with open(manifest, encoding="utf-8") as handle:
                 declare(Manifest.parse(handle.read()), plugin_version)
         except (OSError, ValueError) as error:
-            print("🛑 [%s] %s does not parse: %s — no loopback telemetry" % (token, manifest, error), file=sys.stderr)
+            elog("🛑 [%s] %s does not parse: %s — no loopback telemetry" % (token, manifest, error))
     start_loopback(token, loaded)
     api.loopback = loopback_api_section()
     session = Session(token, loaded, config_source, self_test, api, names)
@@ -1128,7 +1312,7 @@ def serve(token: str, config_text: str, config_source: str, self_test: Callable[
                 target()
                 failures.append((name, returned_code))
             except BaseException as error:              # noqa: BLE001
-                print("🛑 [%s] %s raised: %r" % (token, name, error), file=sys.stderr)
+                elog("🛑 [%s] %s raised: %r" % (token, name, error))
                 failures.append((name, EXIT_AGENT_PANICKED if returned_code == EXIT_AGENT_RETURNED
                                  else returned_code))
         return body
@@ -1157,20 +1341,22 @@ def serve(token: str, config_text: str, config_source: str, self_test: Callable[
         if failures:
             name, code = failures[0]
             if code == EXIT_SESSION_DIED:
-                print("🛑 [%s] the broker session thread ended; exiting so the container restarts" % token,
-                      file=sys.stderr)
+                elog("🛑 [%s] the broker session thread ended; exiting so the container restarts" % token)
+                going_down(token, "the broker session thread ended (exit 69); Docker restarts it")
             elif code == EXIT_AGENT_RETURNED:
-                print("🛑 [%s] %s returned; a hunter that stops is a failure — exiting" % (token, name),
-                      file=sys.stderr)
+                elog("🛑 [%s] %s returned; a hunter that stops is a failure — exiting" % (token, name))
+                going_down(token, "%s returned (exit 70); Docker restarts it" % name)
             else:
-                print("🛑 [%s] %s raised — exiting" % (token, name), file=sys.stderr)
+                elog("🛑 [%s] %s raised — exiting" % (token, name))
+                going_down(token, "%s raised (exit %d); Docker restarts it" % (name, code))
             sys.stdout.flush()
             sys.stderr.flush()
             os._exit(code)
         stale = stalest_tick()
         if stale and stale[1] > stall:
-            print("🛑 [%s] %s: no tick for %ds (limit %ds) — stalled, exiting" % (token, stale[0], stale[1], stall),
-                  file=sys.stderr)
+            elog("🛑 [%s] %s: no tick for %ds (limit %ds) — stalled, exiting" % (token, stale[0], stale[1], stall))
+            going_down(token, "%s: no tick for %ds (limit %ds) — stalled (exit 75); Docker restarts it"
+                       % (stale[0], stale[1], stall))
             sys.stderr.flush()
             os._exit(EXIT_STALLED)
 
@@ -1183,7 +1369,7 @@ def load_config(path: str) -> Tuple[str, str]:
             with open(override, encoding="utf-8") as handle:
                 return handle.read(), override
         except OSError as error:
-            print("🛑 APK_PLUGIN_CONFIG=%s did not read (%s); using %s" % (override, error, path), file=sys.stderr)
+            elog("🛑 APK_PLUGIN_CONFIG=%s did not read (%s); using %s" % (override, error, path))
     with open(path, encoding="utf-8") as handle:
         return handle.read(), "config.ini"
 

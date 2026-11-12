@@ -188,8 +188,11 @@ where
         let answers = client.clone();
         let result_leaf = result_topic.clone();
         let describe = self.describe;
+        let tool = self.tool;
         let lane = JobLane::start(module, self.tool, self.handle, move |answer| {
             println!("🧰 [{module}] job {} → {}", answer["job_id"], describe(&answer));
+            // A failed job is a problem until a later one of this tool works (ROAD-3695).
+            crate::report::job_answer(tool, &answer);
             // Blocking is fine here: the session thread drains the queue.
             crate::loopback::published(answers.publish(result_leaf.clone(), QoS::AtLeastOnce, retain, answer.to_string()).is_ok());
         });
@@ -204,10 +207,11 @@ where
                 Event::Incoming(Packet::Publish(p)) if p.topic == job_topic => match lane.offer(p.payload.to_vec()) {
                     Ok(()) => {}
                     Err(Refused::Busy(answer)) => {
+                        crate::report::job_answer(self.tool, &answer);
                         crate::loopback::published(client.try_publish(result_topic.clone(), QoS::AtLeastOnce, retain, answer.to_string()).is_ok());
                     }
                     Err(Refused::Gone) => {
-                        eprintln!("⚠️ [{module}] the job thread is gone; exiting");
+                        elog!("⚠️ [{module}] the job thread is gone; exiting");
                         return;
                     }
                 },

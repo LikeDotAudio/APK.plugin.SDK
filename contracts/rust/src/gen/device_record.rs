@@ -140,6 +140,9 @@ pub mod error {
 #[doc = "            \"paired\": {"]
 #[doc = "              \"type\": \"string\""]
 #[doc = "            },"]
+#[doc = "            \"services\": {"]
+#[doc = "              \"type\": \"string\""]
+#[doc = "            },"]
 #[doc = "            \"source\": {"]
 #[doc = "              \"type\": \"string\""]
 #[doc = "            }"]
@@ -771,6 +774,9 @@ impl<'de> ::serde::Deserialize<'de> for DeviceRecordDeviceId {
 #[doc = "        \"paired\": {"]
 #[doc = "          \"type\": \"string\""]
 #[doc = "        },"]
+#[doc = "        \"services\": {"]
+#[doc = "          \"type\": \"string\""]
+#[doc = "        },"]
 #[doc = "        \"source\": {"]
 #[doc = "          \"type\": \"string\""]
 #[doc = "        }"]
@@ -1350,6 +1356,9 @@ pub struct DeviceRecordExtraBluetoothController {
 #[doc = "    \"paired\": {"]
 #[doc = "      \"type\": \"string\""]
 #[doc = "    },"]
+#[doc = "    \"services\": {"]
+#[doc = "      \"type\": \"string\""]
+#[doc = "    },"]
 #[doc = "    \"source\": {"]
 #[doc = "      \"type\": \"string\""]
 #[doc = "    }"]
@@ -1380,6 +1389,8 @@ pub struct DeviceRecordExtraBluetoothPeer {
     pub name: ::std::option::Option<::std::string::String>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub paired: ::std::option::Option<::std::string::String>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub services: ::std::option::Option<::std::string::String>,
     #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
     pub source: ::std::option::Option<::std::string::String>,
 }

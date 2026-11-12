@@ -1,0 +1,1122 @@
+  0
+SECTION
+  2
+HEADER
+  9
+$ACADVER
+  1
+AC1015
+  9
+$HANDSEED
+  5
+14A
+  9
+$INSUNITS
+ 70
+4
+  9
+$MEASUREMENT
+ 70
+1
+  0
+ENDSEC
+  0
+SECTION
+  2
+TABLES
+  0
+TABLE
+  2
+LTYPE
+  5
+12B
+100
+AcDbSymbolTable
+ 70
+2
+  0
+LTYPE
+  5
+12C
+100
+AcDbSymbolTableRecord
+100
+AcDbLinetypeTableRecord
+  2
+CONTINUOUS
+ 70
+0
+  3
+Solid line
+ 72
+65
+ 73
+0
+ 40
+0.000000
+  0
+LTYPE
+  5
+12D
+100
+AcDbSymbolTableRecord
+100
+AcDbLinetypeTableRecord
+  2
+CENTER
+ 70
+0
+  3
+Centerline ____ _ ____ _
+ 72
+65
+ 73
+4
+ 40
+20.000000
+ 49
+12.000000
+ 74
+0
+ 49
+-2.000000
+ 74
+0
+ 49
+4.000000
+ 74
+0
+ 49
+-2.000000
+ 74
+0
+  0
+ENDTAB
+  0
+TABLE
+  2
+LAYER
+  5
+12E
+100
+AcDbSymbolTable
+ 70
+6
+  0
+LAYER
+  5
+101
+100
+AcDbSymbolTableRecord
+100
+AcDbLayerTableRecord
+  2
+0_PANEL_CHASSIS
+ 70
+0
+ 62
+7
+  6
+CONTINUOUS
+370
+50
+  0
+LAYER
+  5
+102
+100
+AcDbSymbolTableRecord
+100
+AcDbLayerTableRecord
+  2
+1_MOUNTING_SLOTS
+ 70
+0
+ 62
+4
+  6
+CONTINUOUS
+370
+35
+  0
+LAYER
+  5
+103
+100
+AcDbSymbolTableRecord
+100
+AcDbLayerTableRecord
+  2
+2_BORES_FABRICATION
+ 70
+0
+ 62
+1
+  6
+CONTINUOUS
+370
+35
+  0
+LAYER
+  5
+104
+100
+AcDbSymbolTableRecord
+100
+AcDbLayerTableRecord
+  2
+3_SCREW_HOLES
+ 70
+0
+ 62
+3
+  6
+CONTINUOUS
+370
+25
+  0
+LAYER
+  5
+105
+100
+AcDbSymbolTableRecord
+100
+AcDbLayerTableRecord
+  2
+4_CROSSHAIRS
+ 70
+0
+ 62
+2
+  6
+CENTER
+370
+15
+  0
+LAYER
+  5
+106
+100
+AcDbSymbolTableRecord
+100
+AcDbLayerTableRecord
+  2
+5_DIMENSIONS_SILKSCREEN
+ 70
+0
+ 62
+5
+  6
+CONTINUOUS
+370
+18
+  0
+ENDTAB
+  0
+TABLE
+  2
+BLOCK_RECORD
+  5
+12F
+100
+AcDbSymbolTable
+ 70
+2
+  0
+BLOCK_RECORD
+  5
+130
+100
+AcDbSymbolTableRecord
+100
+AcDbBlockTableRecord
+  2
+*Model_Space
+  0
+BLOCK_RECORD
+  5
+131
+100
+AcDbSymbolTableRecord
+100
+AcDbBlockTableRecord
+  2
+*Paper_Space
+  0
+ENDTAB
+  0
+ENDSEC
+  0
+SECTION
+  2
+BLOCKS
+  0
+BLOCK
+  5
+132
+100
+AcDbEntity
+  8
+0
+100
+AcDbBlockBegin
+  2
+*Model_Space
+ 70
+0
+ 10
+0.0000
+ 20
+0.0000
+ 30
+0.0000
+  3
+*Model_Space
+  1
+
+  0
+ENDBLK
+  5
+133
+100
+AcDbEntity
+  8
+0
+100
+AcDbBlockEnd
+  0
+BLOCK
+  5
+134
+100
+AcDbEntity
+  8
+0
+100
+AcDbBlockBegin
+  2
+*Paper_Space
+ 70
+0
+ 10
+0.0000
+ 20
+0.0000
+ 30
+0.0000
+  3
+*Paper_Space
+  1
+
+  0
+ENDBLK
+  5
+135
+100
+AcDbEntity
+  8
+0
+100
+AcDbBlockEnd
+  0
+ENDSEC
+  0
+SECTION
+  2
+ENTITIES
+  0
+LINE
+  5
+107
+100
+AcDbEntity
+  8
+0_PANEL_CHASSIS
+100
+AcDbLine
+ 10
+0.0000
+ 20
+0.0000
+ 30
+0.0000
+ 11
+482.6000
+ 21
+0.0000
+ 31
+0.0000
+  0
+LINE
+  5
+108
+100
+AcDbEntity
+  8
+0_PANEL_CHASSIS
+100
+AcDbLine
+ 10
+482.6000
+ 20
+0.0000
+ 30
+0.0000
+ 11
+482.6000
+ 21
+44.4500
+ 31
+0.0000
+  0
+LINE
+  5
+109
+100
+AcDbEntity
+  8
+0_PANEL_CHASSIS
+100
+AcDbLine
+ 10
+482.6000
+ 20
+44.4500
+ 30
+0.0000
+ 11
+0.0000
+ 21
+44.4500
+ 31
+0.0000
+  0
+LINE
+  5
+10A
+100
+AcDbEntity
+  8
+0_PANEL_CHASSIS
+100
+AcDbLine
+ 10
+0.0000
+ 20
+44.4500
+ 30
+0.0000
+ 11
+0.0000
+ 21
+0.0000
+ 31
+0.0000
+  0
+LINE
+  5
+10B
+100
+AcDbEntity
+  8
+0_PANEL_CHASSIS
+100
+AcDbLine
+ 10
+15.9000
+ 20
+0.0000
+ 30
+0.0000
+ 11
+15.9000
+ 21
+44.4500
+ 31
+0.0000
+  0
+LINE
+  5
+10C
+100
+AcDbEntity
+  8
+0_PANEL_CHASSIS
+100
+AcDbLine
+ 10
+466.7000
+ 20
+0.0000
+ 30
+0.0000
+ 11
+466.7000
+ 21
+44.4500
+ 31
+0.0000
+  0
+LINE
+  5
+10D
+100
+AcDbEntity
+  8
+1_MOUNTING_SLOTS
+100
+AcDbLine
+ 10
+6.7000
+ 20
+2.8500
+ 30
+0.0000
+ 11
+9.2000
+ 21
+2.8500
+ 31
+0.0000
+  0
+LINE
+  5
+10E
+100
+AcDbEntity
+  8
+1_MOUNTING_SLOTS
+100
+AcDbLine
+ 10
+6.7000
+ 20
+9.8500
+ 30
+0.0000
+ 11
+9.2000
+ 21
+9.8500
+ 31
+0.0000
+  0
+ARC
+  5
+10F
+100
+AcDbEntity
+  8
+1_MOUNTING_SLOTS
+100
+AcDbCircle
+ 10
+9.2000
+ 20
+6.3500
+ 30
+0.0000
+ 40
+3.5000
+100
+AcDbArc
+ 50
+270.00
+ 51
+90.00
+  0
+ARC
+  5
+110
+100
+AcDbEntity
+  8
+1_MOUNTING_SLOTS
+100
+AcDbCircle
+ 10
+6.7000
+ 20
+6.3500
+ 30
+0.0000
+ 40
+3.5000
+100
+AcDbArc
+ 50
+90.00
+ 51
+270.00
+  0
+CIRCLE
+  5
+111
+100
+AcDbEntity
+  8
+4_CROSSHAIRS
+100
+AcDbCircle
+ 10
+7.9500
+ 20
+6.3500
+ 30
+0.0000
+ 40
+0.7500
+  0
+LINE
+  5
+112
+100
+AcDbEntity
+  8
+1_MOUNTING_SLOTS
+100
+AcDbLine
+ 10
+6.7000
+ 20
+34.6000
+ 30
+0.0000
+ 11
+9.2000
+ 21
+34.6000
+ 31
+0.0000
+  0
+LINE
+  5
+113
+100
+AcDbEntity
+  8
+1_MOUNTING_SLOTS
+100
+AcDbLine
+ 10
+6.7000
+ 20
+41.6000
+ 30
+0.0000
+ 11
+9.2000
+ 21
+41.6000
+ 31
+0.0000
+  0
+ARC
+  5
+114
+100
+AcDbEntity
+  8
+1_MOUNTING_SLOTS
+100
+AcDbCircle
+ 10
+9.2000
+ 20
+38.1000
+ 30
+0.0000
+ 40
+3.5000
+100
+AcDbArc
+ 50
+270.00
+ 51
+90.00
+  0
+ARC
+  5
+115
+100
+AcDbEntity
+  8
+1_MOUNTING_SLOTS
+100
+AcDbCircle
+ 10
+6.7000
+ 20
+38.1000
+ 30
+0.0000
+ 40
+3.5000
+100
+AcDbArc
+ 50
+90.00
+ 51
+270.00
+  0
+CIRCLE
+  5
+116
+100
+AcDbEntity
+  8
+4_CROSSHAIRS
+100
+AcDbCircle
+ 10
+7.9500
+ 20
+38.1000
+ 30
+0.0000
+ 40
+0.7500
+  0
+LINE
+  5
+117
+100
+AcDbEntity
+  8
+1_MOUNTING_SLOTS
+100
+AcDbLine
+ 10
+473.4000
+ 20
+2.8500
+ 30
+0.0000
+ 11
+475.9000
+ 21
+2.8500
+ 31
+0.0000
+  0
+LINE
+  5
+118
+100
+AcDbEntity
+  8
+1_MOUNTING_SLOTS
+100
+AcDbLine
+ 10
+473.4000
+ 20
+9.8500
+ 30
+0.0000
+ 11
+475.9000
+ 21
+9.8500
+ 31
+0.0000
+  0
+ARC
+  5
+119
+100
+AcDbEntity
+  8
+1_MOUNTING_SLOTS
+100
+AcDbCircle
+ 10
+475.9000
+ 20
+6.3500
+ 30
+0.0000
+ 40
+3.5000
+100
+AcDbArc
+ 50
+270.00
+ 51
+90.00
+  0
+ARC
+  5
+11A
+100
+AcDbEntity
+  8
+1_MOUNTING_SLOTS
+100
+AcDbCircle
+ 10
+473.4000
+ 20
+6.3500
+ 30
+0.0000
+ 40
+3.5000
+100
+AcDbArc
+ 50
+90.00
+ 51
+270.00
+  0
+CIRCLE
+  5
+11B
+100
+AcDbEntity
+  8
+4_CROSSHAIRS
+100
+AcDbCircle
+ 10
+474.6500
+ 20
+6.3500
+ 30
+0.0000
+ 40
+0.7500
+  0
+LINE
+  5
+11C
+100
+AcDbEntity
+  8
+1_MOUNTING_SLOTS
+100
+AcDbLine
+ 10
+473.4000
+ 20
+34.6000
+ 30
+0.0000
+ 11
+475.9000
+ 21
+34.6000
+ 31
+0.0000
+  0
+LINE
+  5
+11D
+100
+AcDbEntity
+  8
+1_MOUNTING_SLOTS
+100
+AcDbLine
+ 10
+473.4000
+ 20
+41.6000
+ 30
+0.0000
+ 11
+475.9000
+ 21
+41.6000
+ 31
+0.0000
+  0
+ARC
+  5
+11E
+100
+AcDbEntity
+  8
+1_MOUNTING_SLOTS
+100
+AcDbCircle
+ 10
+475.9000
+ 20
+38.1000
+ 30
+0.0000
+ 40
+3.5000
+100
+AcDbArc
+ 50
+270.00
+ 51
+90.00
+  0
+ARC
+  5
+11F
+100
+AcDbEntity
+  8
+1_MOUNTING_SLOTS
+100
+AcDbCircle
+ 10
+473.4000
+ 20
+38.1000
+ 30
+0.0000
+ 40
+3.5000
+100
+AcDbArc
+ 50
+90.00
+ 51
+270.00
+  0
+CIRCLE
+  5
+120
+100
+AcDbEntity
+  8
+4_CROSSHAIRS
+100
+AcDbCircle
+ 10
+474.6500
+ 20
+38.1000
+ 30
+0.0000
+ 40
+0.7500
+  0
+TEXT
+  5
+121
+100
+AcDbEntity
+  8
+5_DIMENSIONS_SILKSCREEN
+100
+AcDbText
+ 10
+25.9000
+ 20
+39.4500
+ 30
+0.0000
+ 40
+3.2000
+  1
+FABRICATION DRAWING: P1 · 1U 19" EIA-310
+ 50
+0.00
+100
+AcDbText
+  0
+TEXT
+  5
+122
+100
+AcDbEntity
+  8
+5_DIMENSIONS_SILKSCREEN
+100
+AcDbText
+ 10
+25.9000
+ 20
+35.4500
+ 30
+0.0000
+ 40
+2.2000
+  1
+MODEL: EIA-310-D · PITCH: 225.40mm · DATUM X0: 112.70mm · CAD.LIKE.AUDIO
+ 50
+0.00
+100
+AcDbText
+  0
+CIRCLE
+  5
+123
+100
+AcDbEntity
+  8
+2_BORES_FABRICATION
+100
+AcDbCircle
+ 10
+128.6000
+ 20
+19.2250
+ 30
+0.0000
+ 40
+3.2500
+  0
+LINE
+  5
+124
+100
+AcDbEntity
+  8
+4_CROSSHAIRS
+100
+AcDbLine
+ 10
+122.8500
+ 20
+19.2250
+ 30
+0.0000
+ 11
+134.3500
+ 21
+19.2250
+ 31
+0.0000
+  0
+LINE
+  5
+125
+100
+AcDbEntity
+  8
+4_CROSSHAIRS
+100
+AcDbLine
+ 10
+128.6000
+ 20
+13.4750
+ 30
+0.0000
+ 11
+128.6000
+ 21
+24.9750
+ 31
+0.0000
+  0
+TEXT
+  5
+126
+100
+AcDbEntity
+  8
+5_DIMENSIONS_SILKSCREEN
+100
+AcDbText
+ 10
+127.4000
+ 20
+23.6750
+ 30
+0.0000
+ 40
+1.8000
+  1
+1
+ 50
+0.00
+100
+AcDbText
+  0
+CIRCLE
+  5
+127
+100
+AcDbEntity
+  8
+2_BORES_FABRICATION
+100
+AcDbCircle
+ 10
+354.0000
+ 20
+19.2250
+ 30
+0.0000
+ 40
+3.2500
+  0
+LINE
+  5
+128
+100
+AcDbEntity
+  8
+4_CROSSHAIRS
+100
+AcDbLine
+ 10
+348.2500
+ 20
+19.2250
+ 30
+0.0000
+ 11
+359.7500
+ 21
+19.2250
+ 31
+0.0000
+  0
+LINE
+  5
+129
+100
+AcDbEntity
+  8
+4_CROSSHAIRS
+100
+AcDbLine
+ 10
+354.0000
+ 20
+13.4750
+ 30
+0.0000
+ 11
+354.0000
+ 21
+24.9750
+ 31
+0.0000
+  0
+TEXT
+  5
+12A
+100
+AcDbEntity
+  8
+5_DIMENSIONS_SILKSCREEN
+100
+AcDbText
+ 10
+352.8000
+ 20
+23.6750
+ 30
+0.0000
+ 40
+1.8000
+  1
+2
+ 50
+0.00
+100
+AcDbText
+  0
+ENDSEC
+  0
+EOF
